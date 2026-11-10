@@ -32,7 +32,7 @@ class RadioController extends StateNotifier<RadioPlayerState> {
     final token = Object();
     _currentTuneToken = token;
 
-    state = state.copyWith(status: PlaybackStatus.tuning, errorMessage: null);
+    state = state.copyWith(status: PlaybackStatus.tuning, clearError: true);
 
     try {
       final station = await _repository.getRandomStation(
@@ -55,7 +55,7 @@ class RadioController extends StateNotifier<RadioPlayerState> {
       state = state.copyWith(
         status: PlaybackStatus.buffering,
         station: station,
-        errorMessage: null,
+        clearError: true,
       );
 
       await _audioService.playStation(station);
@@ -77,7 +77,7 @@ class RadioController extends StateNotifier<RadioPlayerState> {
     state = state.copyWith(
       status: PlaybackStatus.buffering,
       station: station,
-      errorMessage: null,
+      clearError: true,
     );
 
     try {
@@ -106,7 +106,7 @@ class RadioController extends StateNotifier<RadioPlayerState> {
     _currentTuneToken = null;
     await _audioService.stop();
     if (mounted) {
-      state = state.copyWith(status: PlaybackStatus.idle);
+      state = state.copyWith(status: PlaybackStatus.idle, clearError: true);
     }
   }
 

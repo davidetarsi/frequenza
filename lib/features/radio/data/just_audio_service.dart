@@ -16,6 +16,8 @@ class JustAudioService implements RadioAudioService {
 
   final AudioPlayer _player;
   final _statusController = StreamController<PlaybackStatus>.broadcast();
+  final List<StreamSubscription<dynamic>> _subscriptions = [];
+  bool _disposed = false;
   PlaybackStatus _currentStatus = PlaybackStatus.idle;
 
   @override
@@ -28,47 +30,54 @@ class JustAudioService implements RadioAudioService {
     try {
       final session = await AudioSession.instance;
       await session.configure(const AudioSessionConfiguration.music());
+      if (_disposed) return;
 
-      session.becomingNoisyEventStream.listen((_) {
-        pause();
-      });
+      _subscriptions.add(
+        session.becomingNoisyEventStream.listen((_) {
+          unawaited(pause());
+        }),
+      );
 
-      session.interruptionEventStream.listen((event) {
-        if (event.begin) {
-          switch (event.type) {
-            case AudioInterruptionType.duck:
-              _player.setVolume(0.2);
-              break;
-            case AudioInterruptionType.pause:
-            case AudioInterruptionType.unknown:
-              pause();
-              break;
+      _subscriptions.add(
+        session.interruptionEventStream.listen((event) {
+          if (event.begin) {
+            switch (event.type) {
+              case AudioInterruptionType.duck:
+                _player.setVolume(0.2);
+                break;
+              case AudioInterruptionType.pause:
+              case AudioInterruptionType.unknown:
+                pause();
+                break;
+            }
+          } else {
+            switch (event.type) {
+              case AudioInterruptionType.duck:
+                _player.setVolume(1.0);
+                break;
+              case AudioInterruptionType.pause:
+              case AudioInterruptionType.unknown:
+                break;
+            }
           }
-        } else {
-          switch (event.type) {
-            case AudioInterruptionType.duck:
-              _player.setVolume(1.0);
-              break;
-            case AudioInterruptionType.pause:
-            case AudioInterruptionType.unknown:
-              break;
-          }
-        }
-      });
+        }),
+      );
     } catch (_) {
       // AudioSession may not be available on some platforms/tests
     }
   }
 
   void _subscribeToPlayerState() {
-    _player.playerStateStream.listen(
-      (state) {
-        final status = _mapPlayerState(state);
-        _updateStatus(status);
-      },
-      onError: (Object error) {
-        _updateStatus(PlaybackStatus.error);
-      },
+    _subscriptions.add(
+      _player.playerStateStream.listen(
+        (state) {
+          final status = _mapPlayerState(state);
+          _updateStatus(status);
+        },
+        onError: (Object error) {
+          _updateStatus(PlaybackStatus.error);
+        },
+      ),
     );
   }
 
@@ -87,6 +96,7 @@ class JustAudioService implements RadioAudioService {
   }
 
   void _updateStatus(PlaybackStatus status) {
+    if (_disposed) return;
     if (_currentStatus != status) {
       _currentStatus = status;
       _statusController.add(status);
@@ -112,7 +122,8 @@ class JustAudioService implements RadioAudioService {
 
       await _player.stop();
       await _player.setAudioSource(audioSource);
-      await _player.play();
+      // play() completes when live playback stops, not when it starts.
+      _startPlayback();
     } catch (e) {
       _updateStatus(PlaybackStatus.error);
       rethrow;
@@ -122,10 +133,19 @@ class JustAudioService implements RadioAudioService {
   @override
   Future<void> play() async {
     try {
-      await _player.play();
+      _startPlayback();
     } catch (_) {
       _updateStatus(PlaybackStatus.error);
     }
+  }
+
+  void _startPlayback() {
+    if (_disposed) return;
+    unawaited(
+      _player.play().catchError((Object error, StackTrace stack) {
+        _updateStatus(PlaybackStatus.error);
+      }),
+    );
   }
 
   @override
@@ -149,6 +169,12 @@ class JustAudioService implements RadioAudioService {
 
   @override
   Future<void> dispose() async {
+    if (_disposed) return;
+    _disposed = true;
+    for (final subscription in _subscriptions) {
+      await subscription.cancel();
+    }
+    _subscriptions.clear();
     await _player.dispose();
     await _statusController.close();
   }

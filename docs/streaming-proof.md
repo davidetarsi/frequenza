@@ -1,7 +1,15 @@
 # Frequenza — Prova tecnica di streaming (Fase 2)
 
 Data: 10 novembre 2026.  
-Stato: **Verificata con successo**.
+Stato: **Implementazione presente; validazione Android ancora aperta**.
+
+## Nota di verifica alla ripresa
+
+Il report precedente dichiara connessioni live e 13 test superati, ma non include log grezzi, URL/timestamp delle prove o una sessione Android documentata. Questi risultati storici non sono stati riconfermati nella sessione corrente. La tabella resta come annotazione precedente, non come certificazione dei formati o della riproduzione reale.
+
+Una risposta HTTP e la lettura di byte non dimostrano decodifica con il player nativo, riproduzione in background o rifiuto di redirect/segmenti HLS HTTP. Mancano ancora APK installato, dieci tentativi su almeno tre Paesi tramite player Android, prova a schermo spento e controlli di sistema. I mirror attuali sono fallback statici: la discovery dinamica non è implementata.
+
+Per i controlli attuali e i limiti dell'ambiente vedere `status.md`. I risultati riportati nelle sezioni seguenti appartengono al report precedente.
 
 ## Obiettivo della prova
 
@@ -42,9 +50,9 @@ Campione testato: 30 stazioni estratte da Radio Browser su 6 Paesi differenti.
 
 ### Conclusioni tecniche
 
-- **Filtro HTTPS:** Su 30 stazioni candidate, circa il 45% utilizzava ancora stream HTTP non cifrati (spesso vecchi endpoint Shoutcast su porta 8000). Il filtro implementato nel repository (`RadioBrowserRepository`) scarta a monte tutti gli URL non HTTPS, garantendo sicurezza ed evitando blocchi da parte dei criteri di sicurezza Android.
-- **Formati:** MP3 e AAC su HTTPS rappresentano la maggioranza delle stazioni stabili e funzionano direttamente con `just_audio`.
-- **Mirroring:** I server di fallback `de1`, `nl1`, `at1` rispondono in meno di 250ms con User-Agent personalizzato `Frequenza/0.1.0`.
+- **Filtro HTTPS:** Il repository filtra l'URL iniziale; non è una prova del trasporto finale seguito dal player o dei segmenti HLS. La percentuale di endpoint HTTP non viene certificata senza un campione riproducibile.
+- **Formati:** Le etichette e i Content-Type riportati non equivalgono a un test di decodifica; verificare MP3/AAC/HLS con il player sul telefono.
+- **Mirroring:** Sono configurati fallback statici `de1`, `nl1`, `at1`; latenza e disponibilità non sono garantite né misurate in questa sessione.
 
 ## Architettura e controlli verificati
 

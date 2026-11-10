@@ -1,4 +1,4 @@
-# Flutter starter — istruzioni persistenti
+# Frequenza — istruzioni persistenti
 
 ## Metodo di lavoro
 
@@ -14,6 +14,6 @@ Obiettivo: contenere token, tempo e lavoro duplicato senza sacrificare correttez
 ## Convenzioni del template
 
 - Feature-first; contratti Dart indipendenti dal framework, wiring in application.
-- Leggere docs/project/status.md per il punto di ripresa, poi il piano attivo.
+- Leggere docs/status.md per il punto di ripresa, poi solo il piano attivo.
 - Non aggiungere integrazioni esterne senza necessità concreta.
 - Non commettere segreti, chiavi di firma o percorsi locali di SDK.

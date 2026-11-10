@@ -166,6 +166,17 @@ void main() {
       expect(controller.state.errorMessage, isNotNull);
     });
 
+    test('a new tune clears the error from a failed attempt', () async {
+      repository.errorToThrow = Exception('Offline');
+      await controller.tuneRandom();
+      expect(controller.state.errorMessage, isNotNull);
+      repository.errorToThrow = null;
+      repository.stationToReturn = testStation;
+      await controller.tuneRandom();
+      expect(controller.state.status, PlaybackStatus.playing);
+      expect(controller.state.errorMessage, isNull);
+    });
+
     test('pause and stop control audio service', () async {
       repository.stationToReturn = testStation;
       await controller.tuneRandom();

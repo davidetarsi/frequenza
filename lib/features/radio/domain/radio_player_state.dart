@@ -21,10 +21,11 @@ class RadioPlayerState {
     PlaybackStatus? status,
     RadioStation? station,
     String? errorMessage,
+    bool clearError = false,
   }) => RadioPlayerState(
     status: status ?? this.status,
     station: station ?? this.station,
-    errorMessage: errorMessage ?? this.errorMessage,
+    errorMessage: clearError ? null : errorMessage ?? this.errorMessage,
   );
 
   @override
