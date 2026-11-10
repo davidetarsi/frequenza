@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../features/radio/presentation/radio_proof_page.dart';
+import '../features/radio/presentation/radio_page.dart';
 import '../l10n/generated/app_localizations.dart';
 import '../ui/theme/app_theme.dart';
 import 'config/app_config.dart';
@@ -20,6 +20,6 @@ class StarterApp extends StatelessWidget {
     locale: locale,
     localizationsDelegates: AppLocalizations.localizationsDelegates,
     supportedLocales: AppLocalizations.supportedLocales,
-    home: RadioProofPage(appName: config.appName),
+    home: RadioPage(appName: config.appName),
   );
 }

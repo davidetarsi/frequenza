@@ -151,6 +151,216 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Riprova'**
   String get retry;
+
+  /// No description provided for @favorites.
+  ///
+  /// In it, this message translates to:
+  /// **'Preferiti'**
+  String get favorites;
+
+  /// No description provided for @favoritesTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Le tue frequenze'**
+  String get favoritesTitle;
+
+  /// No description provided for @favoritesSubtitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Posti in cui tornare.'**
+  String get favoritesSubtitle;
+
+  /// No description provided for @favoritesEmpty.
+  ///
+  /// In it, this message translates to:
+  /// **'Tocca Salva sulla radio per aggiungere la tua prima frequenza.'**
+  String get favoritesEmpty;
+
+  /// No description provided for @favoritesError.
+  ///
+  /// In it, this message translates to:
+  /// **'Non è stato possibile aggiornare i preferiti. Riprova.'**
+  String get favoritesError;
+
+  /// No description provided for @savedOnDevice.
+  ///
+  /// In it, this message translates to:
+  /// **'Salvate su questo dispositivo'**
+  String get savedOnDevice;
+
+  /// No description provided for @removeFavorite.
+  ///
+  /// In it, this message translates to:
+  /// **'Rimuovi dai preferiti'**
+  String get removeFavorite;
+
+  /// No description provided for @tapToListen.
+  ///
+  /// In it, this message translates to:
+  /// **'Tocca per ascoltare'**
+  String get tapToListen;
+
+  /// No description provided for @close.
+  ///
+  /// In it, this message translates to:
+  /// **'Chiudi'**
+  String get close;
+
+  /// No description provided for @playing.
+  ///
+  /// In it, this message translates to:
+  /// **'In ascolto'**
+  String get playing;
+
+  /// No description provided for @paused.
+  ///
+  /// In it, this message translates to:
+  /// **'In pausa'**
+  String get paused;
+
+  /// No description provided for @ready.
+  ///
+  /// In it, this message translates to:
+  /// **'Pronta a partire'**
+  String get ready;
+
+  /// No description provided for @searching.
+  ///
+  /// In it, this message translates to:
+  /// **'Ricerca'**
+  String get searching;
+
+  /// No description provided for @connecting.
+  ///
+  /// In it, this message translates to:
+  /// **'Connessione alla radio'**
+  String get connecting;
+
+  /// No description provided for @stationError.
+  ///
+  /// In it, this message translates to:
+  /// **'Stazione non raggiungibile'**
+  String get stationError;
+
+  /// No description provided for @exploring.
+  ///
+  /// In it, this message translates to:
+  /// **'Esplorando…'**
+  String get exploring;
+
+  /// No description provided for @whereTo.
+  ///
+  /// In it, this message translates to:
+  /// **'Dove andiamo?'**
+  String get whereTo;
+
+  /// No description provided for @findingPlace.
+  ///
+  /// In it, this message translates to:
+  /// **'Alla ricerca di un luogo'**
+  String get findingPlace;
+
+  /// No description provided for @worldAwaits.
+  ///
+  /// In it, this message translates to:
+  /// **'Il mondo ti aspetta'**
+  String get worldAwaits;
+
+  /// No description provided for @tuning.
+  ///
+  /// In it, this message translates to:
+  /// **'Sintonizzazione…'**
+  String get tuning;
+
+  /// No description provided for @powerOn.
+  ///
+  /// In it, this message translates to:
+  /// **'Accendi'**
+  String get powerOn;
+
+  /// No description provided for @tune.
+  ///
+  /// In it, this message translates to:
+  /// **'Sintonizza'**
+  String get tune;
+
+  /// No description provided for @tuneAccessibility.
+  ///
+  /// In it, this message translates to:
+  /// **'Sintonizza una nuova stazione'**
+  String get tuneAccessibility;
+
+  /// No description provided for @tagline.
+  ///
+  /// In it, this message translates to:
+  /// **'Il mondo, in ascolto.'**
+  String get tagline;
+
+  /// No description provided for @nextStop.
+  ///
+  /// In it, this message translates to:
+  /// **'Prossima fermata: ovunque'**
+  String get nextStop;
+
+  /// No description provided for @firstTrip.
+  ///
+  /// In it, this message translates to:
+  /// **'Un tocco per partire'**
+  String get firstTrip;
+
+  /// No description provided for @knobHint.
+  ///
+  /// In it, this message translates to:
+  /// **'Tocca la manopola per cambiare radio'**
+  String get knobHint;
+
+  /// No description provided for @pause.
+  ///
+  /// In it, this message translates to:
+  /// **'Pausa'**
+  String get pause;
+
+  /// No description provided for @resume.
+  ///
+  /// In it, this message translates to:
+  /// **'Riprendi'**
+  String get resume;
+
+  /// No description provided for @save.
+  ///
+  /// In it, this message translates to:
+  /// **'Salva'**
+  String get save;
+
+  /// No description provided for @saved.
+  ///
+  /// In it, this message translates to:
+  /// **'Salvata'**
+  String get saved;
+
+  /// No description provided for @stationErrorHint.
+  ///
+  /// In it, this message translates to:
+  /// **'Questa frequenza non risponde. Tocca la manopola per provarne un’altra.'**
+  String get stationErrorHint;
+
+  /// No description provided for @pauseHint.
+  ///
+  /// In it, this message translates to:
+  /// **'La tua fermata è ancora qui. Riprendi quando vuoi.'**
+  String get pauseHint;
+
+  /// No description provided for @travelHint.
+  ///
+  /// In it, this message translates to:
+  /// **'Lasciati sorprendere dalla prossima radio.'**
+  String get travelHint;
+
+  /// No description provided for @footer.
+  ///
+  /// In it, this message translates to:
+  /// **'WEB RADIO · SENZA CONFINI'**
+  String get footer;
 }
 
 class _AppLocalizationsDelegate

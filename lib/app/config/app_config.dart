@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class AppConfig {
   const AppConfig({
     this.appName = 'Frequenza',
-    this.seedColor = const Color(0xFFC06C46),
+    this.seedColor = const Color(0xFFAD4823),
   });
 
   final String appName;
