@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../l10n/generated/app_localizations.dart';
+import '../../../ui/theme/travel_radio_palette.dart';
 import '../../radio/application/radio_providers.dart';
 import '../application/favorites_providers.dart';
 
@@ -8,6 +9,10 @@ Future<void> showFavorites(BuildContext context) => showModalBottomSheet<void>(
   context: context,
   isScrollControlled: true,
   useSafeArea: true,
+  backgroundColor: Colors.transparent,
+  elevation: 0,
+  barrierColor: TravelRadioPalette.of(context).ink.withValues(alpha: .48),
+  constraints: const BoxConstraints(maxWidth: 520),
   builder: (_) => const FavoritesSheet(),
 );
 
@@ -18,77 +23,130 @@ class FavoritesSheet extends ConsumerWidget {
     final l = AppLocalizations.of(context)!;
     final favorites = ref.watch(favoritesProvider);
     final player = ref.watch(radioControllerProvider);
+    final p = TravelRadioPalette.of(context);
     return DraggableScrollableSheet(
       expand: false,
-      initialChildSize: .55,
+      initialChildSize: .62,
       minChildSize: .3,
-      maxChildSize: .9,
-      builder: (context, scroll) => SafeArea(
-        top: false,
-        child: ListView(
-          controller: scroll,
-          padding: const EdgeInsets.all(24),
-          children: [
-            Center(
-              child: Container(
-                width: 32,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.outlineVariant,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
+      maxChildSize: .94,
+      builder: (context, scroll) => Container(
+        decoration: BoxDecoration(
+          color: p.paper,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+          border: Border(top: BorderSide(color: p.metalLight)),
+          boxShadow: [
+            BoxShadow(
+              color: p.ink.withValues(alpha: .22),
+              blurRadius: 28,
+              offset: const Offset(0, -5),
             ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    l.favoritesTitle,
-                    style: Theme.of(context).textTheme.headlineSmall,
-                  ),
-                ),
-                IconButton(
-                  tooltip: l.close,
-                  onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.close),
-                ),
-              ],
-            ),
-            Text(l.favoritesSubtitle),
-            const SizedBox(height: 16),
-            if (favorites.isLoading)
-              const Center(child: CircularProgressIndicator()),
-            if (favorites.hasError) ...[
-              Text(
-                l.favoritesError,
-                style: TextStyle(color: Theme.of(context).colorScheme.error),
-              ),
-              TextButton(
-                onPressed: favorites.isSaving
-                    ? null
-                    : ref.read(favoritesProvider.notifier).load,
-                child: Text(l.retry),
-              ),
-            ],
-            if (!favorites.isLoading &&
-                favorites.stations.isEmpty &&
-                !favorites.hasError)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 24),
-                child: Text(l.favoritesEmpty),
-              ),
-            for (final station in favorites.stations)
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+          child: Material(
+            color: p.paper,
+            child: SafeArea(
+              top: false,
+              child: ListView(
+                controller: scroll,
+                padding: const EdgeInsets.fromLTRB(22, 12, 22, 24),
                 children: [
-                  Expanded(
-                    child: ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      key: ValueKey('favorite-play-${station.id}'),
-                      title: Text(station.name),
-                      subtitle: Text(
-                        [
+                  Center(
+                    child: Container(
+                      width: 36,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: p.trim,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 22),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              l.favoritesTitle,
+                              style: Theme.of(context).textTheme.headlineSmall
+                                  ?.copyWith(
+                                    color: p.ink,
+                                    fontWeight: FontWeight.w600,
+                                    letterSpacing: -.6,
+                                  ),
+                            ),
+                            const SizedBox(height: 5),
+                            Text(
+                              l.favoritesSubtitle,
+                              style: TextStyle(color: p.muted),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      IconButton.filledTonal(
+                        style: IconButton.styleFrom(
+                          backgroundColor: p.paperRaised,
+                          foregroundColor: p.ink,
+                        ),
+                        tooltip: l.close,
+                        onPressed: () => Navigator.pop(context),
+                        icon: const Icon(Icons.close, size: 20),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  if (favorites.isLoading)
+                    const Padding(
+                      padding: EdgeInsets.all(24),
+                      child: Center(child: CircularProgressIndicator()),
+                    ),
+                  if (favorites.hasError) ...[
+                    Text(
+                      l.favoritesError,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.error,
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: favorites.isSaving
+                          ? null
+                          : ref.read(favoritesProvider.notifier).load,
+                      child: Text(l.retry),
+                    ),
+                  ],
+                  if (!favorites.isLoading &&
+                      favorites.stations.isEmpty &&
+                      !favorites.hasError)
+                    Container(
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        color: p.paperRaised,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Column(
+                        children: [
+                          Icon(Icons.favorite_border, color: p.muted, size: 28),
+                          const SizedBox(height: 14),
+                          Text(
+                            l.favoritesEmpty,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(color: p.ink),
+                          ),
+                        ],
+                      ),
+                    ),
+                  for (final station in favorites.stations)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: _StationPreset(
+                        id: station.id,
+                        name: station.name,
+                        code: station.countryCode,
+                        subtitle: [
                           station.country,
                           if (player.station?.id == station.id &&
                               player.isPlaying)
@@ -96,30 +154,157 @@ class FavoritesSheet extends ConsumerWidget {
                           else
                             l.tapToListen,
                         ].where((s) => s.isNotEmpty).join(' · '),
+                        active:
+                            player.station?.id == station.id &&
+                            player.isPlaying,
+                        removeLabel: l.removeFavorite,
+                        onPlay: () {
+                          final controller = ref.read(
+                            radioControllerProvider.notifier,
+                          );
+                          Navigator.pop(context);
+                          controller.tuneTo(station);
+                        },
+                        onRemove: favorites.isSaving
+                            ? null
+                            : () => ref
+                                  .read(favoritesProvider.notifier)
+                                  .toggle(station),
                       ),
-                      onTap: () {
-                        Navigator.pop(context);
-                        ref
-                            .read(radioControllerProvider.notifier)
-                            .tuneTo(station);
-                      },
                     ),
-                  ),
-                  IconButton(
-                    tooltip: l.removeFavorite,
-                    onPressed: favorites.isSaving
-                        ? null
-                        : () => ref
-                              .read(favoritesProvider.notifier)
-                              .toggle(station),
-                    icon: const Icon(Icons.favorite),
+                  const SizedBox(height: 10),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.phone_android_outlined,
+                        size: 14,
+                        color: p.muted,
+                      ),
+                      const SizedBox(width: 6),
+                      Flexible(
+                        child: Text(
+                          l.savedOnDevice,
+                          style: Theme.of(
+                            context,
+                          ).textTheme.bodySmall?.copyWith(color: p.muted),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
-            const SizedBox(height: 16),
-            Text(l.savedOnDevice, style: Theme.of(context).textTheme.bodySmall),
-          ],
+            ),
+          ),
         ),
+      ),
+    );
+  }
+}
+
+class _StationPreset extends StatelessWidget {
+  const _StationPreset({
+    required this.id,
+    required this.name,
+    required this.code,
+    required this.subtitle,
+    required this.active,
+    required this.removeLabel,
+    required this.onPlay,
+    required this.onRemove,
+  });
+  final String id, name, code, subtitle, removeLabel;
+  final bool active;
+  final VoidCallback onPlay;
+  final VoidCallback? onRemove;
+  @override
+  Widget build(BuildContext context) {
+    final p = TravelRadioPalette.of(context);
+    final ink = active ? TravelRadioPalette.screenInk : p.ink;
+    final secondary = active
+        ? TravelRadioPalette.screenInk.withValues(alpha: .85)
+        : p.muted;
+    return Material(
+      color: active ? TravelRadioPalette.screen : p.paperRaised,
+      borderRadius: BorderRadius.circular(20),
+      clipBehavior: Clip.antiAlias,
+      child: Row(
+        children: [
+          Expanded(
+            child: InkWell(
+              key: ValueKey('favorite-play-$id'),
+              onTap: onPlay,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 18,
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    ExcludeSemantics(
+                      child: Container(
+                        width: 42,
+                        height: 46,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: active ? TravelRadioPalette.hardware : p.paper,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: active
+                                ? const Color(0xFF65765A)
+                                : p.trim.withValues(alpha: .55),
+                          ),
+                        ),
+                        child: code.isEmpty
+                            ? Icon(Icons.public, size: 18, color: ink)
+                            : Text(
+                                code,
+                                style: TextStyle(
+                                  color: ink,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  letterSpacing: 1,
+                                ),
+                              ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            name,
+                            style: Theme.of(context).textTheme.titleMedium
+                                ?.copyWith(
+                                  color: ink,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                          ),
+                          const SizedBox(height: 5),
+                          Text(
+                            subtitle,
+                            style: Theme.of(
+                              context,
+                            ).textTheme.bodySmall?.copyWith(color: secondary),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          IconButton(
+            tooltip: removeLabel,
+            onPressed: onRemove,
+            icon: const Icon(Icons.favorite, size: 19),
+            color: ink,
+          ),
+          const SizedBox(width: 4),
+        ],
       ),
     );
   }

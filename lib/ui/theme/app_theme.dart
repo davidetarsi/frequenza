@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
+import 'travel_radio_palette.dart';
 
 abstract final class AppTheme {
   static ThemeData create(Color seedColor, Brightness brightness) => ThemeData(
     useMaterial3: true,
-    scaffoldBackgroundColor: brightness == Brightness.dark
-        ? const Color(0xFF242B28)
-        : const Color(0xFFFAF7EF),
+    scaffoldBackgroundColor: TravelRadioPalette.forBrightness(brightness).paper,
     colorScheme: ColorScheme.fromSeed(
       seedColor: seedColor,
       brightness: brightness,

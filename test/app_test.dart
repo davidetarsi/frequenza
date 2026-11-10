@@ -31,7 +31,11 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('tune-knob')));
       await tester.pumpAndSettle();
       expect(find.text('Radio'), findsOneWidget);
-      await tester.ensureVisible(find.text('Salva'));
+      await tester.scrollUntilVisible(
+        find.text('Salva'),
+        160,
+        scrollable: find.byType(Scrollable).first,
+      );
       await tester.pumpAndSettle();
       await tester.tap(find.text('Salva'));
       await tester.pumpAndSettle();
@@ -106,4 +110,36 @@ void main() {
     );
     expect(find.textContaining('Una stazione dal nome'), findsOneWidget);
   });
+  testWidgets(
+    'favorites recover from load failure and can be removed from the sheet',
+    (tester) async {
+      final favorites = MemoryFavorites()
+        ..items = [station]
+        ..failLoad = true;
+      final audio = FakeAudioService();
+      addTearDown(audio.dispose);
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            radioRepositoryProvider.overrideWithValue(FakeRadioRepository()),
+            radioAudioServiceProvider.overrideWithValue(audio),
+            favoritesRepositoryProvider.overrideWithValue(favorites),
+          ],
+          child: const StarterApp(locale: Locale('it')),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('favorites-open')));
+      await tester.pumpAndSettle();
+      expect(find.text('Riprova'), findsOneWidget);
+      favorites.failLoad = false;
+      await tester.tap(find.text('Riprova'));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('favorite-play-id')), findsOneWidget);
+      await tester.tap(find.byTooltip('Rimuovi dai preferiti'));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('favorite-play-id')), findsNothing);
+      expect(find.textContaining('Tocca Salva'), findsOneWidget);
+    },
+  );
 }

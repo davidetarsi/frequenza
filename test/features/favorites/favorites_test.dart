@@ -16,8 +16,13 @@ const station = RadioStation(
 class MemoryFavorites implements FavoritesRepository {
   List<RadioStation> items = [];
   bool failSave = false;
+  bool failLoad = false;
   @override
-  Future<List<RadioStation>> load() async => List.of(items);
+  Future<List<RadioStation>> load() async {
+    if (failLoad) throw StateError('Unavailable');
+    return List.of(items);
+  }
+
   @override
   Future<void> save(List<RadioStation> stations) async {
     if (failSave) throw StateError('Storage unavailable');

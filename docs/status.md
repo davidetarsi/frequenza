@@ -54,3 +54,22 @@ La fase 3 parte da un mockup da mostrare a Davide: radio da viaggio, display del
 - Unica revisione indipendente: nessun difetto importante. Copertura UI di rimozione dal pannello e load-error/retry non dedicata: nota minore rinviata; toggle e scrittura fallita coperti dal controller.
 
 Prossimo passo: eseguire `bash tool/check.sh --apk` in ambiente Android abilitato e provare la UI/player su telefono. Poi rifinire le animazioni (manopola, ricerca, display), rispettando riduzione movimento e stato reale del player. La precedente nota «nessuna UI definitiva approvata» è superata da questa approvazione; le verifiche tecniche Android aperte restano valide.
+
+## Rifinitura design — radio e pannello preferiti
+
+Richiesta: fermare la ricerca audio e migliorare la resa visiva. Piano: superpowers/plans/2026-11-10-design-polish.md.
+
+- Radio: scocca sfumata con cornice/profondità, maniglia aperta, display incassato, griglia stratificata e manopola metallica con indice e tacche decorative. Nessun nuovo comando o animazione continua.
+- Preferiti: route Material conservata per accessibilità/gesti, superficie custom coordinata con palette della radio, schede con Paese, evidenza della stazione in ascolto, rimozione e chiusura. Non più il foglio Material predefinito.
+- Palette condivisa di prodotto in ui/theme/travel_radio_palette.dart, usata anche dallo sfondo dell'app. Il template generico resta neutro.
+- Controllate visivamente catture Flutter a 390×844 della home e del pannello, con font reali. Catture temporanee usate per QA, non nuove immagini di prodotto.
+- Suite: 19/19 passata; aggiunta regressione rimozione dal pannello e caricamento fallito/retry. Corretto overflow del marchio sulla radio con testo al 200%. Analyzer senza segnalazioni; bundle ricompilato.
+- Aggiornato l'emulatore già attivo tramite flutter attach + hot reload: 11 librerie ricaricate, senza riavviare l'app. Sessione di attach poi scollegata.
+
+### Stato del template
+
+Uso corretto di separazione per feature, contratti Dart, adapter persistenti e test con override. Nessuna dipendenza radio/audio aggiunta al template. Il design del prodotto vive solo in Frequenza.
+
+Scostamenti preesistenti ancora aperti: provider manuali/StateNotifier invece della code generation usata dall'esempio; data/just_audio_service importa la porta audio da application, da spostare in domain quando si interviene sull'architettura. Non è stata fatta una migrazione degli strumenti durante il restyling. Lo stile del pannello è specifico della radio: non estrarlo nel template prima di un secondo uso concreto.
+
+Prossimo passo: feedback sul design nell'emulatore, poi lavoro mirato sulle animazioni già rinviate. Ricerca sul silenzio audio sospesa esplicitamente su richiesta di Davide; nessuna causa o risoluzione definitiva dichiarata.
