@@ -1,0 +1,12 @@
+{
+  "@@locale": "en",
+  "welcomeTitle": "A fresh start",
+  "welcomeBody": "A small foundation, ready for your next idea.",
+  "loading": "Loading",
+  "errorTitle": "Something went wrong",
+  "errorBody": "The content could not be loaded. You can try again.",
+  "emptyTitle": "No items yet",
+  "emptyBody": "Your content will appear here when it is available.",
+  "reload": "Reload",
+  "retry": "Try again"
+}

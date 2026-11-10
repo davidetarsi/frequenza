@@ -1,0 +1,30 @@
+name: frequenza
+description: "Ascolto e scoperta di web radio nel mondo."
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: ^3.10.4
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  flutter_riverpod: ^2.6.1
+  riverpod_annotation: ^2.6.1
+  http: ^1.2.2
+  just_audio: ^0.9.44
+  audio_session: ^0.1.25
+  just_audio_background: ^0.0.1-beta.17
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  riverpod_generator: ^2.6.4
+  build_runner: ^2.5.4
+
+flutter:
+  generate: true
+  uses-material-design: true

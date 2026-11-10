@@ -1,0 +1,12 @@
+{
+  "@@locale": "it",
+  "welcomeTitle": "Una nuova partenza",
+  "welcomeBody": "Una piccola base, pronta per la tua prossima idea.",
+  "loading": "Caricamento",
+  "errorTitle": "Qualcosa non ha funzionato",
+  "errorBody": "Non è stato possibile caricare i contenuti. Puoi riprovare.",
+  "emptyTitle": "Ancora nessun elemento",
+  "emptyBody": "Quando ci saranno contenuti, li troverai qui.",
+  "reload": "Ricarica",
+  "retry": "Riprova"
+}
