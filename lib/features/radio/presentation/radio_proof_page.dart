@@ -4,7 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../ui/theme/app_motion.dart';
 import '../../../ui/theme/app_spacing.dart';
 import '../../../ui/widgets/app_button.dart';
-import '../application/radio_providers.dart';
+import '../../../ui/widgets/app_icon_button.dart';
+import '../application/radio_controller.dart';
 import '../domain/radio_player_state.dart';
 
 class RadioProofPage extends ConsumerStatefulWidget {
@@ -193,12 +194,13 @@ class _RadioProofPageState extends ConsumerState<RadioProofPage> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    IconButton.filledTonal(
+                    AppIconButton(
+                      variant: AppIconButtonVariant.tonal,
                       key: const ValueKey('play-pause-button'),
                       icon: Icon(
                         playerState.isPlaying ? Icons.pause : Icons.play_arrow,
+                        size: 32,
                       ),
-                      iconSize: 32,
                       tooltip: playerState.isPlaying ? 'Pausa' : 'Riproduci',
                       onPressed:
                           playerState.station == null || playerState.isLoading
@@ -215,10 +217,10 @@ class _RadioProofPageState extends ConsumerState<RadioProofPage> {
                             },
                     ),
                     const SizedBox(width: AppSpacing.large),
-                    IconButton.outlined(
+                    AppIconButton(
+                      variant: AppIconButtonVariant.outlined,
                       key: const ValueKey('stop-button'),
-                      icon: const Icon(Icons.stop),
-                      iconSize: 32,
+                      icon: const Icon(Icons.stop, size: 32),
                       tooltip: 'Stop',
                       onPressed: playerState.station == null
                           ? null

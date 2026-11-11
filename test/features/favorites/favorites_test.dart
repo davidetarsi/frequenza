@@ -1,5 +1,7 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frequenza/features/favorites/application/favorites_controller.dart';
+import 'package:frequenza/features/favorites/application/favorites_providers.dart';
 import 'package:frequenza/features/favorites/data/preferences_favorites_repository.dart';
 import 'package:frequenza/features/favorites/domain/favorites_repository.dart';
 import 'package:frequenza/features/radio/domain/radio_station.dart';
@@ -40,23 +42,43 @@ void main() {
     expect(loaded.single.id, 'id');
     expect(loaded.single.streamUrl, 'https://example.com/live');
   });
+  test('reads v1 favorites and preserves the persisted keys', () async {
+    SharedPreferences.setMockInitialValues({
+      'frequenza.favorites.v1':
+          '[{"id":"id","name":"Radio","url":"https://example.com/live","code":"IT","tags":["rock",42]}]',
+    });
+    final repository = PreferencesFavoritesRepository();
+    final saved = await repository.load();
+    expect(saved.single.countryCode, 'IT');
+    expect(saved.single.tags, ['rock']);
+    await repository.save(saved);
+    final prefs = await SharedPreferences.getInstance();
+    expect(
+      prefs.getString('frequenza.favorites.v1'),
+      '[{"id":"id","name":"Radio","url":"https://example.com/live","country":"","code":"IT","tags":["rock"]}]',
+    );
+  });
+
   test(
     'toggle removes by identity and failure preserves saved stations',
     () async {
       final repository = MemoryFavorites();
-      final controller = FavoritesController(repository);
-      addTearDown(controller.dispose);
+      final container = ProviderContainer(
+        overrides: [favoritesRepositoryProvider.overrideWithValue(repository)],
+      );
+      addTearDown(container.dispose);
+      final controller = container.read(favoritesProvider.notifier);
       await controller.ready;
       await controller.toggle(station);
-      expect(controller.state.stations.single.id, 'id');
+      expect(container.read(favoritesProvider).stations.single.id, 'id');
       repository.failSave = true;
       await controller.toggle(station);
-      expect(controller.state.stations.single.id, 'id');
-      expect(controller.state.hasError, isTrue);
+      expect(container.read(favoritesProvider).stations.single.id, 'id');
+      expect(container.read(favoritesProvider).hasError, isTrue);
       repository.failSave = false;
       await controller.toggle(station);
-      expect(controller.state.stations, isEmpty);
-      expect(controller.state.hasError, isFalse);
+      expect(container.read(favoritesProvider).stations, isEmpty);
+      expect(container.read(favoritesProvider).hasError, isFalse);
     },
   );
 }

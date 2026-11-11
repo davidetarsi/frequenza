@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../l10n/generated/app_localizations.dart';
+import '../../../ui/theme/app_spacing.dart';
+import '../../../ui/widgets/app_button.dart';
+import '../../../ui/widgets/app_icon_button.dart';
+import '../../../ui/widgets/app_message.dart';
 import '../../../ui/theme/travel_radio_palette.dart';
-import '../../radio/application/radio_providers.dart';
-import '../application/favorites_providers.dart';
+import '../../radio/application/radio_controller.dart';
+import '../application/favorites_controller.dart';
 
 Future<void> showFavorites(BuildContext context) => showModalBottomSheet<void>(
   context: context,
@@ -86,12 +90,11 @@ class FavoritesSheet extends ConsumerWidget {
                           ],
                         ),
                       ),
-                      const SizedBox(width: 12),
-                      IconButton.filledTonal(
-                        style: IconButton.styleFrom(
-                          backgroundColor: p.paperRaised,
-                          foregroundColor: p.ink,
-                        ),
+                      const SizedBox(width: AppSpacing.standard),
+                      AppIconButton(
+                        variant: AppIconButtonVariant.tonal,
+                        backgroundColor: p.paperRaised,
+                        foregroundColor: p.ink,
                         tooltip: l.close,
                         onPressed: () => Navigator.pop(context),
                         icon: const Icon(Icons.close, size: 20),
@@ -111,37 +114,38 @@ class FavoritesSheet extends ConsumerWidget {
                         color: Theme.of(context).colorScheme.error,
                       ),
                     ),
-                    TextButton(
+                    AppButton(
+                      variant: AppButtonVariant.text,
                       onPressed: favorites.isSaving
                           ? null
                           : ref.read(favoritesProvider.notifier).load,
-                      child: Text(l.retry),
+                      label: l.retry,
                     ),
                   ],
                   if (!favorites.isLoading &&
                       favorites.stations.isEmpty &&
                       !favorites.hasError)
                     Container(
-                      padding: const EdgeInsets.all(24),
+                      padding: const EdgeInsets.all(AppSpacing.large),
                       decoration: BoxDecoration(
                         color: p.paperRaised,
                         borderRadius: BorderRadius.circular(20),
                       ),
-                      child: Column(
-                        children: [
-                          Icon(Icons.favorite_border, color: p.muted, size: 28),
-                          const SizedBox(height: 14),
-                          Text(
-                            l.favoritesEmpty,
-                            textAlign: TextAlign.center,
-                            style: TextStyle(color: p.ink),
-                          ),
-                        ],
+                      child: AppMessage.empty(
+                        leading: Icon(
+                          Icons.favorite_border,
+                          color: p.muted,
+                          size: 28,
+                        ),
+                        message: l.favoritesEmpty,
+                        messageStyle: TextStyle(color: p.ink),
                       ),
                     ),
                   for (final station in favorites.stations)
                     Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
+                      padding: const EdgeInsets.only(
+                        bottom: AppSpacing.standard,
+                      ),
                       child: _StationPreset(
                         id: station.id,
                         name: station.name,
@@ -269,7 +273,7 @@ class _StationPreset extends StatelessWidget {
                               ),
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: AppSpacing.standard),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -297,11 +301,11 @@ class _StationPreset extends StatelessWidget {
               ),
             ),
           ),
-          IconButton(
+          AppIconButton(
             tooltip: removeLabel,
             onPressed: onRemove,
             icon: const Icon(Icons.favorite, size: 19),
-            color: ink,
+            foregroundColor: ink,
           ),
           const SizedBox(width: 4),
         ],

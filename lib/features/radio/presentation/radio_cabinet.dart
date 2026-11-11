@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../../../ui/theme/travel_radio_palette.dart';
+import '../../../ui/theme/app_motion.dart';
 
 class RadioCabinet extends StatelessWidget {
   const RadioCabinet({
@@ -539,7 +540,7 @@ class _EqualizerState extends State<_Equalizer>
   }
 
   void _updateMotion() {
-    if (widget.playing && !MediaQuery.disableAnimationsOf(context)) {
+    if (widget.playing && AppMotion.enabled(context)) {
       if (!_phase.isAnimating) _phase.repeat();
     } else {
       _phase.stop();

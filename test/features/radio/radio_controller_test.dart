@@ -1,8 +1,10 @@
 import 'dart:async';
 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:frequenza/features/radio/application/radio_audio_service.dart';
+import 'package:frequenza/features/radio/domain/radio_audio_service.dart';
 import 'package:frequenza/features/radio/application/radio_controller.dart';
+import 'package:frequenza/features/radio/application/radio_providers.dart';
 import 'package:frequenza/features/radio/domain/radio_player_state.dart';
 import 'package:frequenza/features/radio/domain/radio_repository.dart';
 import 'package:frequenza/features/radio/domain/radio_station.dart';
@@ -91,6 +93,7 @@ void main() {
     late FakeRadioRepository repository;
     late FakeAudioService audioService;
     late RadioController controller;
+    late ProviderContainer container;
 
     const testStation = RadioStation(
       id: 'station-1',
@@ -103,33 +106,45 @@ void main() {
     setUp(() {
       repository = FakeRadioRepository();
       audioService = FakeAudioService();
-      controller = RadioController(
-        repository: repository,
-        audioService: audioService,
+      container = ProviderContainer(
+        overrides: [
+          radioRepositoryProvider.overrideWithValue(repository),
+          radioAudioServiceProvider.overrideWithValue(audioService),
+        ],
       );
+      controller = container.read(radioControllerProvider.notifier);
     });
 
     tearDown(() {
-      controller.dispose();
+      container.dispose();
       audioService.dispose();
     });
 
     test('initial state is idle without station', () {
-      expect(controller.state.status, PlaybackStatus.idle);
-      expect(controller.state.station, isNull);
-      expect(controller.state.errorMessage, isNull);
+      expect(
+        container.read(radioControllerProvider).status,
+        PlaybackStatus.idle,
+      );
+      expect(container.read(radioControllerProvider).station, isNull);
+      expect(container.read(radioControllerProvider).errorMessage, isNull);
     });
 
     test('tuneRandom fetches station and starts playback', () async {
       repository.stationToReturn = testStation;
 
       final future = controller.tuneRandom();
-      expect(controller.state.status, PlaybackStatus.tuning);
+      expect(
+        container.read(radioControllerProvider).status,
+        PlaybackStatus.tuning,
+      );
 
       await future;
 
-      expect(controller.state.status, PlaybackStatus.playing);
-      expect(controller.state.station, testStation);
+      expect(
+        container.read(radioControllerProvider).status,
+        PlaybackStatus.playing,
+      );
+      expect(container.read(radioControllerProvider).station, testStation);
       expect(audioService.lastPlayedStation, testStation);
     });
 
@@ -141,7 +156,10 @@ void main() {
 
         // Start first tune
         final firstFuture = controller.tuneRandom();
-        expect(controller.state.status, PlaybackStatus.tuning);
+        expect(
+          container.read(radioControllerProvider).status,
+          PlaybackStatus.tuning,
+        );
 
         // Start second tune immediately with a new station
         const secondStation = RadioStation(
@@ -157,7 +175,7 @@ void main() {
 
         await secondFuture;
 
-        expect(controller.state.station, secondStation);
+        expect(container.read(radioControllerProvider).station, secondStation);
         expect(audioService.lastPlayedStation, secondStation);
 
         // Complete the first (older) request late
@@ -165,7 +183,7 @@ void main() {
         await firstFuture;
 
         // Ensure state was NOT overwritten by the old first request
-        expect(controller.state.station, secondStation);
+        expect(container.read(radioControllerProvider).station, secondStation);
         expect(audioService.lastPlayedStation, secondStation);
       },
     );
@@ -175,32 +193,47 @@ void main() {
 
       await controller.tuneRandom();
 
-      expect(controller.state.status, PlaybackStatus.error);
+      expect(
+        container.read(radioControllerProvider).status,
+        PlaybackStatus.error,
+      );
       expect(audioService.tuningSoundActive, isFalse);
-      expect(controller.state.errorMessage, isNotNull);
+      expect(container.read(radioControllerProvider).errorMessage, isNotNull);
     });
 
     test('a new tune clears the error from a failed attempt', () async {
       repository.errorToThrow = Exception('Offline');
       await controller.tuneRandom();
-      expect(controller.state.errorMessage, isNotNull);
+      expect(container.read(radioControllerProvider).errorMessage, isNotNull);
       repository.errorToThrow = null;
       repository.stationToReturn = testStation;
       await controller.tuneRandom();
-      expect(controller.state.status, PlaybackStatus.playing);
-      expect(controller.state.errorMessage, isNull);
+      expect(
+        container.read(radioControllerProvider).status,
+        PlaybackStatus.playing,
+      );
+      expect(container.read(radioControllerProvider).errorMessage, isNull);
     });
 
     test('pause and stop control audio service', () async {
       repository.stationToReturn = testStation;
       await controller.tuneRandom();
-      expect(controller.state.status, PlaybackStatus.playing);
+      expect(
+        container.read(radioControllerProvider).status,
+        PlaybackStatus.playing,
+      );
 
       await controller.pause();
-      expect(controller.state.status, PlaybackStatus.paused);
+      expect(
+        container.read(radioControllerProvider).status,
+        PlaybackStatus.paused,
+      );
 
       await controller.stop();
-      expect(controller.state.status, PlaybackStatus.idle);
+      expect(
+        container.read(radioControllerProvider).status,
+        PlaybackStatus.idle,
+      );
     });
   });
 }

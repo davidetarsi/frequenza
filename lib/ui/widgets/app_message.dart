@@ -10,22 +10,46 @@ class AppMessage extends StatelessWidget {
     required this.message,
     required this.actionLabel,
     required this.onAction,
-  });
+  }) : leading = null,
+       messageStyle = null;
 
-  final String title;
+  const AppMessage.empty({
+    super.key,
+    required this.message,
+    required this.leading,
+    this.messageStyle,
+  }) : title = null,
+       actionLabel = null,
+       onAction = null;
+
+  final String? title;
   final String message;
-  final String actionLabel;
-  final VoidCallback onAction;
+  final String? actionLabel;
+  final VoidCallback? onAction;
+  final Widget? leading;
+  final TextStyle? messageStyle;
 
   @override
   Widget build(BuildContext context) => Column(
     crossAxisAlignment: CrossAxisAlignment.stretch,
     children: [
-      Text(title, style: Theme.of(context).textTheme.titleLarge),
-      const SizedBox(height: AppSpacing.small),
-      Text(message),
-      const SizedBox(height: AppSpacing.medium),
-      AppButton(label: actionLabel, onPressed: onAction),
+      if (title case final title?) ...[
+        Text(title, style: Theme.of(context).textTheme.titleLarge),
+        const SizedBox(height: AppSpacing.small),
+      ],
+      if (leading case final leading?) ...[
+        Center(child: leading),
+        const SizedBox(height: AppSpacing.medium),
+      ],
+      Text(
+        message,
+        textAlign: leading != null ? TextAlign.center : null,
+        style: messageStyle,
+      ),
+      if (actionLabel case final label?) ...[
+        const SizedBox(height: AppSpacing.medium),
+        AppButton(label: label, onPressed: onAction),
+      ],
     ],
   );
 }

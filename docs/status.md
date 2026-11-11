@@ -100,3 +100,10 @@ Prossimo passo: feedback sul design nell'emulatore, poi lavoro mirato sulle anim
 - La ricerca casuale dura almeno un secondo. Su Android, un fruscio sintetico locale riprodotto tramite SoundPool accompagna la ricerca e termina prima di caricare la diretta. SoundPool si ferma anche quando l'attività va in background. La scelta dai preferiti resta immediata.
 - Verificati 19 test, analisi pulita e APK debug ARM64. Sull'emulatore, AudioFlinger ha registrato l'aggiunta e la rimozione della traccia del fruscio a circa 1,3 s di distanza, prima dell'avvio della traccia della diretta. La sessione di collaudo è stata messa in pausa.
 - Prossimo passo: riscontro d'ascolto del fruscio su telefono e collaudo della riproduzione in background su dispositivo reale.
+
+## Adozione dello starter — 11 novembre 2026
+
+- Radio e Preferiti usano modelli e stati Freezed e provider Riverpod generati. Il contratto del player è nel dominio, con composizione in application.
+- Home, pannello preferiti e schermata diagnostica usano componenti e token condivisi dallo starter. Tema base identico e palette radio passata dal prodotto.
+- Preferiti v1 verificati con un record preesistente, inclusi i campi facoltativi e i tag malformati. Rigenerazione, formattazione, analisi, suite 20/20 e APK debug ARM64 verificati.
+- La prova di riuso da zero con una seconda app neutra resta aperta nella fase 7.

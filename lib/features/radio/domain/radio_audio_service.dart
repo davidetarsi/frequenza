@@ -1,5 +1,5 @@
-import '../domain/radio_player_state.dart';
-import '../domain/radio_station.dart';
+import 'radio_player_state.dart';
+import 'radio_station.dart';
 
 abstract interface class RadioAudioService {
   Stream<PlaybackStatus> get playbackStatusStream;

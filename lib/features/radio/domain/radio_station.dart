@@ -1,36 +1,33 @@
-class RadioStation {
-  const RadioStation({
-    required this.id,
-    required this.name,
-    required this.streamUrl,
-    required this.country,
-    required this.countryCode,
-    this.faviconUrl,
-    this.tags = const [],
-    this.codec,
-    this.bitrate,
-  });
+// Freezed copies the JSON annotations from factory parameters to the fields.
+// ignore_for_file: invalid_annotation_target
 
-  final String id;
-  final String name;
-  final String streamUrl;
-  final String country;
-  final String countryCode;
-  final String? faviconUrl;
-  final List<String> tags;
-  final String? codec;
-  final int? bitrate;
+import 'package:freezed_annotation/freezed_annotation.dart';
+
+part 'radio_station.freezed.dart';
+part 'radio_station.g.dart';
+
+@Freezed(equal: false)
+class RadioStation with _$RadioStation {
+  const RadioStation._();
+
+  const factory RadioStation({
+    required String id,
+    required String name,
+    @JsonKey(name: 'url') required String streamUrl,
+    required String country,
+    @JsonKey(name: 'code') required String countryCode,
+    String? faviconUrl,
+    @Default([]) List<String> tags,
+    String? codec,
+    int? bitrate,
+  }) = _RadioStation;
+
+  factory RadioStation.fromJson(Map<String, dynamic> json) =>
+      _$RadioStationFromJson(json);
 
   @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is RadioStation &&
-          runtimeType == other.runtimeType &&
-          id == other.id;
+  bool operator ==(Object other) => other is RadioStation && other.id == id;
 
   @override
   int get hashCode => id.hashCode;
-
-  @override
-  String toString() => 'RadioStation($name, $countryCode, $streamUrl)';
 }

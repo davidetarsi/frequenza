@@ -13,7 +13,9 @@ Obiettivo: contenere token, tempo e lavoro duplicato senza sacrificare correttez
 
 ## Convenzioni del template
 
-- Feature-first; contratti Dart indipendenti dal framework, wiring in application.
+- Feature-first; contratti Dart indipendenti da Flutter e Riverpod, wiring in application.
+- Modelli e stati strutturati con Freezed, serializzazione generata per i dati JSON e provider Riverpod annotati. Rigenerare e versionare i sorgenti prodotti da build_runner.
+- Usare e mantenere i componenti e i token comuni in lib/ui. Tenere i controlli specifici del prodotto nelle feature.
 - Leggere docs/status.md per il punto di ripresa, poi solo il piano attivo.
 - Non aggiungere integrazioni esterne senza necessità concreta.
 - Non commettere segreti, chiavi di firma o percorsi locali di SDK.

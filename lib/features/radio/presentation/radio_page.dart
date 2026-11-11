@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../l10n/generated/app_localizations.dart';
-import '../../favorites/application/favorites_providers.dart';
+import '../../../ui/theme/app_spacing.dart';
+import '../../../ui/widgets/app_button.dart';
+import '../../../ui/widgets/app_icon_button.dart';
+import '../../favorites/application/favorites_controller.dart';
 import '../../favorites/presentation/favorites_sheet.dart';
-import '../application/radio_providers.dart';
+import '../application/radio_controller.dart';
 import '../domain/radio_player_state.dart';
 import 'radio_cabinet.dart';
 
@@ -50,7 +53,10 @@ class RadioPage extends ConsumerWidget {
         : l.tune;
     return Scaffold(
       body: SafeArea(
-        minimum: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        minimum: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.standard,
+          vertical: AppSpacing.small,
+        ),
         child: LayoutBuilder(
           builder: (context, constraints) {
             final wide =
@@ -74,7 +80,8 @@ class RadioPage extends ConsumerWidget {
             final favoritesLabel =
                 '${l.favorites} · ${favorites.stations.length}';
             final favoritesButton = compact
-                ? IconButton.outlined(
+                ? AppIconButton(
+                    variant: AppIconButtonVariant.outlined,
                     key: const ValueKey('favorites-open'),
                     tooltip: favoritesLabel,
                     onPressed: () => showFavorites(context),
@@ -84,11 +91,12 @@ class RadioPage extends ConsumerWidget {
                       child: const Icon(Icons.favorite_border),
                     ),
                   )
-                : OutlinedButton.icon(
+                : AppButton(
+                    variant: AppButtonVariant.outlined,
                     key: const ValueKey('favorites-open'),
                     onPressed: () => showFavorites(context),
                     icon: const Icon(Icons.favorite_border, size: 18),
-                    label: Text(favoritesLabel),
+                    label: favoritesLabel,
                   );
             final cabinet = RadioCabinet(
               compact: compact,
@@ -109,24 +117,17 @@ class RadioPage extends ConsumerWidget {
               isBusy: busy,
               isPlaying: player.isPlaying,
             );
-            final actionStyle = OutlinedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-            );
-            final pause = OutlinedButton(
-              style: actionStyle,
+            final pause = AppButton(
+              variant: AppButtonVariant.outlined,
               onPressed: idle || busy || player.status == PlaybackStatus.error
                   ? null
                   : () => player.isPlaying
                         ? controller.pause()
                         : controller.play(),
-              child: Text(
-                player.isPlaying ? l.pause : l.resume,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
+              label: player.isPlaying ? l.pause : l.resume,
             );
-            final save = OutlinedButton(
-              style: actionStyle,
+            final save = AppButton(
+              variant: AppButtonVariant.outlined,
               onPressed:
                   idle ||
                       busy ||
@@ -135,13 +136,9 @@ class RadioPage extends ConsumerWidget {
                       favorites.isSaving
                   ? null
                   : () => ref.read(favoritesProvider.notifier).toggle(station),
-              child: Text(
-                station != null && favorites.contains(station.id)
-                    ? l.saved
-                    : l.save,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
+              label: station != null && favorites.contains(station.id)
+                  ? l.saved
+                  : l.save,
             );
             final nextStop = Text(
               l.nextStop,
@@ -187,7 +184,7 @@ class RadioPage extends ConsumerWidget {
                                 ],
                               ),
                             ),
-                            const SizedBox(width: 12),
+                            const SizedBox(width: AppSpacing.standard),
                             Expanded(child: cabinet),
                           ],
                         ),
@@ -216,7 +213,7 @@ class RadioPage extends ConsumerWidget {
                     Row(
                       children: [
                         Expanded(child: pause),
-                        const SizedBox(width: 12),
+                        const SizedBox(width: AppSpacing.standard),
                         Expanded(child: save),
                       ],
                     ),

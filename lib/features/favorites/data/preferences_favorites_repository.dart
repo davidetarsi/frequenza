@@ -25,16 +25,16 @@ class PreferencesFavoritesRepository implements FavoritesRepository {
       }
       final uri = Uri.tryParse(url);
       if (uri == null || uri.scheme != 'https' || uri.host.isEmpty) continue;
-      result[id] = RadioStation(
-        id: id,
-        name: name,
-        streamUrl: url,
-        country: entry['country'] is String ? entry['country'] as String : '',
-        countryCode: entry['code'] is String ? entry['code'] as String : '',
-        tags: (entry['tags'] is List ? entry['tags'] as List : [])
+      result[id] = RadioStation.fromJson({
+        'id': id,
+        'name': name,
+        'url': url,
+        'country': entry['country'] is String ? entry['country'] : '',
+        'code': entry['code'] is String ? entry['code'] : '',
+        'tags': (entry['tags'] is List ? entry['tags'] as List : [])
             .whereType<String>()
             .toList(),
-      );
+      });
     }
     return result.values.toList(growable: false);
   }
@@ -43,18 +43,13 @@ class PreferencesFavoritesRepository implements FavoritesRepository {
   Future<void> save(List<RadioStation> stations) async {
     final prefs = await SharedPreferences.getInstance();
     final encoded = jsonEncode(
-      stations
-          .map(
-            (s) => {
-              'id': s.id,
-              'name': s.name,
-              'url': s.streamUrl,
-              'country': s.country,
-              'code': s.countryCode,
-              'tags': s.tags,
-            },
-          )
-          .toList(),
+      stations.map((station) {
+        final json = station.toJson();
+        return {
+          for (final key in ['id', 'name', 'url', 'country', 'code', 'tags'])
+            key: json[key],
+        };
+      }).toList(),
     );
     if (!await prefs.setString(_key, encoded)) {
       throw StateError('Favorites not saved');

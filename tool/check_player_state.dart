@@ -10,7 +10,7 @@ void main() {
   );
   final retrying = failed.copyWith(
     status: PlaybackStatus.tuning,
-    clearError: true,
+    errorMessage: null,
   );
   if (retrying.errorMessage != null) {
     throw StateError('A new tune must clear the previous failure.');

@@ -1,29 +1,19 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../data/just_audio_service.dart';
 import '../data/radio_browser_repository.dart';
-import '../domain/radio_player_state.dart';
+import '../domain/radio_audio_service.dart';
 import '../domain/radio_repository.dart';
-import 'radio_audio_service.dart';
-import 'radio_controller.dart';
 
-final radioRepositoryProvider = Provider<RadioRepository>((ref) {
-  return RadioBrowserRepository();
-});
+part 'radio_providers.g.dart';
 
-final radioAudioServiceProvider = Provider<RadioAudioService>((ref) {
+@Riverpod(keepAlive: true)
+RadioRepository radioRepository(Ref ref) => RadioBrowserRepository();
+
+@Riverpod(keepAlive: true)
+RadioAudioService radioAudioService(Ref ref) {
   final service = JustAudioService();
   ref.onDispose(service.dispose);
   return service;
-});
-
-final radioControllerProvider =
-    StateNotifierProvider<RadioController, RadioPlayerState>((ref) {
-      final repository = ref.watch(radioRepositoryProvider);
-      final audioService = ref.watch(radioAudioServiceProvider);
-
-      return RadioController(
-        repository: repository,
-        audioService: audioService,
-      );
-    });
+}
