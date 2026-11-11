@@ -38,6 +38,13 @@ class FakeAudioService implements RadioAudioService {
   PlaybackStatus _currentStatus = PlaybackStatus.idle;
   RadioStation? lastPlayedStation;
   bool isDisposed = false;
+  bool tuningSoundActive = false;
+
+  @override
+  Future<void> startTuningSound() async => tuningSoundActive = true;
+
+  @override
+  Future<void> stopTuningSound() async => tuningSoundActive = false;
 
   @override
   Stream<PlaybackStatus> get playbackStatusStream => _statusController.stream;
@@ -169,6 +176,7 @@ void main() {
       await controller.tuneRandom();
 
       expect(controller.state.status, PlaybackStatus.error);
+      expect(audioService.tuningSoundActive, isFalse);
       expect(controller.state.errorMessage, isNotNull);
     });
 

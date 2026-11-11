@@ -15,7 +15,7 @@ class RadioController extends StateNotifier<RadioPlayerState> {
        _audioService = audioService,
        super(const RadioPlayerState()) {
     _statusSubscription = _audioService.playbackStatusStream.listen((status) {
-      if (mounted) {
+      if (mounted && state.status != PlaybackStatus.tuning) {
         state = state.copyWith(status: status);
       }
     });
@@ -50,9 +50,18 @@ class RadioController extends StateNotifier<RadioPlayerState> {
     );
 
     try {
-      final station = await _repository.getRandomStation(
-        countryCode: countryCode,
-      );
+      final RadioStation? station;
+      try {
+        final (found, _) = await (
+          _repository.getRandomStation(countryCode: countryCode),
+          _holdTuningSound(),
+        ).wait;
+        station = found;
+      } finally {
+        if (_currentTuneToken == token && mounted) {
+          await _audioService.stopTuningSound();
+        }
+      }
 
       // Check if another tune operation started while waiting
       if (_currentTuneToken != token || !mounted) {
@@ -85,6 +94,11 @@ class RadioController extends StateNotifier<RadioPlayerState> {
     }
   }
 
+  Future<void> _holdTuningSound() async {
+    await _audioService.startTuningSound();
+    await Future<void>.delayed(const Duration(seconds: 1));
+  }
+
   /// Explicitly tune to a specific station (e.g. from candidate list).
   Future<void> tuneTo(RadioStation station) async {
     final token = Object();
@@ -98,6 +112,8 @@ class RadioController extends StateNotifier<RadioPlayerState> {
     );
 
     try {
+      await _audioService.stopTuningSound();
+      if (_currentTuneToken != token || !mounted) return;
       await _audioService.playStation(station);
     } catch (_) {
       if (_currentTuneToken == token && mounted) {
@@ -120,9 +136,12 @@ class RadioController extends StateNotifier<RadioPlayerState> {
   }
 
   Future<void> stop() async {
-    _currentTuneToken = null;
+    final token = Object();
+    _currentTuneToken = token;
+    await _audioService.stopTuningSound();
+    if (_currentTuneToken != token || !mounted) return;
     await _audioService.stop();
-    if (mounted) {
+    if (_currentTuneToken == token && mounted) {
       state = state.copyWith(
         status: PlaybackStatus.idle,
         clearError: true,
@@ -136,6 +155,7 @@ class RadioController extends StateNotifier<RadioPlayerState> {
     _currentTuneToken = null;
     _statusSubscription?.cancel();
     _trackSubscription?.cancel();
+    unawaited(_audioService.stopTuningSound());
     super.dispose();
   }
 }

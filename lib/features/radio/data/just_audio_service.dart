@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:audio_session/audio_session.dart';
+import 'package:flutter/services.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 
@@ -14,7 +15,9 @@ class JustAudioService implements RadioAudioService {
     _subscribeToPlayerState();
   }
 
+  static const _tuningChannel = MethodChannel('frequenza/tuning_sound');
   final AudioPlayer _player;
+  Object? _tuningSoundRequest;
   final _statusController = StreamController<PlaybackStatus>.broadcast();
   final List<StreamSubscription<dynamic>> _subscriptions = [];
   bool _disposed = false;
@@ -111,6 +114,39 @@ class JustAudioService implements RadioAudioService {
   }
 
   @override
+  Future<void> startTuningSound() async {
+    if (_disposed) return;
+    final request = Object();
+    _tuningSoundRequest = request;
+    try {
+      // Silence the previous station before the speaker plays the static.
+      if (_player.playing) await _player.pause();
+    } on PlatformException {
+      return;
+    }
+    if (_tuningSoundRequest == request) {
+      await _sendTuningSoundCommand('start');
+    }
+  }
+
+  @override
+  Future<void> stopTuningSound() async {
+    if (_tuningSoundRequest == null) return;
+    _tuningSoundRequest = null;
+    await _sendTuningSoundCommand('stop');
+  }
+
+  Future<void> _sendTuningSoundCommand(String command) async {
+    try {
+      await _tuningChannel.invokeMethod<void>(command);
+    } on MissingPluginException {
+      // The optional sound is currently provided by Android.
+    } on PlatformException {
+      // A sound effect failure must not prevent the station from playing.
+    }
+  }
+
+  @override
   Future<void> playStation(RadioStation station) async {
     try {
       _updateStatus(PlaybackStatus.buffering);
@@ -158,6 +194,7 @@ class JustAudioService implements RadioAudioService {
   @override
   Future<void> pause() async {
     try {
+      await stopTuningSound();
       await _player.pause();
     } catch (_) {
       _updateStatus(PlaybackStatus.error);
@@ -178,6 +215,7 @@ class JustAudioService implements RadioAudioService {
   Future<void> dispose() async {
     if (_disposed) return;
     _disposed = true;
+    await stopTuningSound();
     for (final subscription in _subscriptions) {
       await subscription.cancel();
     }

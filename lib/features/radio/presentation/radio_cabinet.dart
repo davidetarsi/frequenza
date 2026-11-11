@@ -24,14 +24,7 @@ class RadioCabinet extends StatelessWidget {
   Widget _equalizer({required double height}) => SizedBox(
     height: height,
     width: double.infinity,
-    child: isPlaying
-        ? const ExcludeSemantics(
-            child: CustomPaint(
-              key: ValueKey('radio-equalizer'),
-              painter: _EqualizerPainter(),
-            ),
-          )
-        : null,
+    child: ExcludeSemantics(child: _Equalizer(playing: isPlaying)),
   );
 
   @override
@@ -517,24 +510,86 @@ class _TuningDial extends StatelessWidget {
   }
 }
 
+class _Equalizer extends StatefulWidget {
+  const _Equalizer({required this.playing});
+
+  final bool playing;
+
+  @override
+  State<_Equalizer> createState() => _EqualizerState();
+}
+
+class _EqualizerState extends State<_Equalizer>
+    with SingleTickerProviderStateMixin {
+  late final _phase = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 1800),
+  );
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _updateMotion();
+  }
+
+  @override
+  void didUpdateWidget(_Equalizer oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.playing != widget.playing) _updateMotion();
+  }
+
+  void _updateMotion() {
+    if (widget.playing && !MediaQuery.disableAnimationsOf(context)) {
+      if (!_phase.isAnimating) _phase.repeat();
+    } else {
+      _phase.stop();
+    }
+  }
+
+  @override
+  void dispose() {
+    _phase.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => RepaintBoundary(
+    child: CustomPaint(
+      key: const ValueKey('radio-equalizer'),
+      painter: _EqualizerPainter(phase: _phase, playing: widget.playing),
+    ),
+  );
+}
+
 class _EqualizerPainter extends CustomPainter {
-  const _EqualizerPainter();
+  _EqualizerPainter({required this.phase, required this.playing})
+    : super(repaint: phase);
+
+  final Animation<double> phase;
+  final bool playing;
 
   @override
   void paint(Canvas canvas, Size size) {
     const levels = [2, 4, 3, 6, 5, 7, 4, 5, 3, 6, 4, 2, 5, 3, 2, 4, 2, 1];
     final columnWidth = size.width / levels.length;
     final step = size.height / 7;
+    final angle = phase.value * 2 * math.pi;
     final paint = Paint()
-      ..color = TravelRadioPalette.screenInk.withValues(alpha: .65);
+      ..color = TravelRadioPalette.screenInk.withValues(
+        alpha: playing ? .65 : .25,
+      );
     for (var column = 0; column < levels.length; column++) {
-      for (var segment = 0; segment < levels[column]; segment++) {
+      final variation =
+          math.sin(angle * 2 + column * 1.3) * 1.6 +
+          math.sin(angle * 3 - column * .8);
+      final level = (levels[column] + variation).round().clamp(1, 7);
+      for (var segment = 0; segment < level; segment++) {
         canvas.drawRect(
           Rect.fromLTWH(
             column * columnWidth + 1,
             size.height - (segment + 1) * step,
             columnWidth - 2,
-            step - 1.5,
+            step * .65,
           ),
           paint,
         );
@@ -543,5 +598,6 @@ class _EqualizerPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_EqualizerPainter oldDelegate) => false;
+  bool shouldRepaint(_EqualizerPainter oldDelegate) =>
+      playing != oldDelegate.playing || phase != oldDelegate.phase;
 }

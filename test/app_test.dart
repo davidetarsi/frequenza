@@ -13,6 +13,11 @@ void main() {
   testWidgets(
     'knob tunes; save persists; favorite selection starts the station',
     (tester) async {
+      tester.platformDispatcher.accessibilityFeaturesTestValue =
+          const FakeAccessibilityFeatures(disableAnimations: true);
+      addTearDown(
+        tester.platformDispatcher.clearAccessibilityFeaturesTestValue,
+      );
       final repository = FakeRadioRepository()..stationToReturn = station;
       final audio = FakeAudioService();
       addTearDown(audio.dispose);
@@ -42,8 +47,14 @@ void main() {
       expect(find.text('Tocca la manopola per cambiare radio'), findsNothing);
 
       await tester.tap(find.byKey(const ValueKey('tune-knob')));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 999));
+      expect(audio.lastPlayedStation, isNull);
+      expect(audio.tuningSoundActive, isTrue);
+      await tester.pump(const Duration(milliseconds: 1));
       await tester.pumpAndSettle();
       expect(find.text('Radio'), findsOneWidget);
+      expect(audio.tuningSoundActive, isFalse);
       expect(tester.getSize(cabinet), initialSize);
       final speaker = tester.getRect(
         find.byKey(const ValueKey('radio-speaker')),
@@ -58,6 +69,8 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Artista — Titolo'), findsOneWidget);
       await tester.tap(find.byKey(const ValueKey('tune-knob')));
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
       await tester.pumpAndSettle();
       expect(find.text('Artista — Titolo'), findsNothing);
       expect(find.byType(Scrollable), findsNothing);
@@ -72,11 +85,23 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Le tue frequenze'), findsNothing);
       expect(audio.lastPlayedStation?.id, 'id');
+      expect(tester.binding.hasScheduledFrame, isFalse);
+      tester.platformDispatcher.clearAccessibilityFeaturesTestValue();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(tester.binding.hasScheduledFrame, isTrue);
+      await tester.tap(find.text('Pausa'));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('radio-equalizer')), findsOneWidget);
+      expect(tester.binding.hasScheduledFrame, isFalse);
     },
   );
   testWidgets('travel radio remains usable with narrow screen and 200% text', (
     tester,
   ) async {
+    tester.platformDispatcher.accessibilityFeaturesTestValue =
+        const FakeAccessibilityFeatures(disableAnimations: true);
+    addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
     tester.view.physicalSize = const Size(320, 640);
     tester.view.devicePixelRatio = 1;
     tester.view.padding = const FakeViewPadding(top: 24, bottom: 24);
@@ -131,6 +156,8 @@ void main() {
     expect(find.text('Salva').hitTestable(), findsOneWidget);
     expect(find.text('Riprendi').hitTestable(), findsOneWidget);
     await tester.tap(find.byKey(const ValueKey('tune-knob')));
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
     expect(find.text('Pausa').hitTestable(), findsOneWidget);

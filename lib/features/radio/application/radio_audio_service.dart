@@ -6,6 +6,8 @@ abstract interface class RadioAudioService {
   PlaybackStatus get currentStatus;
   Stream<String?> get trackTitleStream;
 
+  Future<void> startTuningSound();
+  Future<void> stopTuningSound();
   Future<void> playStation(RadioStation station);
   Future<void> play();
   Future<void> pause();

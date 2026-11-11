@@ -61,9 +61,13 @@ void main() {
         expect(find.byType(CircularProgressIndicator), findsOneWidget);
         expect(find.text('Sintonizzazione...'), findsOneWidget);
 
+        await tester.pump(const Duration(seconds: 2));
+        expect(audioService.tuningSoundActive, isTrue);
+        expect(audioService.lastPlayedStation, isNull);
         completer.complete(testStation);
         await tester.pumpAndSettle(); // Resolve station and settle playback
 
+        expect(audioService.tuningSoundActive, isFalse);
         expect(find.text('Radio Capital'), findsOneWidget);
         expect(find.text('Italy (IT)'), findsOneWidget);
         expect(find.text('In riproduzione'), findsOneWidget);
@@ -77,6 +81,8 @@ void main() {
 
       await tester.pumpWidget(createWidgetUnderTest());
       await tester.tap(find.text('Sintonizza'));
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
       await tester.pumpAndSettle();
 
       expect(find.text('In riproduzione'), findsOneWidget);

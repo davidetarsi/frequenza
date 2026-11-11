@@ -93,3 +93,10 @@ Prossimo passo: feedback sul design nell'emulatore, poi lavoro mirato sulle anim
 - Ripristinati «Prossima fermata: ovunque» sopra la radio e il footer «WEB RADIO · SENZA CONFINI», con le traduzioni esistenti.
 - Scocca verticale a 344 px logici, manopola e speaker ridotti allo stesso diametro. Nel layout compatto le barre condividono la riga di stato.
 - Home senza scorrimento verificata in verticale e orizzontale con testo al 200%. Suite 19/19, analisi pulita e bundle debug compilato.
+
+## Movimento e fruscio di sintonizzazione — 11 novembre 2026
+
+- Le barre del display si muovono solo in play, si fermano in pausa e rispettano la riduzione del movimento. Il disegno è decorativo.
+- La ricerca casuale dura almeno un secondo. Su Android, un fruscio sintetico locale riprodotto tramite SoundPool accompagna la ricerca e termina prima di caricare la diretta. SoundPool si ferma anche quando l'attività va in background. La scelta dai preferiti resta immediata.
+- Verificati 19 test, analisi pulita e APK debug ARM64. Sull'emulatore, AudioFlinger ha registrato l'aggiunta e la rimozione della traccia del fruscio a circa 1,3 s di distanza, prima dell'avvio della traccia della diretta. La sessione di collaudo è stata messa in pausa.
+- Prossimo passo: riscontro d'ascolto del fruscio su telefono e collaudo della riproduzione in background su dispositivo reale.
