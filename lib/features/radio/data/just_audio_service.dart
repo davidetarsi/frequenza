@@ -24,6 +24,13 @@ class JustAudioService implements RadioAudioService {
   Stream<PlaybackStatus> get playbackStatusStream => _statusController.stream;
 
   @override
+  Stream<String?> get trackTitleStream =>
+      _player.icyMetadataStream.map((metadata) {
+        final title = metadata?.info?.title?.trim();
+        return title == null || title.isEmpty ? null : title;
+      }).distinct();
+
+  @override
   PlaybackStatus get currentStatus => _currentStatus;
 
   Future<void> _initAudioSession() async {

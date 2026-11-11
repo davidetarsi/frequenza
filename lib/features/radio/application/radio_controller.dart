@@ -19,11 +19,22 @@ class RadioController extends StateNotifier<RadioPlayerState> {
         state = state.copyWith(status: status);
       }
     });
+    _trackSubscription = _audioService.trackTitleStream.listen((title) {
+      if (mounted &&
+          state.station != null &&
+          state.status != PlaybackStatus.tuning) {
+        state = state.copyWith(
+          trackTitle: title,
+          clearTrackTitle: title == null,
+        );
+      }
+    });
   }
 
   final RadioRepository _repository;
   final RadioAudioService _audioService;
   StreamSubscription<PlaybackStatus>? _statusSubscription;
+  StreamSubscription<String?>? _trackSubscription;
   Object? _currentTuneToken;
 
   /// Tunes to a random station.
@@ -32,7 +43,11 @@ class RadioController extends StateNotifier<RadioPlayerState> {
     final token = Object();
     _currentTuneToken = token;
 
-    state = state.copyWith(status: PlaybackStatus.tuning, clearError: true);
+    state = state.copyWith(
+      status: PlaybackStatus.tuning,
+      clearError: true,
+      clearTrackTitle: true,
+    );
 
     try {
       final station = await _repository.getRandomStation(
@@ -55,6 +70,7 @@ class RadioController extends StateNotifier<RadioPlayerState> {
       state = state.copyWith(
         status: PlaybackStatus.buffering,
         station: station,
+        clearTrackTitle: true,
         clearError: true,
       );
 
@@ -77,6 +93,7 @@ class RadioController extends StateNotifier<RadioPlayerState> {
     state = state.copyWith(
       status: PlaybackStatus.buffering,
       station: station,
+      clearTrackTitle: true,
       clearError: true,
     );
 
@@ -106,7 +123,11 @@ class RadioController extends StateNotifier<RadioPlayerState> {
     _currentTuneToken = null;
     await _audioService.stop();
     if (mounted) {
-      state = state.copyWith(status: PlaybackStatus.idle, clearError: true);
+      state = state.copyWith(
+        status: PlaybackStatus.idle,
+        clearError: true,
+        clearTrackTitle: true,
+      );
     }
   }
 
@@ -114,6 +135,7 @@ class RadioController extends StateNotifier<RadioPlayerState> {
   void dispose() {
     _currentTuneToken = null;
     _statusSubscription?.cancel();
+    _trackSubscription?.cancel();
     super.dispose();
   }
 }

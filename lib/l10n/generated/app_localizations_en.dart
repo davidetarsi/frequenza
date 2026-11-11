@@ -116,9 +116,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get firstTrip => 'One tap to get started';
 
   @override
-  String get knobHint => 'Tap the dial to find another station';
-
-  @override
   String get pause => 'Pause';
 
   @override

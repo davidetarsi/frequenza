@@ -30,6 +30,11 @@ class FakeRadioRepository implements RadioRepository {
 
 class FakeAudioService implements RadioAudioService {
   final _statusController = StreamController<PlaybackStatus>.broadcast();
+  final trackTitles = StreamController<String?>.broadcast();
+
+  @override
+  Stream<String?> get trackTitleStream => trackTitles.stream;
+
   PlaybackStatus _currentStatus = PlaybackStatus.idle;
   RadioStation? lastPlayedStation;
   bool isDisposed = false;
@@ -70,6 +75,7 @@ class FakeAudioService implements RadioAudioService {
   Future<void> dispose() async {
     isDisposed = true;
     await _statusController.close();
+    await trackTitles.close();
   }
 }
 

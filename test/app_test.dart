@@ -5,6 +5,7 @@ import 'package:frequenza/app/app.dart';
 import 'package:frequenza/features/favorites/application/favorites_providers.dart';
 import 'package:frequenza/features/radio/application/radio_providers.dart';
 import 'package:frequenza/features/radio/domain/radio_station.dart';
+import 'package:frequenza/features/radio/presentation/radio_cabinet.dart';
 import 'features/radio/radio_controller_test.dart';
 import 'features/favorites/favorites_test.dart';
 
@@ -28,9 +29,37 @@ void main() {
       await tester.pumpAndSettle();
       expect(audio.lastPlayedStation, isNull);
       expect(find.text('Dove andiamo?'), findsOneWidget);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      tester.view.physicalSize = const Size(390, 900);
+      await tester.pumpAndSettle();
+      final cabinet = find.byType(RadioCabinet);
+      final initialSize = tester.getSize(cabinet);
+      tester.view.physicalSize = const Size(620, 900);
+      await tester.pumpAndSettle();
+      expect(tester.getSize(cabinet), initialSize);
+      expect(find.text('Tocca la manopola per cambiare radio'), findsNothing);
+
       await tester.tap(find.byKey(const ValueKey('tune-knob')));
       await tester.pumpAndSettle();
       expect(find.text('Radio'), findsOneWidget);
+      expect(tester.getSize(cabinet), initialSize);
+      final speaker = tester.getRect(
+        find.byKey(const ValueKey('radio-speaker')),
+      );
+      final dial = tester.getRect(
+        find.byKey(const ValueKey('radio-dial-face')),
+      );
+      expect(dial.size, speaker.size);
+      expect(dial.center.dy, speaker.center.dy);
+      expect(find.byKey(const ValueKey('radio-equalizer')), findsOneWidget);
+      audio.trackTitles.add('Artista — Titolo');
+      await tester.pumpAndSettle();
+      expect(find.text('Artista — Titolo'), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('tune-knob')));
+      await tester.pumpAndSettle();
+      expect(find.text('Artista — Titolo'), findsNothing);
       await tester.scrollUntilVisible(
         find.text('Salva'),
         160,

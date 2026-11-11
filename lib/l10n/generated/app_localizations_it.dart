@@ -118,9 +118,6 @@ class AppLocalizationsIt extends AppLocalizations {
   String get firstTrip => 'Un tocco per partire';
 
   @override
-  String get knobHint => 'Tocca la manopola per cambiare radio';
-
-  @override
   String get pause => 'Pausa';
 
   @override

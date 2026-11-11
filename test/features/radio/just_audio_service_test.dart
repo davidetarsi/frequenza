@@ -13,6 +13,9 @@ class LivePlayer extends Fake implements AudioPlayer {
   Stream<PlayerState> get playerStateStream => const Stream.empty();
 
   @override
+  Stream<IcyMetadata?> get icyMetadataStream => const Stream.empty();
+
+  @override
   Future<Duration?> setAudioSource(
     AudioSource source, {
     bool preload = true,

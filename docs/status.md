@@ -73,3 +73,11 @@ Uso corretto di separazione per feature, contratti Dart, adapter persistenti e t
 Scostamenti preesistenti ancora aperti: provider manuali/StateNotifier invece della code generation usata dall'esempio; data/just_audio_service importa la porta audio da application, da spostare in domain quando si interviene sull'architettura. Non è stata fatta una migrazione degli strumenti durante il restyling. Lo stile del pannello è specifico della radio: non estrarlo nel template prima di un secondo uso concreto.
 
 Prossimo passo: feedback sul design nell'emulatore, poi lavoro mirato sulle animazioni già rinviate. Ricerca sul silenzio audio sospesa esplicitamente su richiesta di Davide; nessuna causa o risoluzione definitiva dichiarata.
+
+## Scocca e display — 11 novembre 2026
+
+- Scocca centrata a 360 px logici, limitata dai vincoli disponibili nelle finestre più strette. Le spaziature esterne variano entro limiti. Display con spazio riservato per stazione, dettaglio, indicatore a barre e stato.
+- Manopola e griglia allineate e di diametro 112 px logici. Rimossa la didascalia della manopola in IT/EN.
+- L'indicatore a barre è decorativo e compare in ascolto. Il titolo arriva da ICY se lo stream lo fornisce e viene azzerato a ogni nuova sintonizzazione.
+- Verificati stabilità a 390 e 620 px e durante la sintonizzazione, accesso ai preferiti a 320×640 con testo al 200%, parità dei diametri, titolo simulato e azzeramento. Suite 19/19, analyzer pulito e bundle debug compilato.
+- Prossimo passo: riscontro visivo su Android e verifica dei metadati su stream reali quando riprende il collaudo audio.

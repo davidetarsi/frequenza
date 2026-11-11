@@ -308,12 +308,6 @@ abstract class AppLocalizations {
   /// **'Un tocco per partire'**
   String get firstTrip;
 
-  /// No description provided for @knobHint.
-  ///
-  /// In it, this message translates to:
-  /// **'Tocca la manopola per cambiare radio'**
-  String get knobHint;
-
   /// No description provided for @pause.
   ///
   /// In it, this message translates to:

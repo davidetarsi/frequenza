@@ -49,6 +49,10 @@ class RadioPage extends ConsumerWidget {
         : idle
         ? l.powerOn
         : l.tune;
+    final sectionGap = (MediaQuery.sizeOf(context).height * .035).clamp(
+      20.0,
+      36.0,
+    );
     return Scaffold(
       body: SafeArea(
         child: Align(
@@ -58,7 +62,10 @@ class RadioPage extends ConsumerWidget {
               maxWidth: AppSpacing.contentMaxWidth,
             ),
             child: ListView(
-              padding: const EdgeInsets.all(24),
+              padding: EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: sectionGap,
+              ),
               children: [
                 Wrap(
                   alignment: WrapAlignment.spaceBetween,
@@ -89,32 +96,37 @@ class RadioPage extends ConsumerWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 28),
+                SizedBox(height: sectionGap),
                 Text(
                   l.nextStop,
                   textAlign: TextAlign.center,
                   style: theme.textTheme.bodySmall,
                 ),
                 const SizedBox(height: 18),
-                RadioCabinet(
-                  country: country,
-                  station: title,
-                  detail: busy
-                      ? ''
-                      : station?.tags.take(2).join(' · ') ?? l.firstTrip,
-                  status: status,
-                  knobLabel: label.toUpperCase(),
-                  tuneLabel: l.tuneAccessibility,
-                  onTune: busy ? null : () => controller.tuneRandom(),
-                  isBusy: busy,
+                Center(
+                  child: SizedBox(
+                    width: 360,
+                    child: RadioCabinet(
+                      country: country,
+                      station: title,
+                      detail: busy
+                          ? ''
+                          : (player.isPlaying ||
+                                        player.status == PlaybackStatus.paused
+                                    ? player.trackTitle
+                                    : null) ??
+                                station?.tags.take(2).join(' · ') ??
+                                l.firstTrip,
+                      status: status,
+                      knobLabel: label.toUpperCase(),
+                      tuneLabel: l.tuneAccessibility,
+                      onTune: busy ? null : () => controller.tuneRandom(),
+                      isBusy: busy,
+                      isPlaying: player.isPlaying,
+                    ),
+                  ),
                 ),
-                const SizedBox(height: 24),
-                Text(
-                  l.knobHint,
-                  textAlign: TextAlign.center,
-                  style: theme.textTheme.bodySmall,
-                ),
-                const SizedBox(height: 16),
+                SizedBox(height: sectionGap),
                 Wrap(
                   alignment: WrapAlignment.center,
                   spacing: 12,

@@ -7,11 +7,13 @@ class RadioPlayerState {
     this.status = PlaybackStatus.idle,
     this.station,
     this.errorMessage,
+    this.trackTitle,
   });
 
   final PlaybackStatus status;
   final RadioStation? station;
   final String? errorMessage;
+  final String? trackTitle;
 
   bool get isPlaying => status == PlaybackStatus.playing;
   bool get isLoading =>
@@ -22,10 +24,13 @@ class RadioPlayerState {
     RadioStation? station,
     String? errorMessage,
     bool clearError = false,
+    String? trackTitle,
+    bool clearTrackTitle = false,
   }) => RadioPlayerState(
     status: status ?? this.status,
     station: station ?? this.station,
     errorMessage: clearError ? null : errorMessage ?? this.errorMessage,
+    trackTitle: clearTrackTitle ? null : trackTitle ?? this.trackTitle,
   );
 
   @override
@@ -35,10 +40,11 @@ class RadioPlayerState {
           runtimeType == other.runtimeType &&
           status == other.status &&
           station == other.station &&
-          errorMessage == other.errorMessage;
+          errorMessage == other.errorMessage &&
+          trackTitle == other.trackTitle;
 
   @override
-  int get hashCode => Object.hash(status, station, errorMessage);
+  int get hashCode => Object.hash(status, station, errorMessage, trackTitle);
 
   @override
   String toString() =>
