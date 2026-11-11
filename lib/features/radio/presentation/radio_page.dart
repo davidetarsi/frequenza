@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../l10n/generated/app_localizations.dart';
-import '../../../ui/theme/app_spacing.dart';
 import '../../favorites/application/favorites_providers.dart';
 import '../../favorites/presentation/favorites_sheet.dart';
 import '../application/radio_providers.dart';
@@ -49,149 +48,153 @@ class RadioPage extends ConsumerWidget {
         : idle
         ? l.powerOn
         : l.tune;
-    final sectionGap = (MediaQuery.sizeOf(context).height * .035).clamp(
-      20.0,
-      36.0,
-    );
     return Scaffold(
       body: SafeArea(
-        child: Align(
-          alignment: Alignment.topCenter,
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(
-              maxWidth: AppSpacing.contentMaxWidth,
-            ),
-            child: ListView(
-              padding: EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: sectionGap,
+        minimum: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final wide =
+                constraints.maxWidth >= 520 && constraints.maxHeight < 560;
+            final largeText = MediaQuery.textScalerOf(context).scale(16) > 20;
+            final compact =
+                wide || constraints.maxHeight < (largeText ? 900 : 740);
+            final heading = Text(
+              appName.toLowerCase(),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style:
+                  (compact
+                          ? theme.textTheme.titleMedium
+                          : theme.textTheme.headlineMedium)
+                      ?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: -1,
+                      ),
+            );
+            final favoritesLabel =
+                '${l.favorites} · ${favorites.stations.length}';
+            final favoritesButton = compact
+                ? IconButton.outlined(
+                    key: const ValueKey('favorites-open'),
+                    tooltip: favoritesLabel,
+                    onPressed: () => showFavorites(context),
+                    icon: Badge.count(
+                      count: favorites.stations.length,
+                      isLabelVisible: favorites.stations.isNotEmpty,
+                      child: const Icon(Icons.favorite_border),
+                    ),
+                  )
+                : OutlinedButton.icon(
+                    key: const ValueKey('favorites-open'),
+                    onPressed: () => showFavorites(context),
+                    icon: const Icon(Icons.favorite_border, size: 18),
+                    label: Text(favoritesLabel),
+                  );
+            final cabinet = RadioCabinet(
+              compact: compact,
+              horizontal: wide,
+              country: country,
+              station: title,
+              detail: busy
+                  ? ''
+                  : (player.isPlaying || player.status == PlaybackStatus.paused
+                            ? player.trackTitle
+                            : null) ??
+                        station?.tags.take(2).join(' · ') ??
+                        l.firstTrip,
+              status: status,
+              knobLabel: label.toUpperCase(),
+              tuneLabel: l.tuneAccessibility,
+              onTune: busy ? null : () => controller.tuneRandom(),
+              isBusy: busy,
+              isPlaying: player.isPlaying,
+            );
+            final actionStyle = OutlinedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+            );
+            final pause = OutlinedButton(
+              style: actionStyle,
+              onPressed: idle || busy || player.status == PlaybackStatus.error
+                  ? null
+                  : () => player.isPlaying
+                        ? controller.pause()
+                        : controller.play(),
+              child: Text(
+                player.isPlaying ? l.pause : l.resume,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
-              children: [
-                Wrap(
-                  alignment: WrapAlignment.spaceBetween,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  spacing: 12,
-                  runSpacing: 12,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          appName.toLowerCase(),
-                          style: theme.textTheme.headlineMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: -1,
-                          ),
+            );
+            final save = OutlinedButton(
+              style: actionStyle,
+              onPressed:
+                  idle ||
+                      busy ||
+                      !favorites.hasLoaded ||
+                      favorites.isLoading ||
+                      favorites.isSaving
+                  ? null
+                  : () => ref.read(favoritesProvider.notifier).toggle(station),
+              child: Text(
+                station != null && favorites.contains(station.id)
+                    ? l.saved
+                    : l.save,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            );
+            if (wide) {
+              return Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 760),
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 160,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            heading,
+                            Center(child: favoritesButton),
+                            pause,
+                            save,
+                          ],
                         ),
-                        Text(l.tagline, style: theme.textTheme.bodySmall),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(child: cabinet),
+                    ],
+                  ),
+                ),
+              );
+            }
+            return Center(
+              child: SizedBox(
+                width: 360,
+                height: double.infinity,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(child: heading),
+                        favoritesButton,
                       ],
                     ),
-                    OutlinedButton.icon(
-                      key: const ValueKey('favorites-open'),
-                      onPressed: () => showFavorites(context),
-                      icon: const Icon(Icons.favorite_border, size: 18),
-                      label: Text(
-                        '${l.favorites} · ${favorites.stations.length}',
-                      ),
+                    cabinet,
+                    Row(
+                      children: [
+                        Expanded(child: pause),
+                        const SizedBox(width: 12),
+                        Expanded(child: save),
+                      ],
                     ),
                   ],
                 ),
-                SizedBox(height: sectionGap),
-                Text(
-                  l.nextStop,
-                  textAlign: TextAlign.center,
-                  style: theme.textTheme.bodySmall,
-                ),
-                const SizedBox(height: 18),
-                Center(
-                  child: SizedBox(
-                    width: 360,
-                    child: RadioCabinet(
-                      country: country,
-                      station: title,
-                      detail: busy
-                          ? ''
-                          : (player.isPlaying ||
-                                        player.status == PlaybackStatus.paused
-                                    ? player.trackTitle
-                                    : null) ??
-                                station?.tags.take(2).join(' · ') ??
-                                l.firstTrip,
-                      status: status,
-                      knobLabel: label.toUpperCase(),
-                      tuneLabel: l.tuneAccessibility,
-                      onTune: busy ? null : () => controller.tuneRandom(),
-                      isBusy: busy,
-                      isPlaying: player.isPlaying,
-                    ),
-                  ),
-                ),
-                SizedBox(height: sectionGap),
-                Wrap(
-                  alignment: WrapAlignment.center,
-                  spacing: 12,
-                  runSpacing: 12,
-                  children: [
-                    OutlinedButton.icon(
-                      onPressed:
-                          idle || busy || player.status == PlaybackStatus.error
-                          ? null
-                          : () => player.isPlaying
-                                ? controller.pause()
-                                : controller.play(),
-                      icon: Icon(
-                        player.isPlaying ? Icons.pause : Icons.play_arrow,
-                      ),
-                      label: Text(player.isPlaying ? l.pause : l.resume),
-                    ),
-                    OutlinedButton.icon(
-                      onPressed:
-                          idle ||
-                              busy ||
-                              !favorites.hasLoaded ||
-                              favorites.isLoading ||
-                              favorites.isSaving
-                          ? null
-                          : () => ref
-                                .read(favoritesProvider.notifier)
-                                .toggle(station),
-                      icon: Icon(
-                        station != null && favorites.contains(station.id)
-                            ? Icons.favorite
-                            : Icons.favorite_border,
-                      ),
-                      label: Text(
-                        station != null && favorites.contains(station.id)
-                            ? l.saved
-                            : l.save,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 18),
-                if (player.status == PlaybackStatus.error)
-                  Text(
-                    l.stationErrorHint,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: theme.colorScheme.error),
-                  )
-                else
-                  Text(
-                    player.status == PlaybackStatus.paused
-                        ? l.pauseHint
-                        : l.travelHint,
-                    textAlign: TextAlign.center,
-                    style: theme.textTheme.bodySmall,
-                  ),
-                const SizedBox(height: 24),
-                Text(
-                  l.footer,
-                  textAlign: TextAlign.center,
-                  style: theme.textTheme.labelSmall,
-                ),
-              ],
-            ),
-          ),
+              ),
+            );
+          },
         ),
       ),
     );

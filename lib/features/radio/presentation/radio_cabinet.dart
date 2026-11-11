@@ -2,8 +2,6 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../../../ui/theme/travel_radio_palette.dart';
 
-const double _controlDiameter = 112;
-
 class RadioCabinet extends StatelessWidget {
   const RadioCabinet({
     super.key,
@@ -16,22 +14,190 @@ class RadioCabinet extends StatelessWidget {
     required this.onTune,
     required this.isBusy,
     required this.isPlaying,
+    required this.compact,
+    required this.horizontal,
   });
   final String country, station, detail, status, knobLabel, tuneLabel;
   final VoidCallback? onTune;
-  final bool isBusy, isPlaying;
+  final bool isBusy, isPlaying, compact, horizontal;
 
   @override
   Widget build(BuildContext context) {
     final p = TravelRadioPalette.of(context);
     final scaler = MediaQuery.textScalerOf(context);
-    return Column(
-      children: [
-        const SizedBox(
-          width: 156,
-          height: 34,
-          child: CustomPaint(painter: _HandlePainter()),
+    final diameter = compact ? 84.0 : 112.0;
+    final stationFont = compact ? 22.0 : 26.0;
+    final stationLines = horizontal && scaler.scale(16) > 20 ? 1 : 2;
+    final display = Container(
+      padding: const EdgeInsets.all(5),
+      decoration: BoxDecoration(
+        color: TravelRadioPalette.hardware,
+        borderRadius: BorderRadius.circular(15),
+        boxShadow: [
+          BoxShadow(
+            color: p.metalLight.withValues(alpha: .7),
+            offset: const Offset(0, 1),
+          ),
+        ],
+      ),
+      child: Container(
+        padding: EdgeInsets.all(compact ? 8 : 14),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10),
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF162F28), TravelRadioPalette.screen],
+          ),
+          border: Border.all(color: const Color(0xFF52634C)),
         ),
+        child: DefaultTextStyle(
+          style: Theme.of(
+            context,
+          ).textTheme.bodyMedium!.copyWith(color: TravelRadioPalette.screenInk),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                country.toUpperCase(),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(fontSize: 12, letterSpacing: 1.4),
+              ),
+              SizedBox(height: compact ? 4 : 14),
+              Semantics(
+                liveRegion: true,
+                child: SizedBox(
+                  height: scaler.scale(stationFont) * stationLines * 1.2,
+                  child: Text(
+                    station,
+                    maxLines: stationLines,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: stationFont,
+                      fontWeight: FontWeight.w600,
+                      height: 1.15,
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(height: compact ? 4 : 8),
+              SizedBox(
+                height: scaler.scale(14) * (compact ? 1.25 : 2.5),
+                child: Text(
+                  detail,
+                  maxLines: compact ? 1 : 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontSize: 14, height: 1.2),
+                ),
+              ),
+              SizedBox(height: compact ? 4 : 8),
+              SizedBox(
+                height: compact ? 16 : 28,
+                width: double.infinity,
+                child: isPlaying
+                    ? const ExcludeSemantics(
+                        child: CustomPaint(
+                          key: ValueKey('radio-equalizer'),
+                          painter: _EqualizerPainter(),
+                        ),
+                      )
+                    : null,
+              ),
+              SizedBox(height: compact ? 4 : 12),
+              Container(
+                height: 1,
+                color: TravelRadioPalette.screenInk.withValues(alpha: .18),
+              ),
+              SizedBox(height: compact ? 4 : 12),
+              SizedBox(
+                height: scaler.scale(12) * (compact ? 1.45 : 2.8),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Container(
+                      width: 7,
+                      height: 7,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: TravelRadioPalette.screenInk,
+                        boxShadow: !isBusy
+                            ? [
+                                BoxShadow(
+                                  color: TravelRadioPalette.screenInk
+                                      .withValues(alpha: .35),
+                                  blurRadius: 7,
+                                ),
+                              ]
+                            : null,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        status,
+                        maxLines: compact ? 1 : 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(fontSize: 12),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    final controls = Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        SizedBox.square(
+          key: const ValueKey('radio-speaker'),
+          dimension: diameter,
+          child: const CustomPaint(painter: _SpeakerPainter()),
+        ),
+        SizedBox(
+          width: diameter,
+          child: Column(
+            children: [
+              _TuningDial(
+                palette: p,
+                label: tuneLabel,
+                onTap: onTune,
+                diameter: diameter,
+              ),
+              SizedBox(height: compact ? 4 : 10),
+              SizedBox(
+                height: scaler.scale(12) * 2.8,
+                child: Text(
+                  knobLabel,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: p.ink,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    letterSpacing: 1,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (!horizontal)
+          SizedBox(
+            width: 156,
+            height: compact ? 23 : 34,
+            child: const CustomPaint(painter: _HandlePainter()),
+          ),
         DecoratedBox(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(30),
@@ -46,7 +212,7 @@ class RadioCabinet extends StatelessWidget {
           ),
           child: Container(
             width: double.infinity,
-            padding: const EdgeInsets.all(8),
+            padding: EdgeInsets.all(compact ? 6 : 8),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(30),
               gradient: LinearGradient(
@@ -56,7 +222,7 @@ class RadioCabinet extends StatelessWidget {
               ),
             ),
             child: Container(
-              padding: const EdgeInsets.all(14),
+              padding: EdgeInsets.all(compact ? 8 : 14),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(23),
                 gradient: LinearGradient(
@@ -69,211 +235,55 @@ class RadioCabinet extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          'F / RADIO',
-                          style: TextStyle(
-                            color: p.ink,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: 2,
+                  if (!compact) ...[
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            'F / RADIO',
+                            style: TextStyle(
+                              color: p.ink,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 2,
+                            ),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 8),
-                      _Screw(color: p.trim),
-                    ],
-                  ),
-                  const SizedBox(height: 15),
-                  Container(
-                    padding: const EdgeInsets.all(5),
-                    decoration: BoxDecoration(
-                      color: TravelRadioPalette.hardware,
-                      borderRadius: BorderRadius.circular(15),
-                      boxShadow: [
-                        BoxShadow(
-                          color: p.metalLight.withValues(alpha: .7),
-                          offset: const Offset(0, 1),
-                        ),
+                        const SizedBox(width: 8),
+                        _Screw(color: p.trim),
                       ],
                     ),
-                    child: Container(
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10),
-                        gradient: const LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            Color(0xFF162F28),
-                            TravelRadioPalette.screen,
-                          ],
+                    const SizedBox(height: 15),
+                  ],
+                  if (horizontal)
+                    Row(
+                      children: [
+                        Expanded(child: display),
+                        const SizedBox(width: 12),
+                        SizedBox(width: diameter * 2 + 8, child: controls),
+                      ],
+                    )
+                  else ...[
+                    display,
+                    SizedBox(height: compact ? 8 : 24),
+                    controls,
+                  ],
+                  if (!compact) ...[
+                    const SizedBox(height: 20),
+                    Row(
+                      children: [
+                        _Screw(color: p.trim),
+                        Expanded(
+                          child: Container(
+                            height: 1,
+                            margin: const EdgeInsets.symmetric(horizontal: 12),
+                            color: p.trim.withValues(alpha: .6),
+                          ),
                         ),
-                        border: Border.all(color: const Color(0xFF52634C)),
-                      ),
-                      child: DefaultTextStyle(
-                        style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                          color: TravelRadioPalette.screenInk,
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              country.toUpperCase(),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                fontSize: 12,
-                                letterSpacing: 1.4,
-                              ),
-                            ),
-                            const SizedBox(height: 14),
-                            Semantics(
-                              liveRegion: true,
-                              child: SizedBox(
-                                height: scaler.scale(26) * 2.4,
-                                child: Text(
-                                  station,
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                    fontSize: 26,
-                                    fontWeight: FontWeight.w600,
-                                    height: 1.15,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            SizedBox(
-                              height: scaler.scale(14) * 2.5,
-                              child: Text(
-                                detail,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  height: 1.2,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            SizedBox(
-                              height: 28,
-                              width: double.infinity,
-                              child: isPlaying
-                                  ? const ExcludeSemantics(
-                                      child: CustomPaint(
-                                        key: ValueKey('radio-equalizer'),
-                                        painter: _EqualizerPainter(),
-                                      ),
-                                    )
-                                  : null,
-                            ),
-                            const SizedBox(height: 12),
-                            Container(
-                              height: 1,
-                              color: TravelRadioPalette.screenInk.withValues(
-                                alpha: .18,
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            SizedBox(
-                              height: scaler.scale(12) * 2.8,
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Container(
-                                    width: 7,
-                                    height: 7,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: TravelRadioPalette.screenInk,
-                                      boxShadow: !isBusy
-                                          ? [
-                                              BoxShadow(
-                                                color: TravelRadioPalette
-                                                    .screenInk
-                                                    .withValues(alpha: .35),
-                                                blurRadius: 7,
-                                              ),
-                                            ]
-                                          : null,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Expanded(
-                                    child: Text(
-                                      status,
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(fontSize: 12),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                        _Screw(color: p.trim),
+                      ],
                     ),
-                  ),
-                  const SizedBox(height: 24),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const SizedBox.square(
-                        key: ValueKey('radio-speaker'),
-                        dimension: _controlDiameter,
-                        child: CustomPaint(painter: _SpeakerPainter()),
-                      ),
-                      SizedBox(
-                        width: _controlDiameter,
-                        child: Column(
-                          children: [
-                            _TuningDial(
-                              palette: p,
-                              label: tuneLabel,
-                              onTap: onTune,
-                            ),
-                            const SizedBox(height: 10),
-                            SizedBox(
-                              height: scaler.scale(12) * 2.8,
-                              child: Text(
-                                knobLabel,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  color: p.ink,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w500,
-                                  letterSpacing: 1,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-                  Row(
-                    children: [
-                      _Screw(color: p.trim),
-                      Expanded(
-                        child: Container(
-                          height: 1,
-                          margin: const EdgeInsets.symmetric(horizontal: 12),
-                          color: p.trim.withValues(alpha: .6),
-                        ),
-                      ),
-                      _Screw(color: p.trim),
-                    ],
-                  ),
+                  ],
                 ],
               ),
             ),
@@ -403,10 +413,12 @@ class _TuningDial extends StatelessWidget {
     required this.palette,
     required this.label,
     required this.onTap,
+    required this.diameter,
   });
   final TravelRadioPalette palette;
   final String label;
   final VoidCallback? onTap;
+  final double diameter;
   @override
   Widget build(BuildContext context) {
     final face = Ink(
@@ -428,8 +440,8 @@ class _TuningDial extends StatelessWidget {
             alignment: Alignment.center,
             children: [
               Container(
-                width: 54,
-                height: 54,
+                width: diameter * .48,
+                height: diameter * .48,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(color: palette.metalDark),
@@ -458,7 +470,7 @@ class _TuningDial extends StatelessWidget {
       onTap: onTap,
       child: ExcludeSemantics(
         child: SizedBox.square(
-          dimension: _controlDiameter,
+          dimension: diameter,
           child: CustomPaint(
             key: const ValueKey('radio-dial-face'),
             painter: _DialTicks(palette.trim),

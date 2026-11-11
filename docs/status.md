@@ -81,3 +81,9 @@ Prossimo passo: feedback sul design nell'emulatore, poi lavoro mirato sulle anim
 - L'indicatore a barre è decorativo e compare in ascolto. Il titolo arriva da ICY se lo stream lo fornisce e viene azzerato a ogni nuova sintonizzazione.
 - Verificati stabilità a 390 e 620 px e durante la sintonizzazione, accesso ai preferiti a 320×640 con testo al 200%, parità dei diametri, titolo simulato e azzeramento. Suite 19/19, analyzer pulito e bundle debug compilato.
 - Prossimo passo: riscontro visivo su Android e verifica dei metadati su stream reali quando riprende il collaudo audio.
+
+## Home senza scorrimento — 11 novembre 2026
+
+- La home usa un layout non scorrevole. Scocca e comandi compatti nelle finestre basse, display e manopola affiancati in orizzontale. Rimossi i testi promozionali esterni alla radio.
+- Verificati sintonizzazione, pausa, salvataggio e apertura preferiti in viewport simulati. Il caso a 320×640 e 640×320 include testo al 200% e margini di sistema simulati. Suite 19/19, analisi pulita e bundle debug compilato.
+- Prossimo passo: feedback visivo su Android e collaudo dei metadati su stream reali.

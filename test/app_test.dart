@@ -60,21 +60,11 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('tune-knob')));
       await tester.pumpAndSettle();
       expect(find.text('Artista — Titolo'), findsNothing);
-      await tester.scrollUntilVisible(
-        find.text('Salva'),
-        160,
-        scrollable: find.byType(Scrollable).first,
-      );
-      await tester.pumpAndSettle();
+      expect(find.byType(Scrollable), findsNothing);
+      expect(find.text('Salva').hitTestable(), findsOneWidget);
       await tester.tap(find.text('Salva'));
       await tester.pumpAndSettle();
       expect(find.text('Salvata'), findsOneWidget);
-      await tester.scrollUntilVisible(
-        find.byKey(const ValueKey('favorites-open')),
-        -200,
-        scrollable: find.byType(Scrollable).first,
-      );
-      await tester.pumpAndSettle();
       await tester.tap(find.byKey(const ValueKey('favorites-open')));
       await tester.pumpAndSettle();
       expect(find.text('Le tue frequenze'), findsOneWidget);
@@ -89,6 +79,8 @@ void main() {
   ) async {
     tester.view.physicalSize = const Size(320, 640);
     tester.view.devicePixelRatio = 1;
+    tester.view.padding = const FakeViewPadding(top: 24, bottom: 24);
+    addTearDown(tester.view.resetPadding);
     tester.platformDispatcher.textScaleFactorTestValue = 2;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
@@ -108,7 +100,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          radioRepositoryProvider.overrideWithValue(FakeRadioRepository()),
+          radioRepositoryProvider.overrideWithValue(
+            FakeRadioRepository()..stationToReturn = saved.items.single,
+          ),
           radioAudioServiceProvider.overrideWithValue(audio),
           favoritesRepositoryProvider.overrideWithValue(saved),
         ],
@@ -117,17 +111,27 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
-    await tester.scrollUntilVisible(
-      find.byKey(const ValueKey('favorites-open')),
-      -200,
-      scrollable: find.byType(Scrollable).first,
+    expect(find.byType(Scrollable), findsNothing);
+    expect(
+      find.byKey(const ValueKey('tune-knob')).hitTestable(),
+      findsOneWidget,
     );
+    expect(find.text('Salva').hitTestable(), findsOneWidget);
+    expect(find.text('Riprendi').hitTestable(), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('tune-knob')));
     await tester.pumpAndSettle();
-    await tester.scrollUntilVisible(
-      find.byKey(const ValueKey('favorites-open')),
-      -200,
-      scrollable: find.byType(Scrollable).first,
+    expect(tester.takeException(), isNull);
+    expect(find.text('Pausa').hitTestable(), findsOneWidget);
+    expect(find.text('Salvata').hitTestable(), findsOneWidget);
+    tester.view.physicalSize = const Size(640, 320);
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+    expect(
+      find.byKey(const ValueKey('tune-knob')).hitTestable(),
+      findsOneWidget,
     );
+    expect(find.text('Salvata').hitTestable(), findsOneWidget);
+    tester.view.physicalSize = const Size(320, 640);
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('favorites-open')));
     await tester.pumpAndSettle();
@@ -137,7 +141,13 @@ void main() {
       120,
       scrollable: find.byType(Scrollable).last,
     );
-    expect(find.textContaining('Una stazione dal nome'), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byKey(const ValueKey('favorite-play-long')),
+        matching: find.textContaining('Una stazione dal nome'),
+      ),
+      findsOneWidget,
+    );
   });
   testWidgets(
     'favorites recover from load failure and can be removed from the sheet',
