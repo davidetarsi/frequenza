@@ -21,13 +21,27 @@ class RadioCabinet extends StatelessWidget {
   final VoidCallback? onTune;
   final bool isBusy, isPlaying, compact, horizontal;
 
+  Widget _equalizer({required double height}) => SizedBox(
+    height: height,
+    width: double.infinity,
+    child: isPlaying
+        ? const ExcludeSemantics(
+            child: CustomPaint(
+              key: ValueKey('radio-equalizer'),
+              painter: _EqualizerPainter(),
+            ),
+          )
+        : null,
+  );
+
   @override
   Widget build(BuildContext context) {
     final p = TravelRadioPalette.of(context);
     final scaler = MediaQuery.textScalerOf(context);
-    final diameter = compact ? 84.0 : 112.0;
+    final diameter = compact ? 76.0 : 104.0;
     final stationFont = compact ? 22.0 : 26.0;
-    final stationLines = horizontal && scaler.scale(16) > 20 ? 1 : 2;
+    final largeText = compact && scaler.scale(16) > 20;
+    final stationLines = largeText ? 1 : 2;
     final display = Container(
       padding: const EdgeInsets.all(5),
       decoration: BoxDecoration(
@@ -41,7 +55,10 @@ class RadioCabinet extends StatelessWidget {
         ],
       ),
       child: Container(
-        padding: EdgeInsets.all(compact ? 8 : 14),
+        padding: EdgeInsets.symmetric(
+          horizontal: compact ? 6 : 12,
+          vertical: horizontal ? 2 : (compact ? 6 : 12),
+        ),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(10),
           gradient: const LinearGradient(
@@ -91,19 +108,10 @@ class RadioCabinet extends StatelessWidget {
                   style: const TextStyle(fontSize: 14, height: 1.2),
                 ),
               ),
-              SizedBox(height: compact ? 4 : 8),
-              SizedBox(
-                height: compact ? 16 : 28,
-                width: double.infinity,
-                child: isPlaying
-                    ? const ExcludeSemantics(
-                        child: CustomPaint(
-                          key: ValueKey('radio-equalizer'),
-                          painter: _EqualizerPainter(),
-                        ),
-                      )
-                    : null,
-              ),
+              if (!compact) ...[
+                const SizedBox(height: 8),
+                _equalizer(height: 26),
+              ],
               SizedBox(height: compact ? 4 : 12),
               Container(
                 height: 1,
@@ -138,9 +146,13 @@ class RadioCabinet extends StatelessWidget {
                         status,
                         maxLines: compact ? 1 : 2,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(fontSize: 12),
+                        style: const TextStyle(fontSize: 12, height: 1.15),
                       ),
                     ),
+                    if (compact) ...[
+                      const SizedBox(width: 8),
+                      SizedBox(width: 56, child: _equalizer(height: 14)),
+                    ],
                   ],
                 ),
               ),
@@ -170,15 +182,18 @@ class RadioCabinet extends StatelessWidget {
               ),
               SizedBox(height: compact ? 4 : 10),
               SizedBox(
-                height: scaler.scale(12) * 2.8,
+                height: compact
+                    ? scaler.scale(10) * 1.25
+                    : scaler.scale(12) * 2.8,
                 child: Text(
                   knobLabel,
-                  maxLines: 2,
+                  maxLines: compact ? 1 : 2,
                   overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: p.ink,
-                    fontSize: 12,
+                    fontSize: compact ? 10 : 12,
+                    height: compact ? 1.2 : null,
                     fontWeight: FontWeight.w500,
                     letterSpacing: 1,
                   ),
@@ -195,7 +210,7 @@ class RadioCabinet extends StatelessWidget {
         if (!horizontal)
           SizedBox(
             width: 156,
-            height: compact ? 23 : 34,
+            height: compact ? 20 : 30,
             child: const CustomPaint(painter: _HandlePainter()),
           ),
         DecoratedBox(
@@ -222,7 +237,7 @@ class RadioCabinet extends StatelessWidget {
               ),
             ),
             child: Container(
-              padding: EdgeInsets.all(compact ? 8 : 14),
+              padding: EdgeInsets.all(compact ? 6 : 12),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(23),
                 gradient: LinearGradient(
@@ -265,7 +280,7 @@ class RadioCabinet extends StatelessWidget {
                     )
                   else ...[
                     display,
-                    SizedBox(height: compact ? 8 : 24),
+                    SizedBox(height: compact ? 6 : 20),
                     controls,
                   ],
                   if (!compact) ...[

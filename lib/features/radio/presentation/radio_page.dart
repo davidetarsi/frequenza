@@ -143,27 +143,56 @@ class RadioPage extends ConsumerWidget {
                 overflow: TextOverflow.ellipsis,
               ),
             );
+            final nextStop = Text(
+              l.nextStop,
+              textAlign: TextAlign.center,
+              style: theme.textTheme.bodySmall?.copyWith(
+                height: 1.1,
+                letterSpacing: 0,
+              ),
+            );
+            final credits = Text(
+              l.footer,
+              textAlign: TextAlign.center,
+              style: theme.textTheme.labelSmall?.copyWith(
+                height: 1.1,
+                letterSpacing: 0,
+              ),
+            );
             if (wide) {
               return Center(
                 child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 760),
-                  child: Row(
+                  constraints: const BoxConstraints(maxWidth: 720),
+                  child: Column(
                     children: [
-                      SizedBox(
-                        width: 160,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                      nextStop,
+                      Expanded(
+                        child: Row(
                           children: [
-                            heading,
-                            Center(child: favoritesButton),
-                            pause,
-                            save,
+                            SizedBox(
+                              width: 160,
+                              child: Column(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Expanded(child: heading),
+                                      favoritesButton,
+                                    ],
+                                  ),
+                                  pause,
+                                  save,
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(child: cabinet),
                           ],
                         ),
                       ),
-                      const SizedBox(width: 12),
-                      Expanded(child: cabinet),
+                      credits,
                     ],
                   ),
                 ),
@@ -171,7 +200,7 @@ class RadioPage extends ConsumerWidget {
             }
             return Center(
               child: SizedBox(
-                width: 360,
+                width: 344,
                 height: double.infinity,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -182,6 +211,7 @@ class RadioPage extends ConsumerWidget {
                         favoritesButton,
                       ],
                     ),
+                    nextStop,
                     cabinet,
                     Row(
                       children: [
@@ -190,6 +220,7 @@ class RadioPage extends ConsumerWidget {
                         Expanded(child: save),
                       ],
                     ),
+                    credits,
                   ],
                 ),
               ),

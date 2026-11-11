@@ -112,6 +112,18 @@ void main() {
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
     expect(find.byType(Scrollable), findsNothing);
+    final credits = find.text('WEB RADIO · SENZA CONFINI');
+    final nextStop = find.text('Prossima fermata: ovunque');
+    expect(nextStop.hitTestable(), findsOneWidget);
+    expect(
+      tester.getRect(nextStop).bottom,
+      lessThan(tester.getRect(find.byType(RadioCabinet)).top),
+    );
+    expect(
+      tester.getRect(credits).top,
+      greaterThan(tester.getRect(find.byType(RadioCabinet)).bottom),
+    );
+    expect(credits.hitTestable(), findsOneWidget);
     expect(
       find.byKey(const ValueKey('tune-knob')).hitTestable(),
       findsOneWidget,
@@ -123,9 +135,15 @@ void main() {
     expect(tester.takeException(), isNull);
     expect(find.text('Pausa').hitTestable(), findsOneWidget);
     expect(find.text('Salvata').hitTestable(), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('radio-equalizer')).hitTestable(),
+      findsOneWidget,
+    );
     tester.view.physicalSize = const Size(640, 320);
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
+    expect(credits.hitTestable(), findsOneWidget);
+    expect(nextStop.hitTestable(), findsOneWidget);
     expect(
       find.byKey(const ValueKey('tune-knob')).hitTestable(),
       findsOneWidget,
