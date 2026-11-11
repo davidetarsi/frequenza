@@ -26,6 +26,15 @@ class TravelRadioPalette {
   static const screen = Color(0xFF203C33);
   static const screenInk = Color(0xFFE4EBC5);
   static const hardware = Color(0xFF354B3F);
+  static const screenHighlight = Color(0xFF162F28);
+  static const screenBorder = Color(0xFF52634C);
+  static const handleHighlight = Color(0xFF73816A);
+  static const speakerRim = Color(0xFF8B947C);
+  static const speakerMeshLight = Color(0xFF68735D);
+  static const speakerMeshDark = Color(0xFF283C30);
+  static const speakerPerforation = Color(0xFF172B23);
+  static const speakerRimHighlight = Color(0xFFA9B199);
+  static const activePresetBorder = Color(0xFF65765A);
   static const accent = Color(0xFFAD4823);
   static TravelRadioPalette of(BuildContext context) =>
       forBrightness(Theme.of(context).brightness);

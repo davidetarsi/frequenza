@@ -112,3 +112,10 @@ Prossimo passo: feedback sul design nell'emulatore, poi lavoro mirato sulle anim
 
 - Il provider generato espone AsyncValue. La lista confermata resta visibile durante la scrittura e dopo un errore. Il caricamento fallito resta recuperabile dal pannello.
 - Code generation, analisi, bundle debug e 20 test verificati. Il prossimo intervento sulla base condivisa è nella roadmap dello starter, sezione Evoluzione dello starter secondo le convenzioni PackLog.
+
+## Base condivisa adottata — 12 novembre 2026
+
+- GoRouter collega home e Impostazioni. Easy Localization genera loader e chiavi dai cataloghi IT/EN. Le Impostazioni condivise espongono lingua e tema Sistema, Chiaro o Scuro con preferenze persistenti.
+- Palette e token della home, scocca, equalizzatore, pannello Preferiti e diagnostica sono centralizzati nel tema di prodotto. I widget comuni seguono la base dello starter.
+- Verificati generazione, formattazione, analisi, 20 test e APK debug ARM64. Sull'emulatore verificato il percorso home → Impostazioni → home. I test simulano il riavvio per lingua e tema nello starter e il cambio in Frequenza.
+- Restano la prova della seconda app neutra e i moduli opzionali della roadmap, incluso Tgram Analytics per gli eventi prodotto.

@@ -1,10 +1,13 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../features/radio/presentation/radio_page.dart';
-import '../l10n/generated/app_localizations.dart';
 import '../ui/theme/app_theme.dart';
 import '../ui/theme/travel_radio_palette.dart';
 import 'config/app_config.dart';
+import 'config/app_localization.dart';
+import 'routing/app_router.dart';
+import 'theme/app_theme_mode.dart';
 
 class StarterApp extends StatelessWidget {
   const StarterApp({super.key, this.config = const AppConfig(), this.locale});
@@ -13,7 +16,19 @@ class StarterApp extends StatelessWidget {
   final Locale? locale;
 
   @override
-  Widget build(BuildContext context) => MaterialApp(
+  Widget build(BuildContext context) => AppLocalization(
+    startLocale: locale,
+    child: _RoutedApp(config: config),
+  );
+}
+
+class _RoutedApp extends ConsumerWidget {
+  const _RoutedApp({required this.config});
+
+  final AppConfig config;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) => MaterialApp.router(
     title: config.appName,
     debugShowCheckedModeBanner: false,
     theme: AppTheme.create(
@@ -26,9 +41,10 @@ class StarterApp extends StatelessWidget {
       Brightness.dark,
       background: TravelRadioPalette.forBrightness(Brightness.dark).paper,
     ),
-    locale: locale,
-    localizationsDelegates: AppLocalizations.localizationsDelegates,
-    supportedLocales: AppLocalizations.supportedLocales,
-    home: RadioPage(appName: config.appName),
+    themeMode: ref.watch(appThemeModeProvider).valueOrNull ?? ThemeMode.system,
+    locale: context.locale,
+    localizationsDelegates: context.localizationDelegates,
+    supportedLocales: context.supportedLocales,
+    routerConfig: ref.watch(appRouterProvider(config.appName)),
   );
 }

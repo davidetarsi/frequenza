@@ -1,15 +1,19 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:frequenza/app/config/app_localization.dart';
 import 'package:frequenza/features/radio/application/radio_providers.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:frequenza/features/radio/domain/radio_station.dart';
 import 'package:frequenza/features/radio/presentation/radio_proof_page.dart';
 
 import 'radio_controller_test.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
   group('RadioProofPage', () {
     late FakeRadioRepository repository;
     late FakeAudioService audioService;
@@ -24,7 +28,9 @@ void main() {
       bitrate: 128,
     );
 
-    setUp(() {
+    setUp(() async {
+      SharedPreferences.setMockInitialValues({});
+      await EasyLocalization.ensureInitialized();
       repository = FakeRadioRepository();
       audioService = FakeAudioService();
     });
@@ -35,12 +41,23 @@ void main() {
           radioRepositoryProvider.overrideWithValue(repository),
           radioAudioServiceProvider.overrideWithValue(audioService),
         ],
-        child: const MaterialApp(home: RadioProofPage(appName: 'Frequenza')),
+        child: AppLocalization(
+          startLocale: const Locale('it'),
+          child: Builder(
+            builder: (context) => MaterialApp(
+              locale: context.locale,
+              localizationsDelegates: context.localizationDelegates,
+              supportedLocales: context.supportedLocales,
+              home: const RadioProofPage(appName: 'Frequenza'),
+            ),
+          ),
+        ),
       );
     }
 
     testWidgets('renders initial idle UI', (tester) async {
       await tester.pumpWidget(createWidgetUnderTest());
+      await tester.pumpAndSettle();
 
       expect(find.text('Frequenza'), findsOneWidget);
       expect(find.text('Nessuna stazione sintonizzata'), findsOneWidget);
@@ -55,6 +72,7 @@ void main() {
         repository.pendingStation = completer;
 
         await tester.pumpWidget(createWidgetUnderTest());
+        await tester.pumpAndSettle();
         await tester.tap(find.text('Sintonizza'));
         await tester.pump(); // Enter tuning state
 
@@ -80,6 +98,7 @@ void main() {
       repository.stationToReturn = testStation;
 
       await tester.pumpWidget(createWidgetUnderTest());
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Sintonizza'));
       await tester.pump();
       await tester.pump(const Duration(seconds: 1));

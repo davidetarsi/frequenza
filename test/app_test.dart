@@ -1,6 +1,8 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:frequenza/app/app.dart';
 import 'package:frequenza/features/favorites/application/favorites_providers.dart';
 import 'package:frequenza/features/radio/application/radio_providers.dart';
@@ -10,6 +12,12 @@ import 'features/radio/radio_controller_test.dart';
 import 'features/favorites/favorites_test.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  setUp(() async {
+    SharedPreferences.setMockInitialValues({});
+    await EasyLocalization.ensureInitialized();
+  });
+
   testWidgets(
     'knob tunes; save persists; favorite selection starts the station',
     (tester) async {
@@ -94,6 +102,22 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byKey(const ValueKey('radio-equalizer')), findsOneWidget);
       expect(tester.binding.hasScheduledFrame, isFalse);
+      await tester.tap(find.byTooltip('Impostazioni'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Scuro'));
+      await tester.pumpAndSettle();
+      expect(
+        Theme.of(tester.element(find.text('Aspetto'))).brightness,
+        Brightness.dark,
+      );
+      await tester.tap(find.text('Inglese'));
+      await tester.pumpAndSettle();
+      expect(find.text('Appearance'), findsOneWidget);
+      await tester.pageBack();
+      await tester.pumpAndSettle();
+      expect(find.text('Next stop: anywhere'), findsOneWidget);
+      expect(tester.getSize(cabinet), initialSize);
+      expect(find.byType(Scrollable), findsNothing);
     },
   );
   testWidgets('travel radio remains usable with narrow screen and 200% text', (

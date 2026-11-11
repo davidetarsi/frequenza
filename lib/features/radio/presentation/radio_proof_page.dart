@@ -1,8 +1,11 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../l10n/locale_keys.g.dart';
 import '../../../ui/theme/app_motion.dart';
 import '../../../ui/theme/app_spacing.dart';
+import '../../../ui/theme/travel_radio_design.dart';
 import '../../../ui/widgets/app_button.dart';
 import '../../../ui/widgets/app_icon_button.dart';
 import '../application/radio_controller.dart';
@@ -22,14 +25,14 @@ class _RadioProofPageState extends ConsumerState<RadioProofPage> {
   final List<String> _historyLogs = [];
 
   static const List<Map<String, String?>> _countryOptions = [
-    {'label': 'Mondo (Casuale)', 'code': null},
-    {'label': 'Italia (IT)', 'code': 'IT'},
-    {'label': 'Francia (FR)', 'code': 'FR'},
-    {'label': 'Giappone (JP)', 'code': 'JP'},
-    {'label': 'Brasile (BR)', 'code': 'BR'},
-    {'label': 'Islanda (IS)', 'code': 'IS'},
-    {'label': 'USA (US)', 'code': 'US'},
-    {'label': 'Germania (DE)', 'code': 'DE'},
+    {'label': LocaleKeys.countryWorld, 'code': null},
+    {'label': LocaleKeys.countryIT, 'code': 'IT'},
+    {'label': LocaleKeys.countryFR, 'code': 'FR'},
+    {'label': LocaleKeys.countryJP, 'code': 'JP'},
+    {'label': LocaleKeys.countryBR, 'code': 'BR'},
+    {'label': LocaleKeys.countryIS, 'code': 'IS'},
+    {'label': LocaleKeys.countryUS, 'code': 'US'},
+    {'label': LocaleKeys.countryDE, 'code': 'DE'},
   ];
 
   void _tune() {
@@ -38,7 +41,10 @@ class _RadioProofPageState extends ConsumerState<RadioProofPage> {
     setState(() {
       _historyLogs.insert(
         0,
-        '${DateTime.now().toIso8601String().substring(11, 19)} [REQ] Sintonizzazione (${country ?? "Mondo"})...',
+        '${DateTime.now().toIso8601String().substring(11, 19)} [REQ] ${LocaleKeys.proofRequest.tr(
+          context: context,
+          args: [country ?? LocaleKeys.countryWorld.tr(context: context)],
+        )}',
       );
     });
     controller.tuneRandom(countryCode: country);
@@ -62,7 +68,7 @@ class _RadioProofPageState extends ConsumerState<RadioProofPage> {
         setState(() {
           _historyLogs.insert(
             0,
-            '${DateTime.now().toIso8601String().substring(11, 19)} [ERR] ${next.errorMessage}',
+            '${DateTime.now().toIso8601String().substring(11, 19)} [ERR] ${LocaleKeys.stationError.tr(context: context)}',
           );
         });
       }
@@ -81,15 +87,18 @@ class _RadioProofPageState extends ConsumerState<RadioProofPage> {
               padding: const EdgeInsets.all(AppSpacing.medium),
               children: [
                 // Country Filter selector
-                Text('Seleziona Paese', style: theme.textTheme.titleSmall),
+                Text(
+                  LocaleKeys.countrySelect.tr(context: context),
+                  style: theme.textTheme.titleSmall,
+                ),
                 const SizedBox(height: AppSpacing.small),
                 Wrap(
-                  spacing: 8,
-                  runSpacing: 4,
+                  spacing: AppSpacing.small,
+                  runSpacing: RadioDiagnosticsDesign.inlineGap,
                   children: [
                     for (final item in _countryOptions)
                       ChoiceChip(
-                        label: Text(item['label']!),
+                        label: Text(item['label']!.tr(context: context)),
                         selected: _selectedCountry == item['code'],
                         onSelected: playerState.isLoading
                             ? null
@@ -105,7 +114,7 @@ class _RadioProofPageState extends ConsumerState<RadioProofPage> {
 
                 // Station Card
                 Card(
-                  elevation: 2,
+                  elevation: RadioDiagnosticsDesign.cardElevation,
                   child: Padding(
                     padding: const EdgeInsets.all(AppSpacing.large),
                     child: Column(
@@ -121,7 +130,7 @@ class _RadioProofPageState extends ConsumerState<RadioProofPage> {
                             if (playerState.station?.codec != null)
                               Chip(
                                 label: Text(
-                                  '${playerState.station!.codec} ${playerState.station!.bitrate != null ? "${playerState.station!.bitrate} kbps" : ""}'
+                                  '${playerState.station!.codec} ${playerState.station!.bitrate != null ? LocaleKeys.proofBitrate.tr(context: context, args: ['${playerState.station!.bitrate}']) : ""}'
                                       .trim(),
                                   style: theme.textTheme.labelSmall,
                                 ),
@@ -133,7 +142,7 @@ class _RadioProofPageState extends ConsumerState<RadioProofPage> {
                           duration: AppMotion.standard(context),
                           child: Text(
                             playerState.station?.name ??
-                                'Nessuna stazione sintonizzata',
+                                LocaleKeys.proofNoStation.tr(context: context),
                             key: ValueKey(playerState.station?.name ?? 'empty'),
                             style: theme.textTheme.headlineSmall?.copyWith(
                               fontWeight: FontWeight.bold,
@@ -144,8 +153,14 @@ class _RadioProofPageState extends ConsumerState<RadioProofPage> {
                         const SizedBox(height: AppSpacing.small),
                         Text(
                           playerState.station != null
-                              ? '${playerState.station!.country} (${playerState.station!.countryCode})'
-                              : 'Tocca «Sintonizza» per scoprire una web radio',
+                              ? LocaleKeys.proofStationLocation.tr(
+                                  context: context,
+                                  args: [
+                                    playerState.station!.country,
+                                    playerState.station!.countryCode,
+                                  ],
+                                )
+                              : LocaleKeys.proofHint.tr(context: context),
                           style: theme.textTheme.bodyMedium?.copyWith(
                             color: theme.colorScheme.onSurfaceVariant,
                           ),
@@ -167,7 +182,7 @@ class _RadioProofPageState extends ConsumerState<RadioProofPage> {
                         if (playerState.errorMessage != null) ...[
                           const SizedBox(height: AppSpacing.medium),
                           Text(
-                            playerState.errorMessage!,
+                            LocaleKeys.stationError.tr(context: context),
                             style: theme.textTheme.bodyMedium?.copyWith(
                               color: theme.colorScheme.error,
                             ),
@@ -183,8 +198,8 @@ class _RadioProofPageState extends ConsumerState<RadioProofPage> {
                 // Main Action Button
                 AppButton(
                   label: playerState.isLoading
-                      ? 'Ricerca stazione...'
-                      : 'Sintonizza',
+                      ? LocaleKeys.proofSearch.tr(context: context)
+                      : LocaleKeys.tune.tr(context: context),
                   isLoading: playerState.isLoading,
                   onPressed: _tune,
                 ),
@@ -199,9 +214,11 @@ class _RadioProofPageState extends ConsumerState<RadioProofPage> {
                       key: const ValueKey('play-pause-button'),
                       icon: Icon(
                         playerState.isPlaying ? Icons.pause : Icons.play_arrow,
-                        size: 32,
+                        size: RadioDiagnosticsDesign.iconSize,
                       ),
-                      tooltip: playerState.isPlaying ? 'Pausa' : 'Riproduci',
+                      tooltip: playerState.isPlaying
+                          ? LocaleKeys.pause.tr(context: context)
+                          : LocaleKeys.proofPlay.tr(context: context),
                       onPressed:
                           playerState.station == null || playerState.isLoading
                           ? null
@@ -220,8 +237,11 @@ class _RadioProofPageState extends ConsumerState<RadioProofPage> {
                     AppIconButton(
                       variant: AppIconButtonVariant.outlined,
                       key: const ValueKey('stop-button'),
-                      icon: const Icon(Icons.stop, size: 32),
-                      tooltip: 'Stop',
+                      icon: const Icon(
+                        Icons.stop,
+                        size: RadioDiagnosticsDesign.iconSize,
+                      ),
+                      tooltip: LocaleKeys.proofStop.tr(context: context),
                       onPressed: playerState.station == null
                           ? null
                           : () => ref
@@ -234,33 +254,36 @@ class _RadioProofPageState extends ConsumerState<RadioProofPage> {
 
                 // Log Box
                 Text(
-                  'Registro verifiche streaming (${_historyLogs.length})',
+                  LocaleKeys.proofLogTitle.tr(
+                    context: context,
+                    args: ['${_historyLogs.length}'],
+                  ),
                   style: theme.textTheme.titleSmall,
                 ),
                 const SizedBox(height: AppSpacing.small),
                 Container(
-                  height: 200,
+                  height: RadioDiagnosticsDesign.logHeight,
                   padding: const EdgeInsets.all(AppSpacing.small),
                   decoration: BoxDecoration(
                     color: theme.colorScheme.surfaceContainerHighest,
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: RadioDiagnosticsDesign.logRadius,
                     border: Border.all(color: theme.colorScheme.outlineVariant),
                   ),
                   child: _historyLogs.isEmpty
                       ? Center(
                           child: Text(
-                            'Nessuna operazione registrata finora.',
+                            LocaleKeys.proofLogEmpty.tr(context: context),
                             style: theme.textTheme.bodySmall,
                           ),
                         )
                       : ListView.separated(
                           itemCount: _historyLogs.length,
-                          separatorBuilder: (_, _) => const Divider(height: 8),
+                          separatorBuilder: (_, _) =>
+                              const Divider(height: AppSpacing.small),
                           itemBuilder: (context, index) => SelectableText(
                             _historyLogs[index],
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              fontFamily: 'monospace',
-                              fontSize: 11,
+                            style: theme.textTheme.bodySmall?.merge(
+                              RadioDiagnosticsDesign.logFont,
                             ),
                           ),
                         ),
@@ -284,32 +307,32 @@ class _StatusBadge extends StatelessWidget {
     final theme = Theme.of(context);
     final (label, color, icon) = switch (status) {
       PlaybackStatus.idle => (
-        'Inattivo',
+        LocaleKeys.proofIdle.tr(context: context),
         theme.colorScheme.outline,
         Icons.radio,
       ),
       PlaybackStatus.tuning => (
-        'Sintonizzazione...',
+        LocaleKeys.proofTuning.tr(context: context),
         theme.colorScheme.primary,
         Icons.search,
       ),
       PlaybackStatus.buffering => (
-        'Buffering...',
+        LocaleKeys.proofBuffering.tr(context: context),
         theme.colorScheme.secondary,
         Icons.hourglass_top,
       ),
       PlaybackStatus.playing => (
-        'In riproduzione',
+        LocaleKeys.proofPlaying.tr(context: context),
         theme.colorScheme.primary,
         Icons.volume_up,
       ),
       PlaybackStatus.paused => (
-        'In pausa',
+        LocaleKeys.paused.tr(context: context),
         theme.colorScheme.secondary,
         Icons.pause_circle,
       ),
       PlaybackStatus.error => (
-        'Errore',
+        LocaleKeys.proofError.tr(context: context),
         theme.colorScheme.error,
         Icons.error_outline,
       ),
@@ -318,8 +341,8 @@ class _StatusBadge extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 16, color: color),
-        const SizedBox(width: 4),
+        Icon(icon, size: RadioDiagnosticsDesign.badgeIconSize, color: color),
+        const SizedBox(width: RadioDiagnosticsDesign.inlineGap),
         Flexible(
           child: Text(
             label,

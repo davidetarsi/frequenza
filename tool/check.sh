@@ -6,7 +6,7 @@ if [[ $# -gt 1 || ( $# -eq 1 && "$1" != '--apk' ) ]]; then
   exit 2
 fi
 flutter pub get
-flutter gen-l10n
+bash tool/generate_l10n.sh
 dart run build_runner build --delete-conflicting-outputs
 dart format --output=none --set-exit-if-changed lib test tool
 flutter analyze --no-pub

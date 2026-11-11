@@ -6,7 +6,7 @@ import 'app_button.dart';
 class AppMessage extends StatelessWidget {
   const AppMessage({
     super.key,
-    required this.title,
+    this.title,
     required this.message,
     required this.actionLabel,
     required this.onAction,

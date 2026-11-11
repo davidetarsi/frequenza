@@ -1,5 +1,9 @@
 import 'dart:math' as math;
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import '../../../l10n/locale_keys.g.dart';
+import '../../../ui/theme/app_spacing.dart';
+import '../../../ui/theme/travel_radio_design.dart';
 import '../../../ui/theme/travel_radio_palette.dart';
 import '../../../ui/theme/app_motion.dart';
 
@@ -32,35 +36,48 @@ class RadioCabinet extends StatelessWidget {
   Widget build(BuildContext context) {
     final p = TravelRadioPalette.of(context);
     final scaler = MediaQuery.textScalerOf(context);
-    final diameter = compact ? 76.0 : 104.0;
-    final stationFont = compact ? 22.0 : 26.0;
-    final largeText = compact && scaler.scale(16) > 20;
+    final metrics = compact
+        ? RadioCabinetDesign.compact
+        : RadioCabinetDesign.regular;
+    final diameter = metrics.diameter;
+    final stationFont = metrics.stationSize;
+    final largeText =
+        compact &&
+        scaler.scale(TravelRadioLayout.referenceTextSize) >
+            TravelRadioLayout.largeTextThreshold;
     final stationLines = largeText ? 1 : 2;
     final display = Container(
-      padding: const EdgeInsets.all(5),
+      padding: const EdgeInsets.all(RadioCabinetDesign.screenFrameInset),
       decoration: BoxDecoration(
         color: TravelRadioPalette.hardware,
-        borderRadius: BorderRadius.circular(15),
+        borderRadius: RadioCabinetDesign.screenFrameRadius,
         boxShadow: [
           BoxShadow(
-            color: p.metalLight.withValues(alpha: .7),
-            offset: const Offset(0, 1),
+            color: p.metalLight.withValues(
+              alpha: RadioCabinetDesign.screenHighlightOpacity,
+            ),
+            offset: RadioCabinetDesign.screenHighlightOffset,
           ),
         ],
       ),
       child: Container(
         padding: EdgeInsets.symmetric(
-          horizontal: compact ? 6 : 12,
-          vertical: horizontal ? 2 : (compact ? 6 : 12),
+          horizontal: metrics.screenInset,
+          vertical: horizontal
+              ? RadioCabinetDesign.screenLandscapeInset
+              : metrics.screenInset,
         ),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: RadioCabinetDesign.screenRadius,
           gradient: const LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [Color(0xFF162F28), TravelRadioPalette.screen],
+            colors: [
+              TravelRadioPalette.screenHighlight,
+              TravelRadioPalette.screen,
+            ],
           ),
-          border: Border.all(color: const Color(0xFF52634C)),
+          border: Border.all(color: TravelRadioPalette.screenBorder),
         ),
         child: DefaultTextStyle(
           style: Theme.of(
@@ -73,53 +90,60 @@ class RadioCabinet extends StatelessWidget {
                 country.toUpperCase(),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontSize: 12, letterSpacing: 1.4),
+                style: RadioCabinetDesign.countryText,
               ),
-              SizedBox(height: compact ? 4 : 14),
+              SizedBox(height: metrics.countryGap),
               Semantics(
                 liveRegion: true,
                 child: SizedBox(
-                  height: scaler.scale(stationFont) * stationLines * 1.2,
+                  height:
+                      scaler.scale(stationFont) *
+                      stationLines *
+                      RadioCabinetDesign.stationHeightFactor,
                   child: Text(
                     station,
                     maxLines: stationLines,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
+                    style: RadioCabinetDesign.stationText.copyWith(
                       fontSize: stationFont,
-                      fontWeight: FontWeight.w600,
-                      height: 1.15,
                     ),
                   ),
                 ),
               ),
-              SizedBox(height: compact ? 4 : 8),
+              SizedBox(height: metrics.detailGap),
               SizedBox(
-                height: scaler.scale(14) * (compact ? 1.25 : 2.5),
+                height:
+                    scaler.scale(RadioCabinetDesign.detailText.fontSize!) *
+                    metrics.detailHeightFactor,
                 child: Text(
                   detail,
-                  maxLines: compact ? 1 : 2,
+                  maxLines: metrics.textLines,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 14, height: 1.2),
+                  style: RadioCabinetDesign.detailText,
                 ),
               ),
               if (!compact) ...[
-                const SizedBox(height: 8),
-                _equalizer(height: 26),
+                const SizedBox(height: RadioCabinetDesign.screenItemGap),
+                _equalizer(height: RadioEqualizerDesign.height),
               ],
-              SizedBox(height: compact ? 4 : 12),
+              SizedBox(height: metrics.statusGap),
               Container(
-                height: 1,
-                color: TravelRadioPalette.screenInk.withValues(alpha: .18),
+                height: RadioCabinetDesign.hairline,
+                color: TravelRadioPalette.screenInk.withValues(
+                  alpha: RadioCabinetDesign.hairlineOpacity,
+                ),
               ),
-              SizedBox(height: compact ? 4 : 12),
+              SizedBox(height: metrics.statusGap),
               SizedBox(
-                height: scaler.scale(12) * (compact ? 1.45 : 2.8),
+                height:
+                    scaler.scale(RadioCabinetDesign.statusText.fontSize!) *
+                    metrics.statusHeightFactor,
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Container(
-                      width: 7,
-                      height: 7,
+                      width: RadioCabinetDesign.indicatorSize,
+                      height: RadioCabinetDesign.indicatorSize,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: TravelRadioPalette.screenInk,
@@ -127,25 +151,33 @@ class RadioCabinet extends StatelessWidget {
                             ? [
                                 BoxShadow(
                                   color: TravelRadioPalette.screenInk
-                                      .withValues(alpha: .35),
-                                  blurRadius: 7,
+                                      .withValues(
+                                        alpha: RadioCabinetDesign
+                                            .indicatorGlowOpacity,
+                                      ),
+                                  blurRadius: RadioCabinetDesign.indicatorSize,
                                 ),
                               ]
                             : null,
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: AppSpacing.small),
                     Expanded(
                       child: Text(
                         status,
-                        maxLines: compact ? 1 : 2,
+                        maxLines: metrics.textLines,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(fontSize: 12, height: 1.15),
+                        style: RadioCabinetDesign.statusText,
                       ),
                     ),
                     if (compact) ...[
-                      const SizedBox(width: 8),
-                      SizedBox(width: 56, child: _equalizer(height: 14)),
+                      const SizedBox(width: AppSpacing.small),
+                      SizedBox(
+                        width: RadioEqualizerDesign.compactWidth,
+                        child: _equalizer(
+                          height: RadioEqualizerDesign.compactHeight,
+                        ),
+                      ),
                     ],
                   ],
                 ),
@@ -174,22 +206,22 @@ class RadioCabinet extends StatelessWidget {
                 onTap: onTune,
                 diameter: diameter,
               ),
-              SizedBox(height: compact ? 4 : 10),
+              SizedBox(height: metrics.dialLabelGap),
               SizedBox(
-                height: compact
-                    ? scaler.scale(10) * 1.25
-                    : scaler.scale(12) * 2.8,
+                height:
+                    scaler.scale(metrics.dialLabelSize) *
+                    metrics.dialLabelHeightFactor,
                 child: Text(
                   knobLabel,
-                  maxLines: compact ? 1 : 2,
+                  maxLines: metrics.textLines,
                   overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.center,
-                  style: TextStyle(
+                  style: RadioCabinetDesign.dialLabelText.copyWith(
                     color: p.ink,
-                    fontSize: compact ? 10 : 12,
-                    height: compact ? 1.2 : null,
-                    fontWeight: FontWeight.w500,
-                    letterSpacing: 1,
+                    fontSize: metrics.dialLabelSize,
+                    height: compact
+                        ? RadioCabinetDesign.dialLabelCompactHeight
+                        : null,
                   ),
                 ),
               ),
@@ -203,27 +235,32 @@ class RadioCabinet extends StatelessWidget {
       children: [
         if (!horizontal)
           SizedBox(
-            width: 156,
-            height: compact ? 20 : 30,
+            width: RadioCabinetDesign.handleWidth,
+            height: metrics.handleHeight,
             child: const CustomPaint(painter: _HandlePainter()),
           ),
         DecoratedBox(
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(30),
+            borderRadius: RadioCabinetDesign.frameRadius,
             boxShadow: [
               BoxShadow(
-                color: p.ink.withValues(alpha: .18),
-                offset: const Offset(0, 12),
-                blurRadius: 22,
+                color: p.ink.withValues(
+                  alpha: RadioCabinetDesign.frameShadowOpacity,
+                ),
+                offset: RadioCabinetDesign.frameShadowOffset,
+                blurRadius: RadioCabinetDesign.frameShadowBlur,
               ),
-              BoxShadow(color: p.trim, offset: const Offset(0, 6)),
+              BoxShadow(
+                color: p.trim,
+                offset: RadioCabinetDesign.frameTrimOffset,
+              ),
             ],
           ),
           child: Container(
             width: double.infinity,
-            padding: EdgeInsets.all(compact ? 6 : 8),
+            padding: EdgeInsets.all(metrics.frameInset),
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(30),
+              borderRadius: RadioCabinetDesign.frameRadius,
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
@@ -231,15 +268,19 @@ class RadioCabinet extends StatelessWidget {
               ),
             ),
             child: Container(
-              padding: EdgeInsets.all(compact ? 6 : 12),
+              padding: EdgeInsets.all(metrics.shellInset),
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(23),
+                borderRadius: RadioCabinetDesign.shellRadius,
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [p.shellTop, p.shellBottom],
                 ),
-                border: Border.all(color: p.metalLight.withValues(alpha: .65)),
+                border: Border.all(
+                  color: p.metalLight.withValues(
+                    alpha: RadioCabinetDesign.shellBorderOpacity,
+                  ),
+                ),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -249,44 +290,48 @@ class RadioCabinet extends StatelessWidget {
                       children: [
                         Expanded(
                           child: Text(
-                            'F / RADIO',
-                            style: TextStyle(
+                            LocaleKeys.cabinetBrand.tr(context: context),
+                            style: RadioCabinetDesign.brandText.copyWith(
                               color: p.ink,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              letterSpacing: 2,
                             ),
                           ),
                         ),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: AppSpacing.small),
                         _Screw(color: p.trim),
                       ],
                     ),
-                    const SizedBox(height: 15),
+                    const SizedBox(height: RadioCabinetDesign.brandGap),
                   ],
                   if (horizontal)
                     Row(
                       children: [
                         Expanded(child: display),
-                        const SizedBox(width: 12),
-                        SizedBox(width: diameter * 2 + 8, child: controls),
+                        const SizedBox(width: AppSpacing.standard),
+                        SizedBox(
+                          width: diameter * 2 + AppSpacing.small,
+                          child: controls,
+                        ),
                       ],
                     )
                   else ...[
                     display,
-                    SizedBox(height: compact ? 6 : 20),
+                    SizedBox(height: metrics.controlsGap),
                     controls,
                   ],
                   if (!compact) ...[
-                    const SizedBox(height: 20),
+                    const SizedBox(height: RadioCabinetDesign.trimGap),
                     Row(
                       children: [
                         _Screw(color: p.trim),
                         Expanded(
                           child: Container(
-                            height: 1,
-                            margin: const EdgeInsets.symmetric(horizontal: 12),
-                            color: p.trim.withValues(alpha: .6),
+                            height: RadioCabinetDesign.hairline,
+                            margin: const EdgeInsets.symmetric(
+                              horizontal: AppSpacing.standard,
+                            ),
+                            color: p.trim.withValues(
+                              alpha: RadioCabinetDesign.trimLineOpacity,
+                            ),
                           ),
                         ),
                         _Screw(color: p.trim),
@@ -309,13 +354,13 @@ class _Screw extends StatelessWidget {
   @override
   Widget build(BuildContext context) => ExcludeSemantics(
     child: Container(
-      width: 8,
-      height: 8,
+      width: RadioCabinetDesign.screwSize,
+      height: RadioCabinetDesign.screwSize,
       decoration: BoxDecoration(shape: BoxShape.circle, color: color),
       child: Center(
         child: Container(
-          width: 4,
-          height: 1,
+          width: RadioCabinetDesign.screwSlotWidth,
+          height: RadioCabinetDesign.hairline,
           color: TravelRadioPalette.hardware,
         ),
       ),
@@ -327,27 +372,31 @@ class _HandlePainter extends CustomPainter {
   const _HandlePainter();
   @override
   void paint(Canvas canvas, Size size) {
+    const side = RadioCabinetDesign.handleSideInset;
+    const shoulder = RadioCabinetDesign.handleShoulder;
+    const top = RadioCabinetDesign.handleTop;
+    const corner = RadioCabinetDesign.handleCornerEnd;
     final path = Path()
-      ..moveTo(8, size.height)
-      ..lineTo(8, 17)
-      ..quadraticBezierTo(8, 6, 21, 6)
-      ..lineTo(size.width - 21, 6)
-      ..quadraticBezierTo(size.width - 8, 6, size.width - 8, 17)
-      ..lineTo(size.width - 8, size.height);
+      ..moveTo(side, size.height)
+      ..lineTo(side, shoulder)
+      ..quadraticBezierTo(side, top, corner, top)
+      ..lineTo(size.width - corner, top)
+      ..quadraticBezierTo(size.width - side, top, size.width - side, shoulder)
+      ..lineTo(size.width - side, size.height);
     canvas.drawPath(
       path,
       Paint()
         ..color = TravelRadioPalette.hardware
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 11
+        ..strokeWidth = RadioCabinetDesign.handleStroke
         ..strokeCap = StrokeCap.round,
     );
     canvas.drawPath(
-      path.shift(const Offset(0, -2)),
+      path.shift(RadioCabinetDesign.handleHighlightOffset),
       Paint()
-        ..color = const Color(0xFF73816A)
+        ..color = TravelRadioPalette.handleHighlight
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 1,
+        ..strokeWidth = RadioCabinetDesign.hairline,
     );
   }
 
@@ -363,12 +412,23 @@ class _DialTicks extends CustomPainter {
     final c = size.center(Offset.zero), r = size.shortestSide / 2;
     final paint = Paint()
       ..color = color
-      ..strokeWidth = 1.5;
-    for (var i = 0; i < 21; i++) {
-      final a = (135 + i * 13.5) * math.pi / 180;
+      ..strokeWidth = RadioCabinetDesign.dialTickStroke;
+    for (var i = 0; i < RadioCabinetDesign.dialTickCount; i++) {
+      final a =
+          (RadioCabinetDesign.dialTickSweepStart +
+              i * RadioCabinetDesign.dialTickStep) *
+          math.pi /
+          180;
       canvas.drawLine(
-        c + Offset(math.cos(a), math.sin(a)) * (r - 1),
-        c + Offset(math.cos(a), math.sin(a)) * (r - (i % 5 == 0 ? 6 : 4)),
+        c +
+            Offset(math.cos(a), math.sin(a)) *
+                (r - RadioCabinetDesign.hairline),
+        c +
+            Offset(math.cos(a), math.sin(a)) *
+                (r -
+                    (i % RadioCabinetDesign.dialLongTickEvery == 0
+                        ? RadioCabinetDesign.dialLongTickInset
+                        : RadioCabinetDesign.dialShortTickInset)),
         paint,
       );
     }
@@ -385,31 +445,49 @@ class _SpeakerPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final c = size.center(Offset.zero), r = size.shortestSide / 2;
     canvas.drawCircle(c, r, Paint()..color = TravelRadioPalette.hardware);
-    canvas.drawCircle(c, r - 3, Paint()..color = const Color(0xFF8B947C));
     canvas.drawCircle(
       c,
-      r - 6,
+      r - RadioCabinetDesign.speakerRimInset,
+      Paint()..color = TravelRadioPalette.speakerRim,
+    );
+    canvas.drawCircle(
+      c,
+      r - RadioCabinetDesign.speakerMeshInset,
       Paint()
         ..shader = const RadialGradient(
-          colors: [Color(0xFF68735D), Color(0xFF283C30)],
+          colors: [
+            TravelRadioPalette.speakerMeshLight,
+            TravelRadioPalette.speakerMeshDark,
+          ],
         ).createShader(Rect.fromCircle(center: c, radius: r)),
     );
-    final paint = Paint()..color = const Color(0xFF172B23);
-    for (var y = -9; y <= 9; y++) {
-      for (var x = -9; x <= 9; x++) {
-        final offset = Offset(x * 5.5 + (y.isOdd ? 2.75 : 0), y * 5.5);
-        if (offset.distance < r - 9) canvas.drawCircle(c + offset, 1.25, paint);
+    final paint = Paint()..color = TravelRadioPalette.speakerPerforation;
+    const grid = RadioCabinetDesign.speakerPerforationGrid;
+    const spacing = RadioCabinetDesign.speakerPerforationSpacing;
+    for (var y = -grid; y <= grid; y++) {
+      for (var x = -grid; x <= grid; x++) {
+        final offset = Offset(
+          x * spacing + (y.isOdd ? spacing / 2 : 0),
+          y * spacing,
+        );
+        if (offset.distance < r - RadioCabinetDesign.speakerPerforationInset) {
+          canvas.drawCircle(
+            c + offset,
+            RadioCabinetDesign.speakerPerforationRadius,
+            paint,
+          );
+        }
       }
     }
     canvas.drawArc(
-      Rect.fromCircle(center: c, radius: r - 1),
+      Rect.fromCircle(center: c, radius: r - RadioCabinetDesign.hairline),
       math.pi,
       math.pi,
       false,
       Paint()
-        ..color = const Color(0xFFA9B199)
+        ..color = TravelRadioPalette.speakerRimHighlight
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 1,
+        ..strokeWidth = RadioCabinetDesign.hairline,
     );
   }
 
@@ -438,7 +516,10 @@ class _TuningDial extends StatelessWidget {
           end: Alignment.bottomRight,
           colors: [palette.metalLight, palette.metalDark, palette.metalLight],
         ),
-        border: Border.all(color: TravelRadioPalette.hardware, width: 4),
+        border: Border.all(
+          color: TravelRadioPalette.hardware,
+          width: RadioCabinetDesign.dialBorderWidth,
+        ),
       ),
       child: InkWell(
         key: const ValueKey('tune-knob'),
@@ -449,21 +530,21 @@ class _TuningDial extends StatelessWidget {
             alignment: Alignment.center,
             children: [
               Container(
-                width: diameter * .48,
-                height: diameter * .48,
+                width: diameter * RadioCabinetDesign.dialRingRatio,
+                height: diameter * RadioCabinetDesign.dialRingRatio,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(color: palette.metalDark),
                 ),
               ),
               Positioned(
-                top: 8,
+                top: RadioCabinetDesign.dialMarkerTop,
                 child: Container(
-                  width: 4,
-                  height: 17,
+                  width: RadioCabinetDesign.dialMarkerWidth,
+                  height: RadioCabinetDesign.dialMarkerHeight,
                   decoration: BoxDecoration(
                     color: TravelRadioPalette.accent,
-                    borderRadius: BorderRadius.circular(3),
+                    borderRadius: RadioCabinetDesign.dialMarkerRadius,
                   ),
                 ),
               ),
@@ -484,15 +565,17 @@ class _TuningDial extends StatelessWidget {
             key: const ValueKey('radio-dial-face'),
             painter: _DialTicks(palette.trim),
             child: Padding(
-              padding: const EdgeInsets.all(9),
+              padding: const EdgeInsets.all(RadioCabinetDesign.dialTickInset),
               child: DecoratedBox(
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: palette.ink.withValues(alpha: .25),
-                      blurRadius: 8,
-                      offset: const Offset(0, 5),
+                      color: palette.ink.withValues(
+                        alpha: RadioCabinetDesign.dialShadowOpacity,
+                      ),
+                      blurRadius: RadioCabinetDesign.dialShadowBlur,
+                      offset: RadioCabinetDesign.dialShadowOffset,
                     ),
                   ],
                 ),
@@ -524,7 +607,7 @@ class _EqualizerState extends State<_Equalizer>
     with SingleTickerProviderStateMixin {
   late final _phase = AnimationController(
     vsync: this,
-    duration: const Duration(milliseconds: 1800),
+    duration: RadioEqualizerDesign.cycle,
   );
 
   @override
@@ -571,26 +654,38 @@ class _EqualizerPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    const levels = [2, 4, 3, 6, 5, 7, 4, 5, 3, 6, 4, 2, 5, 3, 2, 4, 2, 1];
+    const levels = RadioEqualizerDesign.levels;
     final columnWidth = size.width / levels.length;
-    final step = size.height / 7;
+    final step = size.height / RadioEqualizerDesign.segments;
     final angle = phase.value * 2 * math.pi;
     final paint = Paint()
       ..color = TravelRadioPalette.screenInk.withValues(
-        alpha: playing ? .65 : .25,
+        alpha: playing
+            ? RadioEqualizerDesign.activeOpacity
+            : RadioEqualizerDesign.idleOpacity,
       );
     for (var column = 0; column < levels.length; column++) {
       final variation =
-          math.sin(angle * 2 + column * 1.3) * 1.6 +
-          math.sin(angle * 3 - column * .8);
-      final level = (levels[column] + variation).round().clamp(1, 7);
+          math.sin(
+                angle * RadioEqualizerDesign.primaryHarmonic +
+                    column * RadioEqualizerDesign.primaryColumnPhase,
+              ) *
+              RadioEqualizerDesign.primaryAmplitude +
+          math.sin(
+            angle * RadioEqualizerDesign.secondaryHarmonic -
+                column * RadioEqualizerDesign.secondaryColumnPhase,
+          );
+      final level = (levels[column] + variation).round().clamp(
+        1,
+        RadioEqualizerDesign.segments,
+      );
       for (var segment = 0; segment < level; segment++) {
         canvas.drawRect(
           Rect.fromLTWH(
-            column * columnWidth + 1,
+            column * columnWidth + RadioEqualizerDesign.segmentSideInset,
             size.height - (segment + 1) * step,
-            columnWidth - 2,
-            step * .65,
+            columnWidth - RadioEqualizerDesign.segmentSideInset * 2,
+            step * RadioEqualizerDesign.segmentHeightRatio,
           ),
           paint,
         );

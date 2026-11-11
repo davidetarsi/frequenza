@@ -1,10 +1,14 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../l10n/generated/app_localizations.dart';
+import '../../../l10n/locale_keys.g.dart';
 import '../../../ui/theme/app_spacing.dart';
+import '../../../ui/theme/app_shape.dart';
+import '../../../ui/theme/travel_radio_design.dart';
 import '../../../ui/widgets/app_button.dart';
 import '../../../ui/widgets/app_icon_button.dart';
 import '../../../ui/widgets/app_message.dart';
+import '../../../ui/widgets/app_loading.dart';
 import '../../../ui/theme/travel_radio_palette.dart';
 import '../../radio/application/radio_controller.dart';
 import '../application/favorites_controller.dart';
@@ -15,7 +19,9 @@ Future<void> showFavorites(BuildContext context) => showModalBottomSheet<void>(
   useSafeArea: true,
   backgroundColor: Colors.transparent,
   elevation: 0,
-  barrierColor: TravelRadioPalette.of(context).ink.withValues(alpha: .48),
+  barrierColor: TravelRadioPalette.of(
+    context,
+  ).ink.withValues(alpha: RadioFavoritesDesign.barrierOpacity),
   constraints: const BoxConstraints(maxWidth: 520),
   builder: (_) => const FavoritesSheet(),
 );
@@ -24,49 +30,50 @@ class FavoritesSheet extends ConsumerWidget {
   const FavoritesSheet({super.key});
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final l = AppLocalizations.of(context)!;
     final favorites = ref.watch(favoritesProvider);
     final player = ref.watch(radioControllerProvider);
     final p = TravelRadioPalette.of(context);
     return DraggableScrollableSheet(
       expand: false,
-      initialChildSize: .62,
-      minChildSize: .3,
-      maxChildSize: .94,
+      initialChildSize: RadioFavoritesDesign.initialHeight,
+      minChildSize: RadioFavoritesDesign.minHeight,
+      maxChildSize: RadioFavoritesDesign.maxHeight,
       builder: (context, scroll) => Container(
         decoration: BoxDecoration(
           color: p.paper,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+          borderRadius: RadioFavoritesDesign.sheetRadius,
           border: Border(top: BorderSide(color: p.metalLight)),
           boxShadow: [
             BoxShadow(
-              color: p.ink.withValues(alpha: .22),
-              blurRadius: 28,
-              offset: const Offset(0, -5),
+              color: p.ink.withValues(
+                alpha: RadioFavoritesDesign.shadowOpacity,
+              ),
+              blurRadius: RadioFavoritesDesign.shadowBlur,
+              offset: RadioFavoritesDesign.shadowOffset,
             ),
           ],
         ),
         child: ClipRRect(
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+          borderRadius: RadioFavoritesDesign.sheetRadius,
           child: Material(
             color: p.paper,
             child: SafeArea(
               top: false,
               child: ListView(
                 controller: scroll,
-                padding: const EdgeInsets.fromLTRB(22, 12, 22, 24),
+                padding: RadioFavoritesDesign.sheetPadding,
                 children: [
                   Center(
                     child: Container(
-                      width: 36,
-                      height: 4,
+                      width: RadioFavoritesDesign.handleSize.width,
+                      height: RadioFavoritesDesign.handleSize.height,
                       decoration: BoxDecoration(
                         color: p.trim,
-                        borderRadius: BorderRadius.circular(4),
+                        borderRadius: RadioFavoritesDesign.handleRadius,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 22),
+                  const SizedBox(height: RadioFavoritesDesign.headerGap),
                   Row(
                     children: [
                       Expanded(
@@ -74,17 +81,20 @@ class FavoritesSheet extends ConsumerWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              l.favoritesTitle,
+                              LocaleKeys.favoritesTitle.tr(context: context),
                               style: Theme.of(context).textTheme.headlineSmall
                                   ?.copyWith(
                                     color: p.ink,
                                     fontWeight: FontWeight.w600,
-                                    letterSpacing: -.6,
+                                    letterSpacing:
+                                        RadioFavoritesDesign.titleTracking,
                                   ),
                             ),
-                            const SizedBox(height: 5),
+                            const SizedBox(
+                              height: RadioFavoritesDesign.titleGap,
+                            ),
                             Text(
-                              l.favoritesSubtitle,
+                              LocaleKeys.favoritesSubtitle.tr(context: context),
                               style: TextStyle(color: p.muted),
                             ),
                           ],
@@ -95,25 +105,27 @@ class FavoritesSheet extends ConsumerWidget {
                         variant: AppIconButtonVariant.tonal,
                         backgroundColor: p.paperRaised,
                         foregroundColor: p.ink,
-                        tooltip: l.close,
+                        tooltip: LocaleKeys.close.tr(context: context),
                         onPressed: () => Navigator.pop(context),
-                        icon: const Icon(Icons.close, size: 20),
+                        icon: const Icon(
+                          Icons.close,
+                          size: RadioFavoritesDesign.closeIconSize,
+                        ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: RadioFavoritesDesign.contentGap),
                   ...favorites.when(
                     skipLoadingOnRefresh: false,
                     loading: () => [
                       if (!favorites.hasValue)
-                        const Padding(
-                          padding: EdgeInsets.all(AppSpacing.large),
-                          child: Center(child: CircularProgressIndicator()),
+                        AppLoading(
+                          label: LocaleKeys.loading.tr(context: context),
                         ),
                     ],
                     error: (_, _) => [
                       Text(
-                        l.favoritesError,
+                        LocaleKeys.favoritesError.tr(context: context),
                         style: TextStyle(
                           color: Theme.of(context).colorScheme.error,
                         ),
@@ -121,7 +133,7 @@ class FavoritesSheet extends ConsumerWidget {
                       AppButton(
                         variant: AppButtonVariant.text,
                         onPressed: ref.read(favoritesProvider.notifier).load,
-                        label: l.retry,
+                        label: LocaleKeys.retry.tr(context: context),
                       ),
                     ],
                     data: (data) => [
@@ -130,15 +142,17 @@ class FavoritesSheet extends ConsumerWidget {
                           padding: const EdgeInsets.all(AppSpacing.large),
                           decoration: BoxDecoration(
                             color: p.paperRaised,
-                            borderRadius: BorderRadius.circular(20),
+                            borderRadius: AppShape.panelRadius,
                           ),
                           child: AppMessage.empty(
                             leading: Icon(
                               Icons.favorite_border,
                               color: p.muted,
-                              size: 28,
+                              size: RadioFavoritesDesign.emptyIconSize,
                             ),
-                            message: l.favoritesEmpty,
+                            message: LocaleKeys.favoritesEmpty.tr(
+                              context: context,
+                            ),
                             messageStyle: TextStyle(color: p.ink),
                           ),
                         ),
@@ -157,14 +171,16 @@ class FavoritesSheet extends ConsumerWidget {
                           station.country,
                           if (player.station?.id == station.id &&
                               player.isPlaying)
-                            l.playing
+                            LocaleKeys.playing.tr(context: context)
                           else
-                            l.tapToListen,
+                            LocaleKeys.tapToListen.tr(context: context),
                         ].where((s) => s.isNotEmpty).join(' · '),
                         active:
                             player.station?.id == station.id &&
                             player.isPlaying,
-                        removeLabel: l.removeFavorite,
+                        removeLabel: LocaleKeys.removeFavorite.tr(
+                          context: context,
+                        ),
                         onPlay: () {
                           final controller = ref.read(
                             radioControllerProvider.notifier,
@@ -179,19 +195,19 @@ class FavoritesSheet extends ConsumerWidget {
                                   .toggle(station),
                       ),
                     ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: RadioFavoritesDesign.footerGap),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(
                         Icons.phone_android_outlined,
-                        size: 14,
+                        size: RadioFavoritesDesign.footerIconSize,
                         color: p.muted,
                       ),
-                      const SizedBox(width: 6),
+                      const SizedBox(width: RadioFavoritesDesign.footerIconGap),
                       Flexible(
                         child: Text(
-                          l.savedOnDevice,
+                          LocaleKeys.savedOnDevice.tr(context: context),
                           style: Theme.of(
                             context,
                           ).textTheme.bodySmall?.copyWith(color: p.muted),
@@ -229,11 +245,13 @@ class _StationPreset extends StatelessWidget {
     final p = TravelRadioPalette.of(context);
     final ink = active ? TravelRadioPalette.screenInk : p.ink;
     final secondary = active
-        ? TravelRadioPalette.screenInk.withValues(alpha: .85)
+        ? TravelRadioPalette.screenInk.withValues(
+            alpha: RadioFavoritesDesign.activeSubtitleOpacity,
+          )
         : p.muted;
     return Material(
       color: active ? TravelRadioPalette.screen : p.paperRaised,
-      borderRadius: BorderRadius.circular(20),
+      borderRadius: AppShape.panelRadius,
       clipBehavior: Clip.antiAlias,
       child: Row(
         children: [
@@ -242,37 +260,37 @@ class _StationPreset extends StatelessWidget {
               key: ValueKey('favorite-play-$id'),
               onTap: onPlay,
               child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 18,
-                ),
+                padding: RadioFavoritesDesign.presetPadding,
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     ExcludeSemantics(
                       child: Container(
-                        width: 42,
-                        height: 46,
+                        width: RadioFavoritesDesign.presetCodeSize.width,
+                        height: RadioFavoritesDesign.presetCodeSize.height,
                         alignment: Alignment.center,
                         decoration: BoxDecoration(
                           color: active ? TravelRadioPalette.hardware : p.paper,
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: AppShape.controlRadius,
                           border: Border.all(
                             color: active
-                                ? const Color(0xFF65765A)
-                                : p.trim.withValues(alpha: .55),
+                                ? TravelRadioPalette.activePresetBorder
+                                : p.trim.withValues(
+                                    alpha: RadioFavoritesDesign
+                                        .inactivePresetBorderOpacity,
+                                  ),
                           ),
                         ),
                         child: code.isEmpty
-                            ? Icon(Icons.public, size: 18, color: ink)
+                            ? Icon(
+                                Icons.public,
+                                size: RadioFavoritesDesign.presetGlobeSize,
+                                color: ink,
+                              )
                             : Text(
                                 code,
-                                style: TextStyle(
-                                  color: ink,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                  letterSpacing: 1,
-                                ),
+                                style: RadioFavoritesDesign.presetCodeText
+                                    .copyWith(color: ink),
                               ),
                       ),
                     ),
@@ -289,7 +307,7 @@ class _StationPreset extends StatelessWidget {
                                   fontWeight: FontWeight.w600,
                                 ),
                           ),
-                          const SizedBox(height: 5),
+                          const SizedBox(height: RadioFavoritesDesign.titleGap),
                           Text(
                             subtitle,
                             style: Theme.of(
@@ -307,10 +325,13 @@ class _StationPreset extends StatelessWidget {
           AppIconButton(
             tooltip: removeLabel,
             onPressed: onRemove,
-            icon: const Icon(Icons.favorite, size: 19),
+            icon: const Icon(
+              Icons.favorite,
+              size: RadioFavoritesDesign.removeIconSize,
+            ),
             foregroundColor: ink,
           ),
-          const SizedBox(width: 4),
+          const SizedBox(width: RadioFavoritesDesign.trailingInset),
         ],
       ),
     );
