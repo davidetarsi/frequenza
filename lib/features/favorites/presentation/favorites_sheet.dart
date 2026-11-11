@@ -102,46 +102,49 @@ class FavoritesSheet extends ConsumerWidget {
                     ],
                   ),
                   const SizedBox(height: 20),
-                  if (favorites.isLoading)
-                    const Padding(
-                      padding: EdgeInsets.all(24),
-                      child: Center(child: CircularProgressIndicator()),
-                    ),
-                  if (favorites.hasError) ...[
-                    Text(
-                      l.favoritesError,
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.error,
-                      ),
-                    ),
-                    AppButton(
-                      variant: AppButtonVariant.text,
-                      onPressed: favorites.isSaving
-                          ? null
-                          : ref.read(favoritesProvider.notifier).load,
-                      label: l.retry,
-                    ),
-                  ],
-                  if (!favorites.isLoading &&
-                      favorites.stations.isEmpty &&
-                      !favorites.hasError)
-                    Container(
-                      padding: const EdgeInsets.all(AppSpacing.large),
-                      decoration: BoxDecoration(
-                        color: p.paperRaised,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: AppMessage.empty(
-                        leading: Icon(
-                          Icons.favorite_border,
-                          color: p.muted,
-                          size: 28,
+                  ...favorites.when(
+                    skipLoadingOnRefresh: false,
+                    loading: () => [
+                      if (!favorites.hasValue)
+                        const Padding(
+                          padding: EdgeInsets.all(AppSpacing.large),
+                          child: Center(child: CircularProgressIndicator()),
                         ),
-                        message: l.favoritesEmpty,
-                        messageStyle: TextStyle(color: p.ink),
+                    ],
+                    error: (_, _) => [
+                      Text(
+                        l.favoritesError,
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.error,
+                        ),
                       ),
-                    ),
-                  for (final station in favorites.stations)
+                      AppButton(
+                        variant: AppButtonVariant.text,
+                        onPressed: ref.read(favoritesProvider.notifier).load,
+                        label: l.retry,
+                      ),
+                    ],
+                    data: (data) => [
+                      if (data.stations.isEmpty)
+                        Container(
+                          padding: const EdgeInsets.all(AppSpacing.large),
+                          decoration: BoxDecoration(
+                            color: p.paperRaised,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: AppMessage.empty(
+                            leading: Icon(
+                              Icons.favorite_border,
+                              color: p.muted,
+                              size: 28,
+                            ),
+                            message: l.favoritesEmpty,
+                            messageStyle: TextStyle(color: p.ink),
+                          ),
+                        ),
+                    ],
+                  ),
+                  for (final station in favorites.valueOrNull?.stations ?? [])
                     Padding(
                       padding: const EdgeInsets.only(
                         bottom: AppSpacing.standard,
@@ -169,7 +172,7 @@ class FavoritesSheet extends ConsumerWidget {
                           Navigator.pop(context);
                           controller.tuneTo(station);
                         },
-                        onRemove: favorites.isSaving
+                        onRemove: favorites.isLoading
                             ? null
                             : () => ref
                                   .read(favoritesProvider.notifier)

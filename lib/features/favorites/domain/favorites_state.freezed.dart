@@ -18,10 +18,6 @@ final _privateConstructorUsedError = UnsupportedError(
 /// @nodoc
 mixin _$FavoritesState {
   List<RadioStation> get stations => throw _privateConstructorUsedError;
-  bool get isLoading => throw _privateConstructorUsedError;
-  bool get isSaving => throw _privateConstructorUsedError;
-  bool get hasError => throw _privateConstructorUsedError;
-  bool get hasLoaded => throw _privateConstructorUsedError;
 
   /// Create a copy of FavoritesState
   /// with the given fields replaced by the non-null parameter values.
@@ -37,13 +33,7 @@ abstract class $FavoritesStateCopyWith<$Res> {
     $Res Function(FavoritesState) then,
   ) = _$FavoritesStateCopyWithImpl<$Res, FavoritesState>;
   @useResult
-  $Res call({
-    List<RadioStation> stations,
-    bool isLoading,
-    bool isSaving,
-    bool hasError,
-    bool hasLoaded,
-  });
+  $Res call({List<RadioStation> stations});
 }
 
 /// @nodoc
@@ -60,35 +50,13 @@ class _$FavoritesStateCopyWithImpl<$Res, $Val extends FavoritesState>
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? stations = null,
-    Object? isLoading = null,
-    Object? isSaving = null,
-    Object? hasError = null,
-    Object? hasLoaded = null,
-  }) {
+  $Res call({Object? stations = null}) {
     return _then(
       _value.copyWith(
             stations: null == stations
                 ? _value.stations
                 : stations // ignore: cast_nullable_to_non_nullable
                       as List<RadioStation>,
-            isLoading: null == isLoading
-                ? _value.isLoading
-                : isLoading // ignore: cast_nullable_to_non_nullable
-                      as bool,
-            isSaving: null == isSaving
-                ? _value.isSaving
-                : isSaving // ignore: cast_nullable_to_non_nullable
-                      as bool,
-            hasError: null == hasError
-                ? _value.hasError
-                : hasError // ignore: cast_nullable_to_non_nullable
-                      as bool,
-            hasLoaded: null == hasLoaded
-                ? _value.hasLoaded
-                : hasLoaded // ignore: cast_nullable_to_non_nullable
-                      as bool,
           )
           as $Val,
     );
@@ -104,13 +72,7 @@ abstract class _$$FavoritesStateImplCopyWith<$Res>
   ) = __$$FavoritesStateImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({
-    List<RadioStation> stations,
-    bool isLoading,
-    bool isSaving,
-    bool hasError,
-    bool hasLoaded,
-  });
+  $Res call({List<RadioStation> stations});
 }
 
 /// @nodoc
@@ -126,35 +88,13 @@ class __$$FavoritesStateImplCopyWithImpl<$Res>
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? stations = null,
-    Object? isLoading = null,
-    Object? isSaving = null,
-    Object? hasError = null,
-    Object? hasLoaded = null,
-  }) {
+  $Res call({Object? stations = null}) {
     return _then(
       _$FavoritesStateImpl(
-        stations: null == stations
+        null == stations
             ? _value._stations
             : stations // ignore: cast_nullable_to_non_nullable
                   as List<RadioStation>,
-        isLoading: null == isLoading
-            ? _value.isLoading
-            : isLoading // ignore: cast_nullable_to_non_nullable
-                  as bool,
-        isSaving: null == isSaving
-            ? _value.isSaving
-            : isSaving // ignore: cast_nullable_to_non_nullable
-                  as bool,
-        hasError: null == hasError
-            ? _value.hasError
-            : hasError // ignore: cast_nullable_to_non_nullable
-                  as bool,
-        hasLoaded: null == hasLoaded
-            ? _value.hasLoaded
-            : hasLoaded // ignore: cast_nullable_to_non_nullable
-                  as bool,
       ),
     );
   }
@@ -163,18 +103,12 @@ class __$$FavoritesStateImplCopyWithImpl<$Res>
 /// @nodoc
 
 class _$FavoritesStateImpl extends _FavoritesState {
-  const _$FavoritesStateImpl({
-    final List<RadioStation> stations = const [],
-    this.isLoading = false,
-    this.isSaving = false,
-    this.hasError = false,
-    this.hasLoaded = false,
-  }) : _stations = stations,
-       super._();
+  const _$FavoritesStateImpl(final List<RadioStation> stations)
+    : _stations = stations,
+      super._();
 
   final List<RadioStation> _stations;
   @override
-  @JsonKey()
   List<RadioStation> get stations {
     if (_stations is EqualUnmodifiableListView) return _stations;
     // ignore: implicit_dynamic_type
@@ -182,21 +116,8 @@ class _$FavoritesStateImpl extends _FavoritesState {
   }
 
   @override
-  @JsonKey()
-  final bool isLoading;
-  @override
-  @JsonKey()
-  final bool isSaving;
-  @override
-  @JsonKey()
-  final bool hasError;
-  @override
-  @JsonKey()
-  final bool hasLoaded;
-
-  @override
   String toString() {
-    return 'FavoritesState(stations: $stations, isLoading: $isLoading, isSaving: $isSaving, hasError: $hasError, hasLoaded: $hasLoaded)';
+    return 'FavoritesState(stations: $stations)';
   }
 
   @override
@@ -204,26 +125,12 @@ class _$FavoritesStateImpl extends _FavoritesState {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$FavoritesStateImpl &&
-            const DeepCollectionEquality().equals(other._stations, _stations) &&
-            (identical(other.isLoading, isLoading) ||
-                other.isLoading == isLoading) &&
-            (identical(other.isSaving, isSaving) ||
-                other.isSaving == isSaving) &&
-            (identical(other.hasError, hasError) ||
-                other.hasError == hasError) &&
-            (identical(other.hasLoaded, hasLoaded) ||
-                other.hasLoaded == hasLoaded));
+            const DeepCollectionEquality().equals(other._stations, _stations));
   }
 
   @override
-  int get hashCode => Object.hash(
-    runtimeType,
-    const DeepCollectionEquality().hash(_stations),
-    isLoading,
-    isSaving,
-    hasError,
-    hasLoaded,
-  );
+  int get hashCode =>
+      Object.hash(runtimeType, const DeepCollectionEquality().hash(_stations));
 
   /// Create a copy of FavoritesState
   /// with the given fields replaced by the non-null parameter values.
@@ -238,25 +145,12 @@ class _$FavoritesStateImpl extends _FavoritesState {
 }
 
 abstract class _FavoritesState extends FavoritesState {
-  const factory _FavoritesState({
-    final List<RadioStation> stations,
-    final bool isLoading,
-    final bool isSaving,
-    final bool hasError,
-    final bool hasLoaded,
-  }) = _$FavoritesStateImpl;
+  const factory _FavoritesState(final List<RadioStation> stations) =
+      _$FavoritesStateImpl;
   const _FavoritesState._() : super._();
 
   @override
   List<RadioStation> get stations;
-  @override
-  bool get isLoading;
-  @override
-  bool get isSaving;
-  @override
-  bool get hasError;
-  @override
-  bool get hasLoaded;
 
   /// Create a copy of FavoritesState
   /// with the given fields replaced by the non-null parameter values.

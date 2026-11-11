@@ -17,7 +17,9 @@ class RadioPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l = AppLocalizations.of(context)!;
     final player = ref.watch(radioControllerProvider);
-    final favorites = ref.watch(favoritesProvider);
+    final favoritesState = ref.watch(favoritesProvider);
+    final favorites = favoritesState.valueOrNull;
+    final favoritesCount = favorites?.stations.length ?? 0;
     final controller = ref.read(radioControllerProvider.notifier);
     final station = player.station;
     final busy = player.isLoading;
@@ -77,8 +79,7 @@ class RadioPage extends ConsumerWidget {
                         letterSpacing: -1,
                       ),
             );
-            final favoritesLabel =
-                '${l.favorites} · ${favorites.stations.length}';
+            final favoritesLabel = '${l.favorites} · $favoritesCount';
             final favoritesButton = compact
                 ? AppIconButton(
                     variant: AppIconButtonVariant.outlined,
@@ -86,8 +87,8 @@ class RadioPage extends ConsumerWidget {
                     tooltip: favoritesLabel,
                     onPressed: () => showFavorites(context),
                     icon: Badge.count(
-                      count: favorites.stations.length,
-                      isLabelVisible: favorites.stations.isNotEmpty,
+                      count: favoritesCount,
+                      isLabelVisible: favoritesCount > 0,
                       child: const Icon(Icons.favorite_border),
                     ),
                   )
@@ -129,14 +130,10 @@ class RadioPage extends ConsumerWidget {
             final save = AppButton(
               variant: AppButtonVariant.outlined,
               onPressed:
-                  idle ||
-                      busy ||
-                      !favorites.hasLoaded ||
-                      favorites.isLoading ||
-                      favorites.isSaving
+                  idle || busy || favorites == null || favoritesState.isLoading
                   ? null
                   : () => ref.read(favoritesProvider.notifier).toggle(station),
-              label: station != null && favorites.contains(station.id)
+              label: station != null && favorites?.contains(station.id) == true
                   ? l.saved
                   : l.save,
             );

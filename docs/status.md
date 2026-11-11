@@ -107,3 +107,8 @@ Prossimo passo: feedback sul design nell'emulatore, poi lavoro mirato sulle anim
 - Home, pannello preferiti e schermata diagnostica usano componenti e token condivisi dallo starter. Tema base identico e palette radio passata dal prodotto.
 - Preferiti v1 verificati con un record preesistente, inclusi i campi facoltativi e i tag malformati. Rigenerazione, formattazione, analisi, suite 20/20 e APK debug ARM64 verificati.
 - La prova di riuso da zero con una seconda app neutra resta aperta nella fase 7.
+
+## Preferiti asincroni — 12 novembre 2026
+
+- Il provider generato espone AsyncValue. La lista confermata resta visibile durante la scrittura e dopo un errore. Il caricamento fallito resta recuperabile dal pannello.
+- Code generation, analisi, bundle debug e 20 test verificati. Il prossimo intervento sulla base condivisa è nella roadmap dello starter, sezione Evoluzione dello starter secondo le convenzioni PackLog.

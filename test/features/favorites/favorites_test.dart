@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frequenza/features/favorites/application/favorites_controller.dart';
@@ -18,6 +20,7 @@ const station = RadioStation(
 class MemoryFavorites implements FavoritesRepository {
   List<RadioStation> items = [];
   bool failSave = false;
+  Completer<void>? pendingSave;
   bool failLoad = false;
   @override
   Future<List<RadioStation>> load() async {
@@ -27,6 +30,7 @@ class MemoryFavorites implements FavoritesRepository {
 
   @override
   Future<void> save(List<RadioStation> stations) async {
+    await pendingSave?.future;
     if (failSave) throw StateError('Storage unavailable');
     items = List.of(stations);
   }
@@ -68,16 +72,29 @@ void main() {
       );
       addTearDown(container.dispose);
       final controller = container.read(favoritesProvider.notifier);
-      await controller.ready;
+      expect(container.read(favoritesProvider).isLoading, isTrue);
+      await container.read(favoritesProvider.future);
       await controller.toggle(station);
-      expect(container.read(favoritesProvider).stations.single.id, 'id');
+      expect(
+        container.read(favoritesProvider).valueOrNull?.stations.single.id,
+        'id',
+      );
       repository.failSave = true;
-      await controller.toggle(station);
-      expect(container.read(favoritesProvider).stations.single.id, 'id');
+      final pendingSave = repository.pendingSave = Completer<void>();
+      final removal = controller.toggle(station);
+      final saving = container.read(favoritesProvider);
+      expect(saving.isLoading, isTrue);
+      expect(saving.valueOrNull?.stations.single.id, 'id');
+      pendingSave.complete();
+      await removal;
+      expect(
+        container.read(favoritesProvider).valueOrNull?.stations.single.id,
+        'id',
+      );
       expect(container.read(favoritesProvider).hasError, isTrue);
       repository.failSave = false;
       await controller.toggle(station);
-      expect(container.read(favoritesProvider).stations, isEmpty);
+      expect(container.read(favoritesProvider).valueOrNull?.stations, isEmpty);
       expect(container.read(favoritesProvider).hasError, isFalse);
     },
   );

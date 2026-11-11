@@ -8,13 +8,7 @@ part 'favorites_state.freezed.dart';
 class FavoritesState with _$FavoritesState {
   const FavoritesState._();
 
-  const factory FavoritesState({
-    @Default([]) List<RadioStation> stations,
-    @Default(false) bool isLoading,
-    @Default(false) bool isSaving,
-    @Default(false) bool hasError,
-    @Default(false) bool hasLoaded,
-  }) = _FavoritesState;
+  const factory FavoritesState(List<RadioStation> stations) = _FavoritesState;
 
   bool contains(String id) => stations.any((station) => station.id == id);
 }
