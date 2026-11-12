@@ -4,6 +4,7 @@ import 'dart:math';
 
 import 'package:http/http.dart' as http;
 
+import '../../journey/domain/geo_point.dart';
 import '../domain/radio_repository.dart';
 import '../domain/radio_station.dart';
 
@@ -130,6 +131,8 @@ class RadioBrowserRepository implements RadioRepository {
         ? (json['bitrate'] as num).toInt()
         : null;
 
+    final point = GeoPoint.tryFrom(json['geo_lat'], json['geo_long']);
+
     return RadioStation(
       id: id,
       name: name,
@@ -140,6 +143,8 @@ class RadioBrowserRepository implements RadioRepository {
       tags: tags,
       codec: (codec != null && codec.isNotEmpty) ? codec.toUpperCase() : null,
       bitrate: (bitrate != null && bitrate > 0) ? bitrate : null,
+      latitude: point?.latitude,
+      longitude: point?.longitude,
     );
   }
 
