@@ -194,3 +194,27 @@ abstract final class RadioDiagnosticsDesign {
   static const logRadius = BorderRadius.all(Radius.circular(8));
   static const logFont = TextStyle(fontFamily: 'monospace', fontSize: 11);
 }
+
+abstract final class RouteMapDesign {
+  static const height = 96.0;
+  static const north = 80.0;
+  static const south = -60.0;
+  static const dotRadius = .55;
+  static const dotOpacity = .22;
+  static const historyOpacity = .25;
+  static const historyStroke = .8;
+  static const historyDash = 3.0;
+  static const arcOpacity = .9;
+  static const arcStroke = 1.4;
+  static const arcLift = .25;
+  static const pointRadius = 2.4;
+  static const radarRings = 3;
+  static const radarRadius = 26.0;
+  static const radarStroke = 1.0;
+  static const radarCycle = Duration(milliseconds: 1800);
+  static const arrivalPulseRadius = 7.0;
+  static const arrivalCycle = Duration(milliseconds: 2400);
+  static const landing = Duration(milliseconds: 600);
+  static const landingBlur = 6.0;
+  static const dotsCycle = Duration(milliseconds: 1200);
+}

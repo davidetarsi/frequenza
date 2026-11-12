@@ -8,6 +8,8 @@ import '../../../ui/widgets/app_button.dart';
 import '../../../ui/widgets/app_icon_button.dart';
 import '../../favorites/application/favorites_controller.dart';
 import '../../favorites/presentation/favorites_sheet.dart';
+import '../../journey/presentation/journey_texts.dart';
+import '../../journey/presentation/route_map.dart';
 import '../application/radio_controller.dart';
 import '../domain/radio_player_state.dart';
 import 'radio_cabinet.dart';
@@ -48,12 +50,23 @@ class RadioPage extends ConsumerWidget {
       PlaybackStatus.paused => LocaleKeys.paused.tr(context: context),
       PlaybackStatus.error => LocaleKeys.stationError.tr(context: context),
     };
-    final title = player.status == PlaybackStatus.tuning
-        ? LocaleKeys.exploring.tr(context: context)
+    final tuning = player.status == PlaybackStatus.tuning;
+    final flying = tuning && player.flight == FlightPhase.flying;
+    final title = flying
+        ? LocaleKeys.flyingTo.tr(context: context)
+        : player.flight == FlightPhase.signalLost
+        ? LocaleKeys.signalLost.tr(context: context)
         : station?.name ?? LocaleKeys.whereTo.tr(context: context);
-    final country = player.status == PlaybackStatus.tuning
-        ? LocaleKeys.findingPlace.tr(context: context)
-        : station?.country ?? LocaleKeys.worldAwaits.tr(context: context);
+    final distance = station == null ? null : player.leg?.distance;
+    final country = tuning
+        ? ''
+        : station == null
+        ? LocaleKeys.worldAwaits.tr(context: context)
+        : [
+            station.country,
+            if (distance != null)
+              '${distance.approximate ? '≈ ' : ''}${LocaleKeys.distanceKm.tr(context: context, args: [NumberFormat.decimalPattern(context.locale.toLanguageTag()).format(distance.km)])}',
+          ].join(' · ');
     final label = busy
         ? LocaleKeys.tuning.tr(context: context)
         : player.status == PlaybackStatus.error
@@ -133,6 +146,28 @@ class RadioPage extends ConsumerWidget {
                         station?.tags.take(2).join(' · ') ??
                         LocaleKeys.firstTrip.tr(context: context),
               status: status,
+              flying: flying,
+              landings: player.trips,
+              map: RouteMap(
+                flight: player.flight,
+                playing: player.isPlaying,
+                departure: player.departure,
+                leg: player.leg,
+                history: player.history,
+                trips: player.trips,
+              ),
+              localTime: station == null || busy
+                  ? null
+                  : LocalTimeText(
+                      station: station,
+                      style: RadioCabinetDesign.statusText,
+                    ),
+              tripLabel: player.trips == 0
+                  ? null
+                  : LocaleKeys.tripNumber.tr(
+                      context: context,
+                      args: ['${player.trips}'],
+                    ),
               knobLabel: label.toUpperCase(),
               tuneLabel: LocaleKeys.tuneAccessibility.tr(context: context),
               onTune: busy ? null : () => controller.tuneRandom(),
@@ -161,7 +196,9 @@ class RadioPage extends ConsumerWidget {
                   : LocaleKeys.save.tr(context: context),
             );
             final nextStop = Text(
-              LocaleKeys.nextStop.tr(context: context),
+              (tuning ? LocaleKeys.nextStopPending : LocaleKeys.nextStop).tr(
+                context: context,
+              ),
               textAlign: TextAlign.center,
               style: theme.textTheme.bodySmall?.copyWith(
                 height: TravelRadioLayout.captionLineHeight,

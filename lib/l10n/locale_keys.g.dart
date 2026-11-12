@@ -27,9 +27,7 @@ abstract class LocaleKeys {
   static const searching = 'searching';
   static const connecting = 'connecting';
   static const stationError = 'stationError';
-  static const exploring = 'exploring';
   static const whereTo = 'whereTo';
-  static const findingPlace = 'findingPlace';
   static const worldAwaits = 'worldAwaits';
   static const tuning = 'tuning';
   static const powerOn = 'powerOn';
@@ -84,4 +82,10 @@ abstract class LocaleKeys {
   static const audioChannelName = 'audioChannelName';
   static const cabinetBrand = 'cabinetBrand';
   static const notificationFlying = 'notificationFlying';
+  static const flyingTo = 'flyingTo';
+  static const nextStopPending = 'nextStopPending';
+  static const signalLost = 'signalLost';
+  static const distanceKm = 'distanceKm';
+  static const localTime = 'localTime';
+  static const tripNumber = 'tripNumber';
 }

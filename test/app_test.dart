@@ -72,7 +72,7 @@ void main() {
       );
       expect(dial.size, speaker.size);
       expect(dial.center.dy, speaker.center.dy);
-      expect(find.byKey(const ValueKey('radio-equalizer')), findsOneWidget);
+      expect(find.byKey(const ValueKey('route-map')), findsOneWidget);
       audio.trackTitles.add('Artista — Titolo');
       await tester.pumpAndSettle();
       expect(find.text('Artista — Titolo'), findsOneWidget);
@@ -102,7 +102,7 @@ void main() {
       expect(tester.binding.hasScheduledFrame, isTrue);
       await tester.tap(find.text('Pausa'));
       await tester.pumpAndSettle();
-      expect(find.byKey(const ValueKey('radio-equalizer')), findsOneWidget);
+      expect(find.byKey(const ValueKey('route-map')), findsOneWidget);
       expect(tester.binding.hasScheduledFrame, isFalse);
       await tester.tap(find.byTooltip('Impostazioni'));
       await tester.pumpAndSettle();

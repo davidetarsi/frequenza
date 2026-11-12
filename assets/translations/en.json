@@ -23,9 +23,7 @@
   "searching": "Searching",
   "connecting": "Connecting to the station",
   "stationError": "Station unavailable",
-  "exploring": "Exploring…",
   "whereTo": "Where shall we go?",
-  "findingPlace": "Looking for a place",
   "worldAwaits": "The world awaits",
   "tuning": "Tuning…",
   "powerOn": "Power on",
@@ -79,5 +77,11 @@
   "proofBitrate": "{} kbps",
   "audioChannelName": "Frequenza radio playback",
   "cabinetBrand": "F / RADIO",
-  "notificationFlying": "In flight…"
+  "notificationFlying": "In flight…",
+  "flyingTo": "Flying to",
+  "nextStopPending": "Next stop: …",
+  "signalLost": "Signal lost",
+  "distanceKm": "{} km",
+  "localTime": "{} local time",
+  "tripNumber": "Trip no. {}"
 }

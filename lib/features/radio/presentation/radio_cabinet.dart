@@ -6,6 +6,7 @@ import '../../../ui/theme/app_spacing.dart';
 import '../../../ui/theme/travel_radio_design.dart';
 import '../../../ui/theme/travel_radio_palette.dart';
 import '../../../ui/theme/app_motion.dart';
+import '../../journey/presentation/journey_texts.dart';
 
 class RadioCabinet extends StatelessWidget {
   const RadioCabinet({
@@ -21,10 +22,26 @@ class RadioCabinet extends StatelessWidget {
     required this.isPlaying,
     required this.compact,
     required this.horizontal,
+    this.flying = false,
+    this.landings = 0,
+    this.map,
+    this.localTime,
+    this.tripLabel,
   });
   final String country, station, detail, status, knobLabel, tuneLabel;
   final VoidCallback? onTune;
   final bool isBusy, isPlaying, compact, horizontal;
+
+  /// Shows [station] as a searching label instead of a name.
+  final bool flying;
+
+  /// Changes at each landing to bring the station name into focus.
+  final int landings;
+
+  /// Replaces the equalizer in the regular layout.
+  final Widget? map;
+  final Widget? localTime;
+  final String? tripLabel;
 
   Widget _equalizer({required double height}) => SizedBox(
     height: height,
@@ -100,14 +117,25 @@ class RadioCabinet extends StatelessWidget {
                       scaler.scale(stationFont) *
                       stationLines *
                       RadioCabinetDesign.stationHeightFactor,
-                  child: Text(
-                    station,
-                    maxLines: stationLines,
-                    overflow: TextOverflow.ellipsis,
-                    style: RadioCabinetDesign.stationText.copyWith(
-                      fontSize: stationFont,
-                    ),
-                  ),
+                  child: flying
+                      ? FlightDots(
+                          label: station,
+                          maxLines: stationLines,
+                          style: RadioCabinetDesign.stationText.copyWith(
+                            fontSize: stationFont,
+                          ),
+                        )
+                      : LandingFocus(
+                          key: ValueKey(landings),
+                          child: Text(
+                            station,
+                            maxLines: stationLines,
+                            overflow: TextOverflow.ellipsis,
+                            style: RadioCabinetDesign.stationText.copyWith(
+                              fontSize: stationFont,
+                            ),
+                          ),
+                        ),
                 ),
               ),
               SizedBox(height: metrics.detailGap),
@@ -124,7 +152,14 @@ class RadioCabinet extends StatelessWidget {
               ),
               if (!compact) ...[
                 const SizedBox(height: RadioCabinetDesign.screenItemGap),
-                _equalizer(height: RadioEqualizerDesign.height),
+                if (map case final map?)
+                  SizedBox(
+                    height: RouteMapDesign.height,
+                    width: double.infinity,
+                    child: map,
+                  )
+                else
+                  _equalizer(height: RadioEqualizerDesign.height),
               ],
               SizedBox(height: metrics.statusGap),
               Container(
@@ -163,6 +198,7 @@ class RadioCabinet extends StatelessWidget {
                     ),
                     const SizedBox(width: AppSpacing.small),
                     Expanded(
+                      flex: 3,
                       child: Text(
                         status,
                         maxLines: metrics.textLines,
@@ -170,6 +206,10 @@ class RadioCabinet extends StatelessWidget {
                         style: RadioCabinetDesign.statusText,
                       ),
                     ),
+                    if (localTime case final localTime?) ...[
+                      const SizedBox(width: AppSpacing.small),
+                      Flexible(flex: 2, child: localTime),
+                    ],
                     if (compact) ...[
                       const SizedBox(width: AppSpacing.small),
                       SizedBox(
@@ -296,6 +336,19 @@ class RadioCabinet extends StatelessWidget {
                             ),
                           ),
                         ),
+                        if (tripLabel case final tripLabel?) ...[
+                          const SizedBox(width: AppSpacing.small),
+                          Flexible(
+                            child: Text(
+                              tripLabel,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: RadioCabinetDesign.brandText.copyWith(
+                                color: p.ink,
+                              ),
+                            ),
+                          ),
+                        ],
                         const SizedBox(width: AppSpacing.small),
                         _Screw(color: p.trim),
                       ],
