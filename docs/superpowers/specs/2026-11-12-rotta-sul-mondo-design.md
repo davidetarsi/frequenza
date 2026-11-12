@@ -1,6 +1,6 @@
 # Rotta sul mondo — design
 
-Data: 12 novembre 2026. Stato: in revisione da Davide.
+Data: 12 novembre 2026. Stato: in attesa di approvazione da Davide.
 Mock-up di riferimento (tavola «2 · Rotta sul mondo»): https://claude.ai/artifact/Ng6gtkvtxvPeBBGwhp6zkH
 
 Legenda: **[D]** = deciso da Davide; **[C]** = scelta proposta da Claude, da confermare leggendo. Il resto è vincolo derivato dal codice attuale.
@@ -28,7 +28,7 @@ Ogni sintonizzazione diventa un viaggio. Il display della radio mostra una mappa
 Questi casi rendono il lavoro sbagliato anche se l'app «funziona».
 
 - L'animazione finisce e l'audio arriva dopo, oppure l'audio parte mentre è ancora in volo.
-- Testo o linea che rivelano la meta prima dell'atterraggio («In volo verso Tokyo», arco che punta già nella direzione giusta) **[D]**.
+- Testo o linea che rivelano la meta prima dell'atterraggio («In volo verso Tokyo», arco che punta già nella direzione giusta). Vale anche per la notifica multimediale e la schermata di blocco **[D]**.
 - Silenzio durante il caricamento dello stream. Oggi c'è: il fruscio si ferma alla risposta dell'API.
 - Un volo che può durare per sempre.
 - Overflow o testo tagliato nei layout già verificati (320×640 e 640×320 con testo al 200%).
@@ -63,11 +63,12 @@ Questi casi rendono il lavoro sbagliato anche se l'app «funziona».
 
 ### Segnale perso **[D]**
 
-- **Tempo massimo:** 12 s dal tocco **[C]** sul valore. Vale anche se lo stream resta bloccato in caricamento: oggi non esiste un limite, c'è solo il timeout di 8 s per ogni chiamata all'API.
+- **Tempo massimo:** 12 s per ogni tentativo, contati dall'avvio del tentativo **[C]**. Vale anche se lo stream resta bloccato in caricamento: oggi non esiste un limite, c'è solo il timeout di 8 s per ogni chiamata all'API.
 - **Animazione:** la scia si spegne e torna al punto di partenza. Il display mostra «Segnale perso» per un momento.
-- **Tune:** riprova da sola con un'altra stazione casuale, con un nuovo volo dallo stesso punto di partenza. Al massimo 2 tentativi automatici **[C]**, poi stato di errore come oggi, con la manopola che riprova.
+- **Tune:** riprova da sola con un'altra stazione casuale, con un nuovo volo dallo stesso punto di partenza. Al massimo 2 tentativi automatici dopo il primo, quindi 3 in tutto e circa 36 s nel caso peggiore **[C]**. Poi stato di errore come oggi, con la manopola che riprova.
 - **Preferito:** nessun nuovo tentativo, perché la meta l'ha scelta l'utente. Stato di errore. Ritoccare il preferito riprova.
 - Gli errori immediati (API non raggiungibile, nessuna stazione, stream in errore) seguono la stessa regola, senza aspettare i 12 s.
+- **Dopo l'atterraggio** la regola non si applica **[C]**. Il ricaricamento dello stream mentre è in onda e la ripresa dalla pausa (`buffering → playing`) si comportano come oggi: niente nuovo volo e niente «Segnale perso». Il viaggio reagisce solo alle sintonizzazioni.
 
 ### Riduzione del movimento
 
@@ -79,13 +80,33 @@ Con `AppMotion.enabled == false` niente volo animato e niente pulsazioni. In vol
 - **Testi in onda:**
   - Riga principale: nome della stazione.
   - Riga Paese: «Paese · 1.420 km». La distanza è la lunghezza del **tratto** dalla partenza, non da casa tua, visto che dopo il primo viaggio la partenza è la stazione precedente **[C]**.
+  - Se almeno un estremo usa il centro del Paese, la distanza è preceduta da «≈». Se i due estremi sono nello stesso Paese e almeno uno è approssimato, la distanza non si mostra **[C]**.
   - Riga di dettaglio esistente: titolo ICY o tag, invariata.
   - Riga di stato: stato attuale, più l'ora locale a destra quando disponibile.
 - La città non è disponibile. Radio Browser fornisce Paese ed eventualmente regione (`state`), non la città. Si mostra il Paese **[C]**. Il mock-up mostrava città inventate.
-- **Ora locale:** si mostra solo quando il fuso è determinabile in modo affidabile, cioè Paesi con un solo fuso oppure coordinate sufficienti a scegliere il fuso. Altrimenti si nasconde: meglio niente che un'ora sbagliata **[C]**. Il metodo (tabella Paese → fuso, eventuale pacchetto `timezone` per l'ora legale) è del builder. Una nuova dipendenza va motivata nel piano, come chiede `AGENTS.md`.
+- **Ora locale:** si mostra solo per i Paesi con un solo fuso orario, usando una tabella Paese → fuso inclusa nell'app. Per i Paesi con più fusi (USA, Russia, Brasile, Canada, Australia, …) l'ora non si mostra: meglio niente che un'ora sbagliata **[C]**. Il modo di gestire l'ora legale (pacchetto `timezone` o altro) è del builder. Una nuova dipendenza va motivata nel piano, come chiede `AGENTS.md`.
 - **Storico:** le ultime 5 rotte atterrate come tracce tratteggiate tenui. Contatore «Viaggio n. X» sulla scocca accanto a «F / RADIO», come nel mock-up. Entrambi valgono per la sessione.
 - **Accessibilità:** la mappa è decorativa (`ExcludeSemantics`). Tutte le informazioni sono anche nel testo.
 - **Localizzazione:** nuove chiavi IT/EN per «In volo verso…», «Prossima fermata: …», «Segnale perso», distanza, ora locale e contatore. Le attuali `exploring` e `findingPlace` vanno sostituite se non servono più.
+
+## Notifica e schermata di blocco **[D]**
+
+- Durante il volo la notifica multimediale mostra un segnaposto: titolo «Frequenza», sottotitolo con la chiave localizzata di «In volo…», senza nome, Paese o immagine della stazione.
+- All'atterraggio, cioè quando parte l'audio, il segnaposto viene sostituito dalla stazione vera: nome, Paese, favicon se presente.
+- Dopo un fallimento la notifica non deve mai mostrare la stazione mancata.
+- Oggi `JustAudioService.playStation` attacca il `MediaItem` della stazione allo stream già in `setAudioSource`. Con `just_audio_background` il metadato non si aggiorna senza ricaricare lo stream. Per questo serve il passo 1 qui sotto.
+
+## Organizzazione del lavoro **[D]**
+
+Due passi, ognuno con il suo branch e la sua PR.
+
+1. **Migrazione ad `audio_service` a parità di comportamento.**
+   - Rimuovere `just_audio_background`. `audio_service` è già nel lock come dipendenza transitiva, e manifest e `MainActivity extends AudioServiceActivity` sono già i suoi.
+   - Inizializzare `AudioService.init` in `bootstrap.dart` con un `AudioHandler` che fa da ponte tra `just_audio` e la sessione multimediale: stato di riproduzione, play, pausa e stop, tasti delle cuffie, `MediaItem` aggiornabile.
+   - Notifica, schermata di blocco e background si comportano come oggi.
+   - `RadioAudioService` e il controller non cambiano, salvo aggiungere all'interfaccia ciò che serve per i metadati. Test nuovi per l'handler.
+   - Collaudo di Davide sul telefono: notifica, schermata di blocco, cuffie e Bluetooth, schermo spento, ritorno nell'app.
+2. **Rotta sul mondo** (tutto il resto di questo documento), sopra la base del passo 1.
 
 ## Dati
 
@@ -106,6 +127,7 @@ Con `AppMotion.enabled == false` niente volo animato e niente pulsazioni. In vol
 - `RadioController.tuneRandom` oggi ferma il fruscio alla risposta dell'API, prima di `playStation`. `tuneTo` non ha né fruscio né minimo di 1 s. Entrambi devono convergere sul flusso unico descritto sopra.
 - `JustAudioService.playStation` avvia la riproduzione senza attenderla e segnala `buffering → playing` dal `playerStateStream`. L'atterraggio si aggancia a questo stato, non al ritorno di `playStation`.
 - Restano valide le garanzie già verificate: token di annullamento, sottoscrizioni chiuse alla dismissione, `clearError` a ogni nuova sintonizzazione, fruscio fermato in background.
+- Il fruscio esiste solo su Android (SoundPool). Su iOS il volo resta muto: è un limite noto, fuori dal perimetro di questo lavoro **[C]**.
 - Restano verdi la suite esistente (20 test), l'analisi e la build. I layout compatto e orizzontale con testo al 200% non devono andare in overflow.
 
 ## Lasciato al builder
