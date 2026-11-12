@@ -119,3 +119,12 @@ Prossimo passo: feedback sul design nell'emulatore, poi lavoro mirato sulle anim
 - Palette e token della home, scocca, equalizzatore, pannello Preferiti e diagnostica sono centralizzati nel tema di prodotto. I widget comuni seguono la base dello starter.
 - Verificati generazione, formattazione, analisi, 20 test e APK debug ARM64. Sull'emulatore verificato il percorso home → Impostazioni → home. I test simulano il riavvio per lingua e tema nello starter e il cambio in Frequenza.
 - Restano la prova della seconda app neutra e i moduli opzionali della roadmap, incluso Tgram Analytics per gli eventi prodotto.
+
+## Notifica tramite audio_service — 12 novembre 2026
+
+Passo 1 del design `superpowers/specs/2026-11-12-rotta-sul-mondo-design.md`; piano `superpowers/plans/2026-11-12-audio-service.md`.
+
+- Rimosso `just_audio_background`. `RadioAudioHandler` (audio_service diretto) pubblica stato e comandi della notifica dallo stesso `AudioPlayer`; `JustAudioService` passa nome, Paese e logo della stazione tramite `RadioMediaSession`. Canale, opzioni di notifica e contratto del controller invariati.
+- Verificati sulla VPS: formattazione, analisi senza segnalazioni, controlli dello stato del player, suite 29/29, bundle debug. APK release non verificato: la build sulla VPS è stata fermata per memoria insufficiente.
+- La VPS ha Flutter 3.47.4: `pub get` riscrive il lock e `build_runner` si blocca sull'analyzer. Il lock è stato modificato a mano e il provider `radioAudioHandler` scritto a mano nel `.g.dart`: rieseguire `bash tool/check.sh --apk` con Flutter 3.38.5 e versionare eventuali differenze.
+- Prossimo passo: collaudo su telefono (checklist in fondo al piano), poi passo 2, la Rotta sul mondo.

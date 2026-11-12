@@ -3,20 +3,23 @@ import 'dart:async';
 import 'package:audio_session/audio_session.dart';
 import 'package:flutter/services.dart';
 import 'package:just_audio/just_audio.dart';
-import 'package:just_audio_background/just_audio_background.dart';
 
 import '../domain/radio_audio_service.dart';
 import '../domain/radio_player_state.dart';
 import '../domain/radio_station.dart';
+import 'radio_media_session.dart';
 
 class JustAudioService implements RadioAudioService {
-  JustAudioService({AudioPlayer? player}) : _player = player ?? AudioPlayer() {
+  JustAudioService({AudioPlayer? player, RadioMediaSession? mediaSession})
+    : _player = player ?? AudioPlayer(),
+      _mediaSession = mediaSession {
     _initAudioSession();
     _subscribeToPlayerState();
   }
 
   static const _tuningChannel = MethodChannel('frequenza/tuning_sound');
   final AudioPlayer _player;
+  final RadioMediaSession? _mediaSession;
   Object? _tuningSoundRequest;
   final _statusController = StreamController<PlaybackStatus>.broadcast();
   final List<StreamSubscription<dynamic>> _subscriptions = [];
@@ -151,19 +154,10 @@ class JustAudioService implements RadioAudioService {
     try {
       _updateStatus(PlaybackStatus.buffering);
 
-      final audioSource = AudioSource.uri(
-        Uri.parse(station.streamUrl),
-        tag: MediaItem(
-          id: station.id,
-          title: station.name,
-          artist: station.country,
-          artUri: station.faviconUrl != null
-              ? Uri.tryParse(station.faviconUrl!)
-              : null,
-        ),
-      );
+      final audioSource = AudioSource.uri(Uri.parse(station.streamUrl));
 
       await _player.stop();
+      _mediaSession?.showStation(station);
       await _player.setAudioSource(audioSource);
       // play() completes when live playback stops, not when it starts.
       _startPlayback();

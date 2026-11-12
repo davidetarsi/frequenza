@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frequenza/features/radio/data/just_audio_service.dart';
+import 'package:frequenza/features/radio/data/radio_media_session.dart';
 import 'package:frequenza/features/radio/domain/radio_player_state.dart';
 import 'package:frequenza/features/radio/domain/radio_station.dart';
 import 'package:just_audio/just_audio.dart';
@@ -35,6 +36,13 @@ class LivePlayer extends Fake implements AudioPlayer {
   }
 }
 
+class RecordingSession implements RadioMediaSession {
+  RadioStation? shown;
+
+  @override
+  void showStation(RadioStation station) => shown = station;
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   const station = RadioStation(
@@ -65,5 +73,16 @@ void main() {
     );
     player.playback.completeError(StateError('Disconnected'));
     await observed;
+  });
+
+  test('playStation shows the station on the media session', () async {
+    final session = RecordingSession();
+    final service = JustAudioService(
+      player: LivePlayer(),
+      mediaSession: session,
+    );
+    addTearDown(service.dispose);
+    await service.playStation(station).timeout(const Duration(seconds: 1));
+    expect(session.shown?.id, station.id);
   });
 }

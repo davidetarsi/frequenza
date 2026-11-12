@@ -23,7 +23,26 @@ final radioRepositoryProvider = Provider<RadioRepository>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef RadioRepositoryRef = ProviderRef<RadioRepository>;
-String _$radioAudioServiceHash() => r'28eb22c0a2968eb695aa9f37ed4ef4ed0edeef1c';
+String _$radioAudioHandlerHash() => r'746400d86e9a494e4a26aed6e6821274190598bf';
+
+/// The system media session, overridden at startup by `bootstrap`.
+///
+/// Copied from [radioAudioHandler].
+@ProviderFor(radioAudioHandler)
+final radioAudioHandlerProvider = Provider<RadioAudioHandler?>.internal(
+  radioAudioHandler,
+  name: r'radioAudioHandlerProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$radioAudioHandlerHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef RadioAudioHandlerRef = ProviderRef<RadioAudioHandler?>;
+String _$radioAudioServiceHash() => r'1ee8729e67e2f6e82b951c911b8fa9a4e09cdf09';
 
 /// See also [radioAudioService].
 @ProviderFor(radioAudioService)
