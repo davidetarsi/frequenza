@@ -7,7 +7,11 @@ import '../domain/radio_station.dart';
 import 'radio_media_session.dart';
 
 class RadioAudioHandler extends BaseAudioHandler implements RadioMediaSession {
-  RadioAudioHandler(this.player) {
+  RadioAudioHandler(
+    this.player, {
+    required this.flightTitle,
+    required this.flightSubtitle,
+  }) {
     _events = player.playbackEventStream.listen(
       _publish,
       onError: (Object error) {
@@ -22,6 +26,7 @@ class RadioAudioHandler extends BaseAudioHandler implements RadioMediaSession {
   }
 
   final AudioPlayer player;
+  final String flightTitle, flightSubtitle;
   late final StreamSubscription<PlaybackEvent> _events;
 
   static const _processingStates = {
@@ -64,6 +69,13 @@ class RadioAudioHandler extends BaseAudioHandler implements RadioMediaSession {
             ? Uri.tryParse(station.faviconUrl!)
             : null,
       ),
+    );
+  }
+
+  @override
+  void showFlight() {
+    mediaItem.add(
+      MediaItem(id: 'flight', title: flightTitle, artist: flightSubtitle),
     );
   }
 

@@ -78,5 +78,6 @@
   "proofStationLocation": "{} ({})",
   "proofBitrate": "{} kbps",
   "audioChannelName": "Riproduzione radio Frequenza",
-  "cabinetBrand": "F / RADIO"
+  "cabinetBrand": "F / RADIO",
+  "notificationFlying": "In volo…"
 }

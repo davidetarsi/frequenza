@@ -65,6 +65,11 @@ class FakeAudioService implements RadioAudioService {
     emitStatus(PlaybackStatus.playing);
   }
 
+  final landed = <RadioStation>[];
+
+  @override
+  Future<void> land(RadioStation station) async => landed.add(station);
+
   @override
   Future<void> play() async {
     emitStatus(PlaybackStatus.playing);

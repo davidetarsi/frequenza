@@ -17,16 +17,20 @@ Future<void> bootstrap({AppConfig config = const AppConfig()}) async {
   WidgetsFlutterBinding.ensureInitialized();
   await EasyLocalization.ensureInitialized();
   final player = AudioPlayer();
+  final language =
+      WidgetsBinding.instance.platformDispatcher.locale.languageCode == 'it'
+      ? 'it'
+      : 'en';
+  String text(String key) => CodegenLoader.mapLocales[language]![key] as String;
   final handler = await AudioService.init(
-    builder: () => RadioAudioHandler(player),
+    builder: () => RadioAudioHandler(
+      player,
+      flightTitle: config.appName,
+      flightSubtitle: text(LocaleKeys.notificationFlying),
+    ),
     config: AudioServiceConfig(
       androidNotificationChannelId: 'dev.davidetarsi.frequenza.channel.audio',
-      androidNotificationChannelName:
-          WidgetsBinding.instance.platformDispatcher.locale.languageCode == 'it'
-          ? CodegenLoader.mapLocales['it']![LocaleKeys.audioChannelName]
-                as String
-          : CodegenLoader.mapLocales['en']![LocaleKeys.audioChannelName]
-                as String,
+      androidNotificationChannelName: text(LocaleKeys.audioChannelName),
       androidNotificationOngoing: true,
       androidStopForegroundOnPause: true,
     ),

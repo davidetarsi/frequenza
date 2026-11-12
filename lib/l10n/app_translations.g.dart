@@ -96,6 +96,7 @@ class CodegenLoader extends AssetLoader {
     "proofBitrate": "{} kbps",
     "audioChannelName": "Frequenza radio playback",
     "cabinetBrand": "F / RADIO",
+    "notificationFlying": "In flight…",
   };
   static const Map<String, dynamic> _it = {
     "welcomeTitle": "Una nuova partenza",
@@ -180,6 +181,7 @@ class CodegenLoader extends AssetLoader {
     "proofBitrate": "{} kbps",
     "audioChannelName": "Riproduzione radio Frequenza",
     "cabinetBrand": "F / RADIO",
+    "notificationFlying": "In volo…",
   };
   static const Map<String, Map<String, dynamic>> mapLocales = {
     "en": _en,

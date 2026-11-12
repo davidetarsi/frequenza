@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:audio_session/audio_session.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:just_audio/just_audio.dart';
 
@@ -25,6 +26,13 @@ class JustAudioService implements RadioAudioService {
   final List<StreamSubscription<dynamic>> _subscriptions = [];
   bool _disposed = false;
   PlaybackStatus _currentStatus = PlaybackStatus.idle;
+  bool _muted = false, _ducked = false;
+
+  double get _volume => _muted
+      ? 0
+      : _ducked
+      ? 0.2
+      : 1;
 
   @override
   Stream<PlaybackStatus> get playbackStatusStream => _statusController.stream;
@@ -52,31 +60,22 @@ class JustAudioService implements RadioAudioService {
       );
 
       _subscriptions.add(
-        session.interruptionEventStream.listen((event) {
-          if (event.begin) {
-            switch (event.type) {
-              case AudioInterruptionType.duck:
-                _player.setVolume(0.2);
-                break;
-              case AudioInterruptionType.pause:
-              case AudioInterruptionType.unknown:
-                pause();
-                break;
-            }
-          } else {
-            switch (event.type) {
-              case AudioInterruptionType.duck:
-                _player.setVolume(1.0);
-                break;
-              case AudioInterruptionType.pause:
-              case AudioInterruptionType.unknown:
-                break;
-            }
-          }
-        }),
+        session.interruptionEventStream.listen(handleInterruption),
       );
     } catch (_) {
       // AudioSession may not be available on some platforms/tests
+    }
+  }
+
+  @visibleForTesting
+  void handleInterruption(AudioInterruptionEvent event) {
+    switch (event.type) {
+      case AudioInterruptionType.duck:
+        _ducked = event.begin;
+        unawaited(_player.setVolume(_volume));
+      case AudioInterruptionType.pause:
+      case AudioInterruptionType.unknown:
+        if (event.begin) unawaited(pause());
     }
   }
 
@@ -157,7 +156,10 @@ class JustAudioService implements RadioAudioService {
       final audioSource = AudioSource.uri(Uri.parse(station.streamUrl));
 
       await _player.stop();
-      _mediaSession?.showStation(station);
+      _mediaSession?.showFlight();
+      // Silent until land(): the static plays while the stream loads.
+      _muted = true;
+      await _player.setVolume(_volume);
       await _player.setAudioSource(audioSource);
       // play() completes when live playback stops, not when it starts.
       _startPlayback();
@@ -165,6 +167,13 @@ class JustAudioService implements RadioAudioService {
       _updateStatus(PlaybackStatus.error);
       rethrow;
     }
+  }
+
+  @override
+  Future<void> land(RadioStation station) async {
+    _muted = false;
+    await _player.setVolume(_volume);
+    _mediaSession?.showStation(station);
   }
 
   @override

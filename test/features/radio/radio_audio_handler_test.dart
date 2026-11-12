@@ -44,7 +44,11 @@ void main() {
 
   setUp(() {
     player = EventPlayer();
-    handler = RadioAudioHandler(player);
+    handler = RadioAudioHandler(
+      player,
+      flightTitle: 'Frequenza',
+      flightSubtitle: 'In volo…',
+    );
   });
   tearDown(() => handler.dispose());
 
@@ -149,5 +153,13 @@ void main() {
     await handler.play().timeout(const Duration(seconds: 1));
     expect(player.seeks, [Duration.zero]);
     expect(player.plays, 1);
+  });
+
+  test('showFlight hides the destination', () {
+    handler.showFlight();
+    final item = handler.mediaItem.value!;
+    expect(item.title, 'Frequenza');
+    expect(item.artist, 'In volo…');
+    expect(item.artUri, isNull);
   });
 }

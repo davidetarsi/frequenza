@@ -83,4 +83,5 @@ abstract class LocaleKeys {
   static const proofBitrate = 'proofBitrate';
   static const audioChannelName = 'audioChannelName';
   static const cabinetBrand = 'cabinetBrand';
+  static const notificationFlying = 'notificationFlying';
 }
