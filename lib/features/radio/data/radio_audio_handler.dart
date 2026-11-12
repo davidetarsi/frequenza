@@ -33,7 +33,11 @@ class RadioAudioHandler extends BaseAudioHandler implements RadioMediaSession {
   };
 
   void _publish(PlaybackEvent event) {
-    final playing = player.playing;
+    // just_audio keeps `playing` true after a stream ends, until pause or stop.
+    final playing =
+        player.playing &&
+        event.processingState != ProcessingState.idle &&
+        event.processingState != ProcessingState.completed;
     playbackState.add(
       PlaybackState(
         controls: [
@@ -65,6 +69,9 @@ class RadioAudioHandler extends BaseAudioHandler implements RadioMediaSession {
 
   @override
   Future<void> play() async {
+    if (player.processingState == ProcessingState.completed) {
+      await player.seek(Duration.zero);
+    }
     // play() completes when live playback stops, not when it starts.
     unawaited(player.play().catchError((Object _) {}));
   }

@@ -14,6 +14,13 @@ class EventPlayer extends Fake implements AudioPlayer {
   int pauses = 0;
   int plays = 0;
   int stops = 0;
+  final seeks = <Duration?>[];
+  @override
+  ProcessingState processingState = ProcessingState.idle;
+
+  @override
+  Future<void> seek(Duration? position, {int? index}) async =>
+      seeks.add(position);
 
   @override
   Stream<PlaybackEvent> get playbackEventStream => events.stream;
@@ -43,6 +50,7 @@ void main() {
 
   Future<PlaybackState> emit(ProcessingState state, {required bool playing}) {
     player.playing = playing;
+    player.processingState = state;
     final next = handler.playbackState.skip(1).first;
     player.events.add(PlaybackEvent(processingState: state));
     return next;
@@ -128,5 +136,18 @@ void main() {
     final state = await next;
     expect(state.processingState, AudioProcessingState.error);
     expect(state.playing, isFalse);
+  });
+
+  test('a completed live stream is published as not playing', () async {
+    final state = await emit(ProcessingState.completed, playing: true);
+    expect(state.playing, isFalse);
+    expect(state.controls.first, MediaControl.play);
+  });
+
+  test('play after a completed stream restarts it', () async {
+    await emit(ProcessingState.completed, playing: true);
+    await handler.play().timeout(const Duration(seconds: 1));
+    expect(player.seeks, [Duration.zero]);
+    expect(player.plays, 1);
   });
 }
