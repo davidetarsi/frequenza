@@ -1,6 +1,6 @@
 # Rotta sul mondo — design
 
-Data: 12 novembre 2026. Stato: in attesa di approvazione da Davide.
+Data: 12 novembre 2026. Stato: approvato da Davide il 12 novembre 2026.
 Mock-up di riferimento (tavola «2 · Rotta sul mondo»): https://claude.ai/artifact/Ng6gtkvtxvPeBBGwhp6zkH
 
 Legenda: **[D]** = deciso da Davide; **[C]** = scelta proposta da Claude, da confermare leggendo. Il resto è vincolo derivato dal codice attuale.
@@ -84,7 +84,11 @@ Con `AppMotion.enabled == false` niente volo animato e niente pulsazioni. In vol
   - Riga di dettaglio esistente: titolo ICY o tag, invariata.
   - Riga di stato: stato attuale, più l'ora locale a destra quando disponibile.
 - La città non è disponibile. Radio Browser fornisce Paese ed eventualmente regione (`state`), non la città. Si mostra il Paese **[C]**. Il mock-up mostrava città inventate.
-- **Ora locale:** si mostra solo per i Paesi con un solo fuso orario, usando una tabella Paese → fuso inclusa nell'app. Per i Paesi con più fusi (USA, Russia, Brasile, Canada, Australia, …) l'ora non si mostra: meglio niente che un'ora sbagliata **[C]**. Il modo di gestire l'ora legale (pacchetto `timezone` o altro) è del builder. Una nuova dipendenza va motivata nel piano, come chiede `AGENTS.md`.
+- **Ora locale:** si mostra sempre, anche quando il fuso della stazione è uguale a quello dell'utente **[D]**. Il fuso si ricava così **[C]**:
+  - Paesi con un solo fuso: tabella Paese → fuso inclusa nell'app.
+  - Paesi con più fusi (USA, Russia, Brasile, Canada, Australia, …), se la stazione ha coordinate proprie: il fuso della città di riferimento più vicina tra quelle del Paese, una per fuso (es. USA: New York, Chicago, Denver, Los Angeles, Anchorage, Honolulu). Niente dataset dei confini dei fusi.
+  - Paesi con più fusi e coordinate assenti: il fuso principale del Paese, con l'ora preceduta da «≈», come per la distanza.
+  - Il modo di gestire l'ora legale (pacchetto `timezone` o altro) è del builder. Una nuova dipendenza va motivata nel piano, come chiede `AGENTS.md`.
 - **Storico:** le ultime 5 rotte atterrate come tracce tratteggiate tenui. Contatore «Viaggio n. X» sulla scocca accanto a «F / RADIO», come nel mock-up. Entrambi valgono per la sessione.
 - **Accessibilità:** la mappa è decorativa (`ExcludeSemantics`). Tutte le informazioni sono anche nel testo.
 - **Localizzazione:** nuove chiavi IT/EN per «In volo verso…», «Prossima fermata: …», «Segnale perso», distanza, ora locale e contatore. Le attuali `exploring` e `findingPlace` vanno sostituite se non servono più.
