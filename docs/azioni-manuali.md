@@ -15,7 +15,7 @@ Account sviluppatore personale: prima della produzione servono 14 giorni di test
 
 ### A. Decisione da prendere subito
 
-- [ ] **Package name.** Oggi è `dev.davidetarsi.frequenza`. Dopo il primo caricamento sul Play Store non si può più cambiare. PackLog usa `com.davidetarsi.packlog`: per lo stesso schema servirebbe `com.davidetarsi.frequenza`. Va deciso prima che si scrivano le pipeline.
+- [x] **Package name:** `it.davidetarsi.frequenza`, deciso il 12 novembre 2026. La versione dev sarà `it.davidetarsi.frequenza.dev`. Dopo il primo caricamento sul Play Store non si può più cambiare.
 
 ### B. Sul tuo computer: chiavi di firma
 
