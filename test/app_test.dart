@@ -57,7 +57,7 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('tune-knob')));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 999));
-      expect(audio.lastPlayedStation, isNull);
+      expect(audio.landed, isEmpty);
       expect(audio.tuningSoundActive, isTrue);
       await tester.pump(const Duration(milliseconds: 1));
       await tester.pumpAndSettle();
@@ -90,6 +90,8 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Le tue frequenze'), findsOneWidget);
       await tester.tap(find.byKey(const ValueKey('favorite-play-id')));
+      await tester.pumpAndSettle();
+      await tester.pump(const Duration(seconds: 1));
       await tester.pumpAndSettle();
       expect(find.text('Le tue frequenze'), findsNothing);
       expect(audio.lastPlayedStation?.id, 'id');
