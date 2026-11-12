@@ -6,7 +6,7 @@ part of 'radio_controller.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$radioControllerHash() => r'65d7716f3637c3deb3b9f6dc49d7544eb51ee6e3';
+String _$radioControllerHash() => r'bdf32e53e924686d2ed21b59f2a5f77f18ba0e7c';
 
 /// See also [RadioController].
 @ProviderFor(RadioController)
