@@ -7,7 +7,7 @@ Cose che solo Davide può fare: account, chiavi, impostazioni di GitHub e del Pl
 - [ ] Unire le PR verso `develop`, in quest'ordine:
   1. https://github.com/davidetarsi/frequenza/compare/develop...feat/audio-service?expand=1
   2. https://github.com/davidetarsi/frequenza/compare/feat/audio-service...feat/rotta-sul-mondo?expand=1 (dopo il merge della prima, controllare che la base sia diventata `develop`)
-- [ ] Scegliere il logo (dev e prod).
+- [x] Scegliere il logo: la manopola (proposta 1 in https://claude.ai/artifact/KknrUgBnLJ1mKAjGCeG7th). Stessa icona per dev e prod; la dev cambia solo il nome, «Frequenza Dev».
 
 ## Pipeline e Play Store
 
