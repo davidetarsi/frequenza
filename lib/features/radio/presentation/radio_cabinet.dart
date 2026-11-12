@@ -12,6 +12,7 @@ class RadioCabinet extends StatelessWidget {
   const RadioCabinet({
     super.key,
     required this.country,
+    this.countryDetail,
     required this.station,
     required this.detail,
     required this.status,
@@ -29,6 +30,9 @@ class RadioCabinet extends StatelessWidget {
     this.tripLabel,
   });
   final String country, station, detail, status, knobLabel, tuneLabel;
+
+  /// Shown after [country] and never cut: the country shrinks instead.
+  final String? countryDetail;
   final VoidCallback? onTune;
   final bool isBusy, isPlaying, compact, horizontal;
 
@@ -103,11 +107,27 @@ class RadioCabinet extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                country.toUpperCase(),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: RadioCabinetDesign.countryText,
+              _BoundedRow(
+                share: 1,
+                children: (bound) => [
+                  Flexible(
+                    child: Text(
+                      country.toUpperCase(),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: RadioCabinetDesign.countryText,
+                    ),
+                  ),
+                  if (countryDetail case final detail?)
+                    bound(
+                      Text(
+                        ' · ${detail.toUpperCase()}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: RadioCabinetDesign.countryText,
+                      ),
+                    ),
+                ],
               ),
               SizedBox(height: metrics.countryGap),
               Semantics(
@@ -173,9 +193,9 @@ class RadioCabinet extends StatelessWidget {
                 height:
                     scaler.scale(RadioCabinetDesign.statusText.fontSize!) *
                     metrics.statusHeightFactor,
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
+                child: _BoundedRow(
+                  share: .5,
+                  children: (bound) => [
                     Container(
                       width: RadioCabinetDesign.indicatorSize,
                       height: RadioCabinetDesign.indicatorSize,
@@ -198,7 +218,6 @@ class RadioCabinet extends StatelessWidget {
                     ),
                     const SizedBox(width: AppSpacing.small),
                     Expanded(
-                      flex: 3,
                       child: Text(
                         status,
                         maxLines: metrics.textLines,
@@ -208,9 +227,8 @@ class RadioCabinet extends StatelessWidget {
                     ),
                     if (localTime case final localTime?) ...[
                       const SizedBox(width: AppSpacing.small),
-                      Flexible(flex: 2, child: localTime),
-                    ],
-                    if (compact) ...[
+                      bound(localTime),
+                    ] else if (compact) ...[
                       const SizedBox(width: AppSpacing.small),
                       SizedBox(
                         width: RadioEqualizerDesign.compactWidth,
@@ -399,6 +417,25 @@ class RadioCabinet extends StatelessWidget {
       ],
     );
   }
+}
+
+/// A row whose `bound` children keep their natural width up to [share] of
+/// the row, so they are cut only when nothing else can give way.
+class _BoundedRow extends StatelessWidget {
+  const _BoundedRow({required this.share, required this.children});
+  final double share;
+  final List<Widget> Function(Widget Function(Widget) bound) children;
+  @override
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, constraints) => Row(
+      children: children(
+        (child) => ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: constraints.maxWidth * share),
+          child: child,
+        ),
+      ),
+    ),
+  );
 }
 
 class _Screw extends StatelessWidget {

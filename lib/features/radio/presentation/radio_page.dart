@@ -60,13 +60,10 @@ class RadioPage extends ConsumerWidget {
     final distance = station == null ? null : player.leg?.distance;
     final country = tuning
         ? ''
-        : station == null
-        ? LocaleKeys.worldAwaits.tr(context: context)
-        : [
-            station.country,
-            if (distance != null)
-              '${distance.approximate ? '≈ ' : ''}${LocaleKeys.distanceKm.tr(context: context, args: [NumberFormat.decimalPattern(context.locale.toLanguageTag()).format(distance.km)])}',
-          ].join(' · ');
+        : station?.country ?? LocaleKeys.worldAwaits.tr(context: context);
+    final countryDetail = tuning || distance == null
+        ? null
+        : '${distance.approximate ? '≈ ' : ''}${LocaleKeys.distanceKm.tr(context: context, args: [NumberFormat.decimalPattern(context.locale.toLanguageTag()).format(distance.km)])}';
     final label = busy
         ? LocaleKeys.tuning.tr(context: context)
         : player.status == PlaybackStatus.error
@@ -137,6 +134,7 @@ class RadioPage extends ConsumerWidget {
               compact: compact,
               horizontal: wide,
               country: country,
+              countryDetail: countryDetail,
               station: title,
               detail: busy
                   ? ''

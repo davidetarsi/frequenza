@@ -146,15 +146,30 @@ class _LocalTimeTextState extends State<LocalTimeText> {
   Widget build(BuildContext context) {
     final time = localTimeOf(widget.station, DateTime.now().toUtc());
     if (time == null) return const SizedBox.shrink();
-    return Text(
-      LocaleKeys.localTime.tr(
-        context: context,
-        args: ['${time.approximate ? '≈ ' : ''}${time.hhmm}'],
+    final shown = '${time.approximate ? '≈ ' : ''}${time.hhmm}';
+    return Semantics(
+      label: LocaleKeys.localTime.tr(context: context, args: [shown]),
+      child: ExcludeSemantics(
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.schedule,
+              size: widget.style.fontSize,
+              color: widget.style.color,
+            ),
+            const SizedBox(width: RouteMapDesign.clockIconGap),
+            Flexible(
+              child: Text(
+                shown,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: widget.style,
+              ),
+            ),
+          ],
+        ),
       ),
-      maxLines: 1,
-      overflow: TextOverflow.ellipsis,
-      textAlign: TextAlign.end,
-      style: widget.style,
     );
   }
 }

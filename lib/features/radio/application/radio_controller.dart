@@ -36,8 +36,12 @@ class RadioController extends _$RadioController {
         state = state.copyWith(trackTitle: title);
       }
     });
+    final interruptionSubscription = audio.flightInterruptions.listen((_) {
+      if (active && state.flight == FlightPhase.flying) unawaited(stop());
+    });
     ref.onDispose(() {
       active = false;
+      unawaited(interruptionSubscription.cancel());
       _currentTuneToken = null;
       unawaited(statusSubscription.cancel());
       unawaited(trackSubscription.cancel());
@@ -155,7 +159,10 @@ class RadioController extends _$RadioController {
     final leg = TravelLeg(from: state.departure, to: to);
     final history = [...state.history, if (to != null) leg];
     state = state.copyWith(
-      status: PlaybackStatus.playing,
+      // A pause may have arrived while the status listener ignored events.
+      status: _audioService.currentStatus == PlaybackStatus.paused
+          ? PlaybackStatus.paused
+          : PlaybackStatus.playing,
       station: station,
       flight: FlightPhase.grounded,
       leg: leg,
@@ -189,6 +196,7 @@ class RadioController extends _$RadioController {
         errorMessage: null,
         trackTitle: null,
         flight: FlightPhase.grounded,
+        leg: null,
       );
     }
   }

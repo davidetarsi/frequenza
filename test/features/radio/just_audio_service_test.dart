@@ -110,6 +110,28 @@ void main() {
     expect(session.shown?.id, station.id);
   });
 
+  test(
+    'a pause during the flight is reported, after landing it is not',
+    () async {
+      final player = LivePlayer();
+      final service = JustAudioService(player: player);
+      addTearDown(service.dispose);
+      var reported = 0;
+      final subscription = service.flightInterruptions.listen(
+        (_) => reported++,
+      );
+      addTearDown(subscription.cancel);
+      await service.playStation(station);
+      await service.pause();
+      await Future<void>.delayed(Duration.zero);
+      expect(reported, 1);
+      await service.land(station);
+      await service.pause();
+      await Future<void>.delayed(Duration.zero);
+      expect(reported, 1);
+    },
+  );
+
   test('a duck ending during the flight keeps the station silent', () async {
     final player = LivePlayer();
     final service = JustAudioService(player: player);

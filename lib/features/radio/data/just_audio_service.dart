@@ -23,6 +23,7 @@ class JustAudioService implements RadioAudioService {
   final RadioMediaSession? _mediaSession;
   Object? _tuningSoundRequest;
   final _statusController = StreamController<PlaybackStatus>.broadcast();
+  final _interruptions = StreamController<void>.broadcast();
   final List<StreamSubscription<dynamic>> _subscriptions = [];
   bool _disposed = false;
   PlaybackStatus _currentStatus = PlaybackStatus.idle;
@@ -46,6 +47,9 @@ class JustAudioService implements RadioAudioService {
 
   @override
   PlaybackStatus get currentStatus => _currentStatus;
+
+  @override
+  Stream<void> get flightInterruptions => _interruptions.stream;
 
   Future<void> _initAudioSession() async {
     try {
@@ -196,6 +200,7 @@ class JustAudioService implements RadioAudioService {
 
   @override
   Future<void> pause() async {
+    if (_muted && !_disposed) _interruptions.add(null);
     try {
       await stopTuningSound();
       await _player.pause();
@@ -225,5 +230,6 @@ class JustAudioService implements RadioAudioService {
     _subscriptions.clear();
     await _player.dispose();
     await _statusController.close();
+    await _interruptions.close();
   }
 }

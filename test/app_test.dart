@@ -189,7 +189,8 @@ void main() {
     expect(find.text('Pausa').hitTestable(), findsOneWidget);
     expect(find.text('Salvata').hitTestable(), findsOneWidget);
     expect(
-      find.byKey(const ValueKey('radio-equalizer')).hitTestable(),
+      // On air, the station's local time takes the bars' place.
+      find.byIcon(Icons.schedule).hitTestable(),
       findsOneWidget,
     );
     tester.view.physicalSize = const Size(640, 320);

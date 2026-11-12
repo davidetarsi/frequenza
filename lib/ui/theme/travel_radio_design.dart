@@ -217,4 +217,5 @@ abstract final class RouteMapDesign {
   static const landing = Duration(milliseconds: 600);
   static const landingBlur = 6.0;
   static const dotsCycle = Duration(milliseconds: 1200);
+  static const clockIconGap = 3.0;
 }

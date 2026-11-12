@@ -33,6 +33,45 @@ const nowhere = RadioStation(
   countryCode: '',
 );
 
+Future<FakeAudioService> openRadio(
+  WidgetTester tester,
+  RadioStation station, {
+  Size size = const Size(390, 900),
+  double textScale = 1,
+}) async {
+  tester.platformDispatcher.accessibilityFeaturesTestValue =
+      const FakeAccessibilityFeatures(disableAnimations: true);
+  addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
+  tester.view.physicalSize = size;
+  tester.view.devicePixelRatio = 1;
+  tester.platformDispatcher.textScaleFactorTestValue = textScale;
+  addTearDown(tester.view.resetPhysicalSize);
+  addTearDown(tester.view.resetDevicePixelRatio);
+  addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+  final audio = FakeAudioService()..autoPlay = false;
+  addTearDown(audio.dispose);
+  await tester.pumpWidget(
+    ProviderScope(
+      overrides: [
+        radioRepositoryProvider.overrideWithValue(
+          FakeRadioRepository()..stationToReturn = station,
+        ),
+        radioAudioServiceProvider.overrideWithValue(audio),
+        favoritesRepositoryProvider.overrideWithValue(MemoryFavorites()),
+      ],
+      child: const StarterApp(locale: Locale('it')),
+    ),
+  );
+  await tester.pumpAndSettle();
+  return audio;
+}
+
+Future<void> landFlight(WidgetTester tester, FakeAudioService audio) async {
+  audio.emitStatus(PlaybackStatus.playing);
+  await tester.pump(const Duration(seconds: 1));
+  await tester.pumpAndSettle();
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   setUp(() async {
@@ -40,49 +79,10 @@ void main() {
     await EasyLocalization.ensureInitialized();
   });
 
-  Future<FakeAudioService> open(
-    WidgetTester tester,
-    RadioStation station, {
-    Size size = const Size(390, 900),
-    double textScale = 1,
-  }) async {
-    tester.platformDispatcher.accessibilityFeaturesTestValue =
-        const FakeAccessibilityFeatures(disableAnimations: true);
-    addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
-    tester.view.physicalSize = size;
-    tester.view.devicePixelRatio = 1;
-    tester.platformDispatcher.textScaleFactorTestValue = textScale;
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
-    addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
-    final audio = FakeAudioService()..autoPlay = false;
-    addTearDown(audio.dispose);
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          radioRepositoryProvider.overrideWithValue(
-            FakeRadioRepository()..stationToReturn = station,
-          ),
-          radioAudioServiceProvider.overrideWithValue(audio),
-          favoritesRepositoryProvider.overrideWithValue(MemoryFavorites()),
-        ],
-        child: const StarterApp(locale: Locale('it')),
-      ),
-    );
-    await tester.pumpAndSettle();
-    return audio;
-  }
-
-  Future<void> land(WidgetTester tester, FakeAudioService audio) async {
-    audio.emitStatus(PlaybackStatus.playing);
-    await tester.pump(const Duration(seconds: 1));
-    await tester.pumpAndSettle();
-  }
-
   testWidgets('the flight hides the destination, the landing reveals it', (
     tester,
   ) async {
-    final audio = await open(tester, fip);
+    final audio = await openRadio(tester, fip);
     expect(find.byType(RouteMap), findsOneWidget);
     await tester.tap(find.byKey(const ValueKey('tune-knob')));
     await tester.pump(const Duration(milliseconds: 500));
@@ -91,13 +91,14 @@ void main() {
     expect(find.textContaining('FIP'), findsNothing);
     expect(find.textContaining('FRANCE'), findsNothing);
 
-    await land(tester, audio);
+    await landFlight(tester, audio);
     final km = NumberFormat.decimalPattern(
       'it',
     ).format(TravelLeg(from: homePlace, to: placeOf(fip)).distance!.km);
     expect(find.text('FIP Paris'), findsOneWidget);
-    expect(find.text('FRANCE · ≈ $km KM'), findsOneWidget);
-    expect(find.textContaining('ora locale'), findsOneWidget);
+    expect(find.text('FRANCE'), findsOneWidget);
+    expect(find.text(' · ≈ $km KM'), findsOneWidget);
+    expect(find.bySemanticsLabel(RegExp('ora locale')), findsOneWidget);
     expect(find.text('Viaggio n. 1'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
@@ -105,13 +106,13 @@ void main() {
   testWidgets('a station without a place still lands with its texts', (
     tester,
   ) async {
-    final audio = await open(tester, nowhere);
+    final audio = await openRadio(tester, nowhere);
     await tester.tap(find.byKey(const ValueKey('tune-knob')));
     await tester.pump();
-    await land(tester, audio);
+    await landFlight(tester, audio);
     expect(find.text('Radio Nowhere'), findsOneWidget);
     expect(find.text('MONDO'), findsOneWidget);
-    expect(find.textContaining('ora locale'), findsNothing);
+    expect(find.bySemanticsLabel(RegExp('ora locale')), findsNothing);
     expect(tester.takeException(), isNull);
   });
 
@@ -124,11 +125,11 @@ void main() {
     testWidgets('no overflow at $size with text x$scale in flight and on air', (
       tester,
     ) async {
-      final audio = await open(tester, fip, size: size, textScale: scale);
+      final audio = await openRadio(tester, fip, size: size, textScale: scale);
       await tester.tap(find.byKey(const ValueKey('tune-knob')));
       await tester.pump(const Duration(milliseconds: 500));
       expect(tester.takeException(), isNull);
-      await land(tester, audio);
+      await landFlight(tester, audio);
       expect(tester.takeException(), isNull);
       expect(find.byType(Scrollable), findsNothing);
     });

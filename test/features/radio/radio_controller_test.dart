@@ -38,6 +38,10 @@ class FakeRadioRepository implements RadioRepository {
 class FakeAudioService implements RadioAudioService {
   final _statusController = StreamController<PlaybackStatus>.broadcast();
   final trackTitles = StreamController<String?>.broadcast();
+  final interruptions = StreamController<void>.broadcast();
+
+  @override
+  Stream<void> get flightInterruptions => interruptions.stream;
 
   @override
   Stream<String?> get trackTitleStream => trackTitles.stream;
@@ -377,6 +381,39 @@ void main() {
       expect(read().flight, FlightPhase.grounded);
       expect(audioService.tuningSoundActive, isFalse);
       expect(audioService.landed, isEmpty);
+    });
+
+    test('landing reports a pause that arrived during the flight', () async {
+      final flight = controller.tuneTo(testStation);
+      await wait(10);
+      audioService.emitStatus(PlaybackStatus.paused);
+      await flight;
+      expect(read().station, testStation);
+      expect(read().status, PlaybackStatus.paused);
+    });
+
+    test('a system pause during the flight cancels it', () async {
+      audioService.autoPlay = false;
+      repository.stationToReturn = testStation;
+      final flight = controller.tuneRandom();
+      await wait(20);
+      audioService.interruptions.add(null);
+      await flight;
+      expect(read().status, PlaybackStatus.idle);
+      expect(read().flight, FlightPhase.grounded);
+      expect(audioService.played, hasLength(1));
+      expect(audioService.landed, isEmpty);
+      expect(audioService.tuningSoundActive, isFalse);
+    });
+
+    test('stop during a later flight turns the map off', () async {
+      await controller.tuneTo(testStation);
+      audioService.autoPlay = false;
+      final flight = controller.tuneTo(testStation);
+      await wait(10);
+      await controller.stop();
+      await flight;
+      expect(read().leg, isNull);
     });
 
     test('pause and stop control audio service', () async {

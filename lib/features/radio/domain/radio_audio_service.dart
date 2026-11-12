@@ -6,6 +6,10 @@ abstract interface class RadioAudioService {
   PlaybackStatus get currentStatus;
   Stream<String?> get trackTitleStream;
 
+  /// Pause requests (headphones unplugged, a call…) that arrive while a
+  /// station is still flying silently.
+  Stream<void> get flightInterruptions;
+
   Future<void> startTuningSound();
   Future<void> stopTuningSound();
 
