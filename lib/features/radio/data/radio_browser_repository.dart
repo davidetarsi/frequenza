@@ -13,7 +13,7 @@ class RadioBrowserRepository implements RadioRepository {
     http.Client? client,
     List<String>? mirrors,
     this.timeout = const Duration(seconds: 8),
-    this.userAgent = 'Frequenza/0.1.0 (dev.davidetarsi.frequenza)',
+    this.userAgent = 'Frequenza/0.1.0 (it.davidetarsi.frequenza)',
   }) : _client = client ?? http.Client(),
        _mirrors = mirrors ?? _defaultMirrors;
 

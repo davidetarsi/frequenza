@@ -43,3 +43,7 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+**/*.p12
+# Account di servizio del Play Store: solo come segreto GitHub.
+/android/*.json
+*service-account*.json

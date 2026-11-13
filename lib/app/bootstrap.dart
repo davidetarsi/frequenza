@@ -29,7 +29,7 @@ Future<void> bootstrap({AppConfig config = const AppConfig()}) async {
       flightSubtitle: text(LocaleKeys.notificationFlying),
     ),
     config: AudioServiceConfig(
-      androidNotificationChannelId: 'dev.davidetarsi.frequenza.channel.audio',
+      androidNotificationChannelId: 'it.davidetarsi.frequenza.channel.audio',
       androidNotificationChannelName: text(LocaleKeys.audioChannelName),
       androidNotificationOngoing: true,
       androidStopForegroundOnPause: true,
