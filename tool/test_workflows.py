@@ -159,5 +159,33 @@ class WhatsNewTest(unittest.TestCase):
             self.assertLessEqual(len(text), 500, path.name)
 
 
+@SKIP
+class PromoteProdTest(unittest.TestCase):
+    def setUp(self):
+        self.workflow = load('promote_prod.yml')
+
+    def test_manual_only(self):
+        self.assertEqual(list(self.workflow['on']), ['workflow_dispatch'])
+        inputs = self.workflow['on']['workflow_dispatch']['inputs']
+        self.assertEqual(inputs['version_code']['type'], 'number')
+        self.assertIs(inputs['version_code']['required'], True)
+        self.assertEqual(str(inputs['rollout']['default']), '100')
+
+    def test_promotes_without_uploading(self):
+        commands = runs(self.workflow)
+        for option in ('--track_promote_to production', '--version_code', '--skip_upload_aab true',
+                       'gem install fastlane -v 2.225.0'):
+            self.assertIn(option, commands)
+        self.assertIn("vars.PLAY_TRACK || 'alpha'", (WORKFLOWS / 'promote_prod.yml').read_text())
+
+
+@SKIP
+class StoreListingWorkflowTest(unittest.TestCase):
+    def test_package_and_dry_run_by_default(self):
+        workflow = load('store_listing.yml')
+        self.assertIn('--package_name it.davidetarsi.frequenza', runs(workflow))
+        self.assertIs(workflow['on']['workflow_dispatch']['inputs']['pubblica']['default'], False)
+
+
 if __name__ == '__main__':
     unittest.main()
