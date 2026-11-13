@@ -115,5 +115,49 @@ class BuildDevTest(unittest.TestCase):
         self.assertEqual(step_using(self.workflow, 'actions/upload-artifact')['with']['retention-days'], 7)
 
 
+@SKIP
+class ReleaseProdTest(unittest.TestCase):
+    def setUp(self):
+        self.workflow = load('release_prod.yml')
+
+    def test_prerelease_has_no_files(self):
+        release = step_using(self.workflow, 'softprops/action-gh-release')['with']
+        self.assertIs(release['prerelease'], True)
+        self.assertNotIn('files', release)
+
+    def test_signed_builds_kept_as_artifact(self):
+        artifact = step_using(self.workflow, 'actions/upload-artifact')['with']
+        self.assertEqual(artifact['retention-days'], 30)
+        self.assertIn('.aab', artifact['path'])
+        self.assertIn('.apk', artifact['path'])
+
+    def test_play_upload_behind_switch(self):
+        upload = step_using(self.workflow, 'r0adkll/upload-google-play')
+        account = [s for s in steps(self.workflow)
+                   if 'GOOGLE_PLAY_SERVICE_ACCOUNT_JSON' in s.get('env', {})]
+        self.assertEqual(len(account), 1)
+        for step in (upload, account[0]):
+            self.assertEqual(step.get('if'), "vars.PLAY_UPLOAD == 'on'")
+        self.assertEqual(upload['with']['tracks'], "${{ vars.PLAY_TRACK || 'alpha' }}")
+        self.assertEqual(upload['with']['packageName'], 'it.davidetarsi.frequenza')
+        self.assertEqual(upload['with']['whatsNewDirectory'], 'distribution/whatsnew')
+
+    def test_tag_on_another_commit_stops_first(self):
+        job_steps = list(steps(self.workflow))
+        checkout = next(i for i, s in enumerate(job_steps)
+                        if s.get('uses', '').startswith('actions/checkout@'))
+        self.assertIn('already points to another commit', job_steps[checkout + 1]['run'])
+
+
+class WhatsNewTest(unittest.TestCase):
+    def test_whatsnew_length(self):
+        files = sorted((WORKFLOWS.parents[1] / 'distribution' / 'whatsnew').glob('whatsnew-*'))
+        self.assertEqual({f.name for f in files}, {'whatsnew-it-IT', 'whatsnew-en-US'})
+        for path in files:
+            text = path.read_text().strip()
+            self.assertTrue(text, path.name)
+            self.assertLessEqual(len(text), 500, path.name)
+
+
 if __name__ == '__main__':
     unittest.main()
