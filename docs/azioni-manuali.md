@@ -98,6 +98,8 @@ Account sviluppatore personale: prima della produzione servono 14 giorni di test
 
   I nomi dei controlli compaiono nell'elenco dopo la prima esecuzione delle pipeline: si possono aggiungere dopo.
 
+  Nella regola di `develop` aggiungi anche **Bypass list → Repository admin** (modalità «Always allow»). L'aggiornamento automatico della versione scrive con il tuo `PAT_TOKEN` direttamente su `develop`, il branch della PR di rilascio: senza l'eccezione la regola «Require a pull request» lo rifiuta e il controllo «Android Version Selection» resta rosso. In alternativa, la versione si aggiorna a mano con una piccola PR.
+
 ### F. Primo rilascio verso `main`
 
 Fatto da Claude il 13 novembre 2026, sul branch `feat/pipeline`: versioni dev e prod (un solo `main.dart`), firma da `key.properties`, icona manopola, pipeline adattate da PackLog. Comandi locali: `flutter run` (parte la dev), `flutter build appbundle --flavor prod`.
