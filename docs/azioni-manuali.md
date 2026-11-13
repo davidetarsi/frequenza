@@ -1,12 +1,13 @@
 # Azioni manuali di Davide
 
-Cose che solo Davide può fare: account, chiavi, impostazioni di GitHub e del Play Store. Le spunte si aggiornano man mano. Stato al 12 novembre 2026.
+Cose che solo Davide può fare: account, chiavi, impostazioni di GitHub e del Play Store. Le spunte si aggiornano man mano. Stato al 13 novembre 2026.
 
 ## Ora
 
 - [ ] Unire le PR verso `develop`, in quest'ordine:
   1. https://github.com/davidetarsi/frequenza/compare/develop...feat/audio-service?expand=1
   2. https://github.com/davidetarsi/frequenza/compare/feat/audio-service...feat/rotta-sul-mondo?expand=1 (dopo il merge della prima, controllare che la base sia diventata `develop`)
+  3. https://github.com/davidetarsi/frequenza/compare/develop...feat/pipeline?expand=1 (le pipeline; contiene già la Rotta, quindi dopo la 2 mostra solo le sue modifiche)
 - [x] Scegliere il logo: la manopola (proposta 1 in https://claude.ai/artifact/KknrUgBnLJ1mKAjGCeG7th). Stessa icona per dev e prod; la dev cambia solo il nome, «Frequenza Dev».
 
 ## Pipeline e Play Store
@@ -43,13 +44,14 @@ Account sviluppatore personale: prima della produzione servono 14 giorni di test
   - pubblico di destinazione;
   - sicurezza dei dati: nessun dato raccolto né condiviso;
   - norme sulla privacy: un URL con una pagina semplice, che Claude può preparare.
-- [ ] **Scheda dello Store.** Descrizione breve e lunga, icona 512×512, grafica 1024×500 e almeno 2 screenshot. Claude può prepararli.
+- [ ] **Scheda dello Store.** Testi e icona 512×512 sono già nel repo (`fastlane/metadata/android`) e si inviano con Actions, «Scheda Google Play». Mancano grafica 1024×500 e almeno 2 screenshot: Claude può prepararli.
 - [ ] **Test chiuso.**
   - Apri Test, poi Test chiuso. Crea il canale (o usa «Alpha») e aggiungi i tester come elenco email o Google Group.
   - Il conto dei 14 giorni parte quando i tester hanno accettato l'invito e installato l'app: conviene averne più di 12.
 - [ ] **Primo AAB caricato a mano.** Google accetta caricamenti automatici solo dopo il primo.
-  - Scarica l'AAB costruito dalla pipeline (tab Actions) e caricalo tu nel test chiuso.
+  - Scarica l'AAB dagli artifact della run «Android Release Candidate» (tab Actions, in fondo alla pagina della run; resta 30 giorni) e caricalo tu nel test chiuso. La release su GitHub ha solo tag e note, nessun file: il repo è pubblico.
   - Così si attiva anche la firma delle app di Google Play, l'opzione predefinita.
+  - Solo quando quella prima versione del test chiuso è stata approvata da Google, accendi i caricamenti automatici: variabile `PLAY_UPLOAD` = `on` (punto E). Prima, Google rifiuterebbe i caricamenti perché l'app è ancora una bozza.
 
 ### D. Google Cloud: account di servizio per i caricamenti automatici
 
@@ -73,6 +75,19 @@ Account sviluppatore personale: prima della produzione servono 14 giorni di test
   | `DEBUG_KEYSTORE_BASE64` | il base64 di `frequenza-dev.p12` |
   | `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON` | il contenuto intero del file JSON |
   | `PAT_TOKEN` | token fine-grained di GitHub, solo sul repo frequenza, permesso Contents read/write. Serve all'aggiornamento automatico della versione |
+  | `TELEGRAM_BOT_TOKEN` | lo stesso valore del repo PackLog: è il bot che manda l'APK dev in chat |
+  | `TELEGRAM_CHAT_ID` | lo stesso valore del repo PackLog |
+
+  I segreti non passano da un repo all'altro: vanno copiati. Senza i due segreti Telegram l'APK dev resta solo nella tab Actions (7 giorni).
+
+  La chiave dev deve usare alias `androiddebugkey` e password `android`, come nel comando del punto B: la pipeline dev la apre con questi valori.
+
+- [ ] **Variabili:** stessa pagina, scheda Variables, poi New repository variable.
+
+  | Variabile | Valore |
+  |---|---|
+  | `PLAY_UPLOAD` | `on`, ma solo dopo il primo AAB caricato a mano e approvato (punto C). Finché manca, il rilascio si ferma verde dopo la release GitHub |
+  | `PLAY_TRACK` | facoltativa: il nome del canale del test chiuso. Se manca vale `alpha`, il test chiuso predefinito |
 
 - [ ] **Etichette:** Issues, poi Labels. Crea `version:major`, `version:minor` e `version:patch`.
 - [ ] **Regole dei branch:** Settings, poi Rules, poi Rulesets. Crea una regola per `main` e una per `develop` con:
@@ -83,13 +98,13 @@ Account sviluppatore personale: prima della produzione servono 14 giorni di test
 
   I nomi dei controlli compaiono nell'elenco dopo la prima esecuzione delle pipeline: si possono aggiungere dopo.
 
-### F. Parte di Claude
+### F. Primo rilascio verso `main`
 
-Dopo il passo A, sul branch `feat/pipeline` verso `develop`, con prima un breve documento di progetto da approvare:
-- le versioni dev e prod dell'app (Frequenza Dev con id `.dev`);
-- la firma da `key.properties`;
-- `main_dev` e `main_prod`;
-- le pipeline adattate da PackLog: rilascio nel test chiuso invece che nell'interno, e passaggio a produzione da avviare a mano.
+Fatto da Claude il 13 novembre 2026, sul branch `feat/pipeline`: versioni dev e prod (un solo `main.dart`), firma da `key.properties`, icona manopola, pipeline adattate da PackLog. Comandi locali: `flutter run` (parte la dev), `flutter build appbundle --flavor prod`.
+
+- [ ] **Versione del primo rilascio, una volta sola.** Su `main` la versione è ancora `0.1.0` e l'aggiornamento automatico arriva su `main` solo con questo stesso rilascio. Prima di aprire la PR `develop → main`, una piccola PR verso `develop` porta `pubspec.yaml` a `version: 0.2.0+1` (Claude può prepararla). Poi la PR `develop → main` con l'etichetta `version:minor`. Dal secondo rilascio in poi basta l'etichetta.
+- [ ] **Novità della versione:** prima di ogni rilascio, aggiorna `distribution/whatsnew/whatsnew-it-IT` e `whatsnew-en-US` (massimo 500 caratteri).
+- [ ] **Passaggio in produzione**, dopo i 14 giorni con 12 tester: Actions, «Promuovi in produzione», Run workflow, con il numero di build (il numero dopo il `+`, per esempio `1` per `0.2.0+1`) e la percentuale di utenti.
 
 Quando A, B ed E sono fatti, basta dire «fatto»: Claude non può controllare gli account.
 
