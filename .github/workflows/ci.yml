@@ -92,4 +92,6 @@ jobs:
         run: bash tool/check.sh
 
       - name: 🧾 Generated files are committed
-        run: git diff --exit-code
+        run: |
+          git status --short
+          git diff --exit-code
