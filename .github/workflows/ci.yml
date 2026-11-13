@@ -1,0 +1,95 @@
+name: 🛡️ Continuous Integration
+
+on:
+  pull_request:
+    branches: [ "main", "develop" ]
+    types: [opened, reopened, synchronize, labeled, unlabeled]
+
+permissions:
+  contents: read
+
+jobs:
+  version-selection:
+    name: Android Version Selection
+    if: github.base_ref == 'main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+
+    steps:
+      - name: ⬇️ Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Verify one version label and the pubspec bump
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const { LABELS, parseVersion, selectedLabel, nextVersion, formatVersion } =
+              require(`${process.env.GITHUB_WORKSPACE}/.github/scripts/version.cjs`);
+            const pr = context.payload.pull_request;
+            const label = selectedLabel(pr.labels.map((l) => l.name));
+            if (!label) {
+              core.setFailed(`Choose exactly one version label: ${LABELS.join(', ')}`);
+              return;
+            }
+
+            async function readPubspec(owner, repo, ref) {
+              const response = await github.rest.repos.getContent({ owner, repo, path: 'pubspec.yaml', ref });
+              if (Array.isArray(response.data) || !response.data.content) {
+                throw new Error('pubspec.yaml is missing');
+              }
+              return Buffer.from(response.data.content, 'base64').toString('utf8');
+            }
+
+            // La base può non avere ancora il numero di build (primo rilascio).
+            const base = parseVersion(
+              await readPubspec(pr.base.repo.owner.login, pr.base.repo.name, pr.base.sha),
+              { allowMissingBuild: true });
+            const head = parseVersion(
+              await readPubspec(pr.head.repo.owner.login, pr.head.repo.name, pr.head.sha));
+            const expected = formatVersion(nextVersion(base, label));
+            if (formatVersion(head) !== expected) {
+              core.setFailed(`Expected ${expected} in pubspec.yaml`);
+            }
+
+  lint-and-test:
+    name: Lint & Unit Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: ⬇️ Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: 🐍 Setup Python (test dei workflow e dell'icona)
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: 📦 Install PyYAML
+        run: python -m pip install pyyaml==6.0.2
+
+      - name: 🐦 Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          flutter-version: '3.38.5'
+          cache: true
+
+      # Dipendenze, l10n, codice generato, formattazione, analisi e test:
+      # lo stesso comando che si lancia in locale.
+      - name: 🧪 Run tool/check.sh
+        env:
+          REQUIRE_YAML: '1'
+        run: bash tool/check.sh
+
+      - name: 🧾 Generated files are committed
+        run: git diff --exit-code
