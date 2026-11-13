@@ -63,6 +63,20 @@ void main() {
     );
   });
 
+  test('favorites keep valid coordinates and ignore malformed ones', () async {
+    SharedPreferences.setMockInitialValues({
+      'frequenza.favorites.v1':
+          '[{"id":"bad","name":"Bad","url":"https://example.com/bad","code":"FR","lat":"x","lon":2.3}]',
+    });
+    final repository = PreferencesFavoritesRepository();
+    expect((await repository.load()).single.point, isNull);
+
+    await repository.save([station.copyWith(latitude: 45.46, longitude: 9.19)]);
+    final loaded = (await repository.load()).single;
+    expect(loaded.point?.latitude, 45.46);
+    expect(loaded.point?.longitude, 9.19);
+  });
+
   test(
     'toggle removes by identity and failure preserves saved stations',
     () async {

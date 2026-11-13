@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../journey/domain/geo_point.dart';
 import '../../radio/domain/radio_station.dart';
 import '../domain/favorites_repository.dart';
 
@@ -25,6 +26,7 @@ class PreferencesFavoritesRepository implements FavoritesRepository {
       }
       final uri = Uri.tryParse(url);
       if (uri == null || uri.scheme != 'https' || uri.host.isEmpty) continue;
+      final point = GeoPoint.tryFrom(entry['lat'], entry['lon']);
       result[id] = RadioStation.fromJson({
         'id': id,
         'name': name,
@@ -34,6 +36,8 @@ class PreferencesFavoritesRepository implements FavoritesRepository {
         'tags': (entry['tags'] is List ? entry['tags'] as List : [])
             .whereType<String>()
             .toList(),
+        'lat': point?.latitude,
+        'lon': point?.longitude,
       });
     }
     return result.values.toList(growable: false);
@@ -48,6 +52,11 @@ class PreferencesFavoritesRepository implements FavoritesRepository {
         return {
           for (final key in ['id', 'name', 'url', 'country', 'code', 'tags'])
             key: json[key],
+          // Records without coordinates keep the original v1 shape.
+          if (station.point case final point?) ...{
+            'lat': point.latitude,
+            'lon': point.longitude,
+          },
         };
       }).toList(),
     );

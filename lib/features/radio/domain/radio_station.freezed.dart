@@ -32,6 +32,10 @@ mixin _$RadioStation {
   List<String> get tags => throw _privateConstructorUsedError;
   String? get codec => throw _privateConstructorUsedError;
   int? get bitrate => throw _privateConstructorUsedError;
+  @JsonKey(name: 'lat')
+  double? get latitude => throw _privateConstructorUsedError;
+  @JsonKey(name: 'lon')
+  double? get longitude => throw _privateConstructorUsedError;
 
   /// Serializes this RadioStation to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -60,6 +64,8 @@ abstract class $RadioStationCopyWith<$Res> {
     List<String> tags,
     String? codec,
     int? bitrate,
+    @JsonKey(name: 'lat') double? latitude,
+    @JsonKey(name: 'lon') double? longitude,
   });
 }
 
@@ -87,6 +93,8 @@ class _$RadioStationCopyWithImpl<$Res, $Val extends RadioStation>
     Object? tags = null,
     Object? codec = freezed,
     Object? bitrate = freezed,
+    Object? latitude = freezed,
+    Object? longitude = freezed,
   }) {
     return _then(
       _value.copyWith(
@@ -126,6 +134,14 @@ class _$RadioStationCopyWithImpl<$Res, $Val extends RadioStation>
                 ? _value.bitrate
                 : bitrate // ignore: cast_nullable_to_non_nullable
                       as int?,
+            latitude: freezed == latitude
+                ? _value.latitude
+                : latitude // ignore: cast_nullable_to_non_nullable
+                      as double?,
+            longitude: freezed == longitude
+                ? _value.longitude
+                : longitude // ignore: cast_nullable_to_non_nullable
+                      as double?,
           )
           as $Val,
     );
@@ -151,6 +167,8 @@ abstract class _$$RadioStationImplCopyWith<$Res>
     List<String> tags,
     String? codec,
     int? bitrate,
+    @JsonKey(name: 'lat') double? latitude,
+    @JsonKey(name: 'lon') double? longitude,
   });
 }
 
@@ -177,6 +195,8 @@ class __$$RadioStationImplCopyWithImpl<$Res>
     Object? tags = null,
     Object? codec = freezed,
     Object? bitrate = freezed,
+    Object? latitude = freezed,
+    Object? longitude = freezed,
   }) {
     return _then(
       _$RadioStationImpl(
@@ -216,6 +236,14 @@ class __$$RadioStationImplCopyWithImpl<$Res>
             ? _value.bitrate
             : bitrate // ignore: cast_nullable_to_non_nullable
                   as int?,
+        latitude: freezed == latitude
+            ? _value.latitude
+            : latitude // ignore: cast_nullable_to_non_nullable
+                  as double?,
+        longitude: freezed == longitude
+            ? _value.longitude
+            : longitude // ignore: cast_nullable_to_non_nullable
+                  as double?,
       ),
     );
   }
@@ -234,6 +262,8 @@ class _$RadioStationImpl extends _RadioStation {
     final List<String> tags = const [],
     this.codec,
     this.bitrate,
+    @JsonKey(name: 'lat') this.latitude,
+    @JsonKey(name: 'lon') this.longitude,
   }) : _tags = tags,
        super._();
 
@@ -267,10 +297,16 @@ class _$RadioStationImpl extends _RadioStation {
   final String? codec;
   @override
   final int? bitrate;
+  @override
+  @JsonKey(name: 'lat')
+  final double? latitude;
+  @override
+  @JsonKey(name: 'lon')
+  final double? longitude;
 
   @override
   String toString() {
-    return 'RadioStation(id: $id, name: $name, streamUrl: $streamUrl, country: $country, countryCode: $countryCode, faviconUrl: $faviconUrl, tags: $tags, codec: $codec, bitrate: $bitrate)';
+    return 'RadioStation(id: $id, name: $name, streamUrl: $streamUrl, country: $country, countryCode: $countryCode, faviconUrl: $faviconUrl, tags: $tags, codec: $codec, bitrate: $bitrate, latitude: $latitude, longitude: $longitude)';
   }
 
   /// Create a copy of RadioStation
@@ -298,6 +334,8 @@ abstract class _RadioStation extends RadioStation {
     final List<String> tags,
     final String? codec,
     final int? bitrate,
+    @JsonKey(name: 'lat') final double? latitude,
+    @JsonKey(name: 'lon') final double? longitude,
   }) = _$RadioStationImpl;
   const _RadioStation._() : super._();
 
@@ -324,6 +362,12 @@ abstract class _RadioStation extends RadioStation {
   String? get codec;
   @override
   int? get bitrate;
+  @override
+  @JsonKey(name: 'lat')
+  double? get latitude;
+  @override
+  @JsonKey(name: 'lon')
+  double? get longitude;
 
   /// Create a copy of RadioStation
   /// with the given fields replaced by the non-null parameter values.

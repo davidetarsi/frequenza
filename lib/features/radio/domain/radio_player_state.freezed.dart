@@ -21,6 +21,17 @@ mixin _$RadioPlayerState {
   RadioStation? get station => throw _privateConstructorUsedError;
   String? get errorMessage => throw _privateConstructorUsedError;
   String? get trackTitle => throw _privateConstructorUsedError;
+  FlightPhase get flight => throw _privateConstructorUsedError;
+
+  /// Where the next flight leaves from: the last placed landing.
+  StationPlace get departure => throw _privateConstructorUsedError;
+
+  /// The leg that brought the radio to [station].
+  TravelLeg? get leg => throw _privateConstructorUsedError;
+
+  /// The last placed legs of this session, oldest first.
+  List<TravelLeg> get history => throw _privateConstructorUsedError;
+  int get trips => throw _privateConstructorUsedError;
 
   /// Create a copy of RadioPlayerState
   /// with the given fields replaced by the non-null parameter values.
@@ -41,6 +52,11 @@ abstract class $RadioPlayerStateCopyWith<$Res> {
     RadioStation? station,
     String? errorMessage,
     String? trackTitle,
+    FlightPhase flight,
+    StationPlace departure,
+    TravelLeg? leg,
+    List<TravelLeg> history,
+    int trips,
   });
 
   $RadioStationCopyWith<$Res>? get station;
@@ -65,6 +81,11 @@ class _$RadioPlayerStateCopyWithImpl<$Res, $Val extends RadioPlayerState>
     Object? station = freezed,
     Object? errorMessage = freezed,
     Object? trackTitle = freezed,
+    Object? flight = null,
+    Object? departure = null,
+    Object? leg = freezed,
+    Object? history = null,
+    Object? trips = null,
   }) {
     return _then(
       _value.copyWith(
@@ -84,6 +105,26 @@ class _$RadioPlayerStateCopyWithImpl<$Res, $Val extends RadioPlayerState>
                 ? _value.trackTitle
                 : trackTitle // ignore: cast_nullable_to_non_nullable
                       as String?,
+            flight: null == flight
+                ? _value.flight
+                : flight // ignore: cast_nullable_to_non_nullable
+                      as FlightPhase,
+            departure: null == departure
+                ? _value.departure
+                : departure // ignore: cast_nullable_to_non_nullable
+                      as StationPlace,
+            leg: freezed == leg
+                ? _value.leg
+                : leg // ignore: cast_nullable_to_non_nullable
+                      as TravelLeg?,
+            history: null == history
+                ? _value.history
+                : history // ignore: cast_nullable_to_non_nullable
+                      as List<TravelLeg>,
+            trips: null == trips
+                ? _value.trips
+                : trips // ignore: cast_nullable_to_non_nullable
+                      as int,
           )
           as $Val,
     );
@@ -118,6 +159,11 @@ abstract class _$$RadioPlayerStateImplCopyWith<$Res>
     RadioStation? station,
     String? errorMessage,
     String? trackTitle,
+    FlightPhase flight,
+    StationPlace departure,
+    TravelLeg? leg,
+    List<TravelLeg> history,
+    int trips,
   });
 
   @override
@@ -142,6 +188,11 @@ class __$$RadioPlayerStateImplCopyWithImpl<$Res>
     Object? station = freezed,
     Object? errorMessage = freezed,
     Object? trackTitle = freezed,
+    Object? flight = null,
+    Object? departure = null,
+    Object? leg = freezed,
+    Object? history = null,
+    Object? trips = null,
   }) {
     return _then(
       _$RadioPlayerStateImpl(
@@ -161,6 +212,26 @@ class __$$RadioPlayerStateImplCopyWithImpl<$Res>
             ? _value.trackTitle
             : trackTitle // ignore: cast_nullable_to_non_nullable
                   as String?,
+        flight: null == flight
+            ? _value.flight
+            : flight // ignore: cast_nullable_to_non_nullable
+                  as FlightPhase,
+        departure: null == departure
+            ? _value.departure
+            : departure // ignore: cast_nullable_to_non_nullable
+                  as StationPlace,
+        leg: freezed == leg
+            ? _value.leg
+            : leg // ignore: cast_nullable_to_non_nullable
+                  as TravelLeg?,
+        history: null == history
+            ? _value._history
+            : history // ignore: cast_nullable_to_non_nullable
+                  as List<TravelLeg>,
+        trips: null == trips
+            ? _value.trips
+            : trips // ignore: cast_nullable_to_non_nullable
+                  as int,
       ),
     );
   }
@@ -174,7 +245,13 @@ class _$RadioPlayerStateImpl extends _RadioPlayerState {
     this.station,
     this.errorMessage,
     this.trackTitle,
-  }) : super._();
+    this.flight = FlightPhase.grounded,
+    this.departure = homePlace,
+    this.leg,
+    final List<TravelLeg> history = const <TravelLeg>[],
+    this.trips = 0,
+  }) : _history = history,
+       super._();
 
   @override
   @JsonKey()
@@ -185,10 +262,38 @@ class _$RadioPlayerStateImpl extends _RadioPlayerState {
   final String? errorMessage;
   @override
   final String? trackTitle;
+  @override
+  @JsonKey()
+  final FlightPhase flight;
+
+  /// Where the next flight leaves from: the last placed landing.
+  @override
+  @JsonKey()
+  final StationPlace departure;
+
+  /// The leg that brought the radio to [station].
+  @override
+  final TravelLeg? leg;
+
+  /// The last placed legs of this session, oldest first.
+  final List<TravelLeg> _history;
+
+  /// The last placed legs of this session, oldest first.
+  @override
+  @JsonKey()
+  List<TravelLeg> get history {
+    if (_history is EqualUnmodifiableListView) return _history;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_history);
+  }
+
+  @override
+  @JsonKey()
+  final int trips;
 
   @override
   String toString() {
-    return 'RadioPlayerState(status: $status, station: $station, errorMessage: $errorMessage, trackTitle: $trackTitle)';
+    return 'RadioPlayerState(status: $status, station: $station, errorMessage: $errorMessage, trackTitle: $trackTitle, flight: $flight, departure: $departure, leg: $leg, history: $history, trips: $trips)';
   }
 
   @override
@@ -201,12 +306,28 @@ class _$RadioPlayerStateImpl extends _RadioPlayerState {
             (identical(other.errorMessage, errorMessage) ||
                 other.errorMessage == errorMessage) &&
             (identical(other.trackTitle, trackTitle) ||
-                other.trackTitle == trackTitle));
+                other.trackTitle == trackTitle) &&
+            (identical(other.flight, flight) || other.flight == flight) &&
+            (identical(other.departure, departure) ||
+                other.departure == departure) &&
+            (identical(other.leg, leg) || other.leg == leg) &&
+            const DeepCollectionEquality().equals(other._history, _history) &&
+            (identical(other.trips, trips) || other.trips == trips));
   }
 
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, status, station, errorMessage, trackTitle);
+  int get hashCode => Object.hash(
+    runtimeType,
+    status,
+    station,
+    errorMessage,
+    trackTitle,
+    flight,
+    departure,
+    leg,
+    const DeepCollectionEquality().hash(_history),
+    trips,
+  );
 
   /// Create a copy of RadioPlayerState
   /// with the given fields replaced by the non-null parameter values.
@@ -226,6 +347,11 @@ abstract class _RadioPlayerState extends RadioPlayerState {
     final RadioStation? station,
     final String? errorMessage,
     final String? trackTitle,
+    final FlightPhase flight,
+    final StationPlace departure,
+    final TravelLeg? leg,
+    final List<TravelLeg> history,
+    final int trips,
   }) = _$RadioPlayerStateImpl;
   const _RadioPlayerState._() : super._();
 
@@ -237,6 +363,22 @@ abstract class _RadioPlayerState extends RadioPlayerState {
   String? get errorMessage;
   @override
   String? get trackTitle;
+  @override
+  FlightPhase get flight;
+
+  /// Where the next flight leaves from: the last placed landing.
+  @override
+  StationPlace get departure;
+
+  /// The leg that brought the radio to [station].
+  @override
+  TravelLeg? get leg;
+
+  /// The last placed legs of this session, oldest first.
+  @override
+  List<TravelLeg> get history;
+  @override
+  int get trips;
 
   /// Create a copy of RadioPlayerState
   /// with the given fields replaced by the non-null parameter values.

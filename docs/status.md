@@ -119,3 +119,23 @@ Prossimo passo: feedback sul design nell'emulatore, poi lavoro mirato sulle anim
 - Palette e token della home, scocca, equalizzatore, pannello Preferiti e diagnostica sono centralizzati nel tema di prodotto. I widget comuni seguono la base dello starter.
 - Verificati generazione, formattazione, analisi, 20 test e APK debug ARM64. Sull'emulatore verificato il percorso home → Impostazioni → home. I test simulano il riavvio per lingua e tema nello starter e il cambio in Frequenza.
 - Restano la prova della seconda app neutra e i moduli opzionali della roadmap, incluso Tgram Analytics per gli eventi prodotto.
+
+## Notifica tramite audio_service — 12 novembre 2026
+
+Passo 1 del design `superpowers/specs/2026-11-12-rotta-sul-mondo-design.md`; piano `superpowers/plans/2026-11-12-audio-service.md`.
+
+- Rimosso `just_audio_background`. `RadioAudioHandler` (audio_service diretto) pubblica stato e comandi della notifica dallo stesso `AudioPlayer`; `JustAudioService` passa nome, Paese e logo della stazione tramite `RadioMediaSession`. Canale, opzioni di notifica e contratto del controller invariati.
+- Verificati sulla VPS: formattazione, analisi senza segnalazioni, controlli dello stato del player, suite 31/31, bundle debug. Una revisione indipendente del branch ha portato a due correzioni: notifica ferma quando lo stream finisce e lock riportato sulle versioni del progetto. APK release non verificato: la build sulla VPS è stata fermata per memoria insufficiente.
+- La VPS ha Flutter 3.47.4: `pub get` riscrive il lock e `build_runner` si blocca sull'analyzer. Il lock è stato modificato a mano e il provider `radioAudioHandler` scritto a mano nel `.g.dart`: rieseguire `bash tool/check.sh --apk` con Flutter 3.38.5 e versionare eventuali differenze.
+- Prossimo passo: collaudo su telefono (checklist in fondo al piano), poi passo 2, la Rotta sul mondo.
+
+## Rotta sul mondo — 12 novembre 2026
+
+Passo 2 del design `superpowers/specs/2026-11-12-rotta-sul-mondo-design.md`; piano `superpowers/plans/2026-11-12-rotta-sul-mondo.md`. Branch `feat/rotta-sul-mondo` sopra `feat/audio-service`, non ancora pubblicato.
+
+- Manopola e Preferiti seguono lo stesso volo. Il volo dura almeno 1 s, con il fruscio e la stazione a volume zero. L'atterraggio avviene solo con la riproduzione avviata e solo allora la notifica mostra la stazione. Dopo 12 s senza riproduzione compare «Segnale perso»: la manopola fa fino a 2 nuovi tentativi, il preferito nessuno. Una pausa di sistema durante il volo (cuffie, chiamata) annulla il volo.
+- Display: mappa a puntini (Natural Earth) al posto delle barre nel layout normale, con scia radar, arco, storico di 5 rotte e «Viaggio n. X». Mostra anche distanza del tratto e ora locale con icona. Nel layout compatto l'ora prende il posto delle barre.
+- L'atlante (`lib/features/journey/data/world_atlas.g.dart`) si rigenera con `bash tool/world_atlas/generate.sh`, che usa la tzdata del sistema. L'Egitto e Lord Howe usano l'ora solare. Il Cile può sbagliare l'ora legale di una settimana in alcuni anni.
+- Flutter 3.38.5 del progetto è installato sulla VPS in `/srv/claude/workspaces/.tools/flutter-3.38.5`. Verificati `tool/check.sh` (lock invariato), analisi pulita e suite 69/69, più una revisione indipendente del branch con quattro correzioni. APK non compilato sulla VPS.
+- Limiti noti: su iOS il volo è muto. Pausa dalla notifica durante il volo: la stazione resta muta, il volo scade in «Segnale perso» e la manopola può riprovare.
+- Prossimo passo: push dei due branch e PR, collaudo su telefono (checklist del passo 1, volo da manopola e Preferiti, niente audio prima dell'atterraggio, notifica «In volo…», modalità aereo, riduzione del movimento), poi aggiornamento di Flutter.

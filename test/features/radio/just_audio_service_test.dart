@@ -1,13 +1,20 @@
 import 'dart:async';
 
+import 'package:audio_session/audio_session.dart';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frequenza/features/radio/data/just_audio_service.dart';
+import 'package:frequenza/features/radio/data/radio_media_session.dart';
 import 'package:frequenza/features/radio/domain/radio_player_state.dart';
 import 'package:frequenza/features/radio/domain/radio_station.dart';
 import 'package:just_audio/just_audio.dart';
 
 class LivePlayer extends Fake implements AudioPlayer {
   final playback = Completer<void>();
+  final calls = <String>[];
+
+  @override
+  Future<void> setVolume(double volume) async => calls.add('volume $volume');
 
   @override
   Stream<PlayerState> get playerStateStream => const Stream.empty();
@@ -24,7 +31,10 @@ class LivePlayer extends Fake implements AudioPlayer {
   }) async => null;
 
   @override
-  Future<void> play() => playback.future;
+  Future<void> play() {
+    calls.add('play');
+    return playback.future;
+  }
 
   @override
   Future<void> stop() async {}
@@ -33,6 +43,17 @@ class LivePlayer extends Fake implements AudioPlayer {
   Future<void> dispose() async {
     if (!playback.isCompleted) playback.complete();
   }
+}
+
+class RecordingSession implements RadioMediaSession {
+  RadioStation? shown;
+  var flights = 0;
+
+  @override
+  void showStation(RadioStation station) => shown = station;
+
+  @override
+  void showFlight() => flights++;
 }
 
 void main() {
@@ -65,5 +86,71 @@ void main() {
     );
     player.playback.completeError(StateError('Disconnected'));
     await observed;
+  });
+
+  test('playStation starts silent and shows only the flight', () async {
+    final player = LivePlayer();
+    final session = RecordingSession();
+    final service = JustAudioService(player: player, mediaSession: session);
+    addTearDown(service.dispose);
+    await service.playStation(station).timeout(const Duration(seconds: 1));
+    expect(player.calls, ['volume 0.0', 'play']);
+    expect(session.flights, 1);
+    expect(session.shown, isNull);
+  });
+
+  test('land restores the volume and reveals the station', () async {
+    final player = LivePlayer();
+    final session = RecordingSession();
+    final service = JustAudioService(player: player, mediaSession: session);
+    addTearDown(service.dispose);
+    await service.playStation(station);
+    await service.land(station);
+    expect(player.calls.last, 'volume 1.0');
+    expect(session.shown?.id, station.id);
+  });
+
+  test(
+    'a pause during the flight is reported, after landing it is not',
+    () async {
+      final player = LivePlayer();
+      final service = JustAudioService(player: player);
+      addTearDown(service.dispose);
+      var reported = 0;
+      final subscription = service.flightInterruptions.listen(
+        (_) => reported++,
+      );
+      addTearDown(subscription.cancel);
+      await service.playStation(station);
+      await service.pause();
+      await Future<void>.delayed(Duration.zero);
+      expect(reported, 1);
+      await service.land(station);
+      await service.pause();
+      await Future<void>.delayed(Duration.zero);
+      expect(reported, 1);
+    },
+  );
+
+  test('a duck ending during the flight keeps the station silent', () async {
+    final player = LivePlayer();
+    final service = JustAudioService(player: player);
+    addTearDown(service.dispose);
+    await service.playStation(station);
+    service.handleInterruption(
+      AudioInterruptionEvent(true, AudioInterruptionType.duck),
+    );
+    service.handleInterruption(
+      AudioInterruptionEvent(false, AudioInterruptionType.duck),
+    );
+    expect(
+      player.calls.where((c) => c.startsWith('volume')),
+      everyElement('volume 0.0'),
+    );
+    service.handleInterruption(
+      AudioInterruptionEvent(true, AudioInterruptionType.duck),
+    );
+    await service.land(station);
+    expect(player.calls.last, 'volume 0.2');
   });
 }

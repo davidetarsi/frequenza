@@ -57,7 +57,7 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('tune-knob')));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 999));
-      expect(audio.lastPlayedStation, isNull);
+      expect(audio.landed, isEmpty);
       expect(audio.tuningSoundActive, isTrue);
       await tester.pump(const Duration(milliseconds: 1));
       await tester.pumpAndSettle();
@@ -72,7 +72,7 @@ void main() {
       );
       expect(dial.size, speaker.size);
       expect(dial.center.dy, speaker.center.dy);
-      expect(find.byKey(const ValueKey('radio-equalizer')), findsOneWidget);
+      expect(find.byKey(const ValueKey('route-map')), findsOneWidget);
       audio.trackTitles.add('Artista — Titolo');
       await tester.pumpAndSettle();
       expect(find.text('Artista — Titolo'), findsOneWidget);
@@ -91,6 +91,8 @@ void main() {
       expect(find.text('Le tue frequenze'), findsOneWidget);
       await tester.tap(find.byKey(const ValueKey('favorite-play-id')));
       await tester.pumpAndSettle();
+      await tester.pump(const Duration(seconds: 1));
+      await tester.pumpAndSettle();
       expect(find.text('Le tue frequenze'), findsNothing);
       expect(audio.lastPlayedStation?.id, 'id');
       expect(tester.binding.hasScheduledFrame, isFalse);
@@ -100,7 +102,7 @@ void main() {
       expect(tester.binding.hasScheduledFrame, isTrue);
       await tester.tap(find.text('Pausa'));
       await tester.pumpAndSettle();
-      expect(find.byKey(const ValueKey('radio-equalizer')), findsOneWidget);
+      expect(find.byKey(const ValueKey('route-map')), findsOneWidget);
       expect(tester.binding.hasScheduledFrame, isFalse);
       await tester.tap(find.byTooltip('Impostazioni'));
       await tester.pumpAndSettle();
@@ -187,7 +189,8 @@ void main() {
     expect(find.text('Pausa').hitTestable(), findsOneWidget);
     expect(find.text('Salvata').hitTestable(), findsOneWidget);
     expect(
-      find.byKey(const ValueKey('radio-equalizer')).hitTestable(),
+      // On air, the station's local time takes the bars' place.
+      find.byIcon(Icons.schedule).hitTestable(),
       findsOneWidget,
     );
     tester.view.physicalSize = const Size(640, 320);
