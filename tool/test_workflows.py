@@ -88,5 +88,32 @@ class CiTest(unittest.TestCase):
                 self.assertNotIn('pull_request', ref)
 
 
+@SKIP
+class BuildDevTest(unittest.TestCase):
+    def setUp(self):
+        self.workflow = load('build_dev.yml')
+
+    def test_triggers(self):
+        push = self.workflow['on']['push']
+        self.assertEqual(push['branches'], ['develop'])
+        self.assertLessEqual({'docs/**', 'test/**', '**/*.md'}, set(push['paths-ignore']))
+        self.assertIn('workflow_dispatch', self.workflow['on'])
+
+    def test_builds_dev_arm64(self):
+        commands = runs(self.workflow)
+        self.assertIn('--flavor dev', commands)
+        self.assertIn('--target-platform android-arm64', commands)
+
+    def test_telegram_secrets_only_from_env(self):
+        telegram = [s for s in steps(self.workflow) if 'api.telegram.org' in s.get('run', '')]
+        self.assertEqual(len(telegram), 1)
+        self.assertNotIn('secrets.', telegram[0]['run'])
+        self.assertEqual(telegram[0]['env']['TELEGRAM_BOT_TOKEN'], '${{ secrets.TELEGRAM_BOT_TOKEN }}')
+        self.assertEqual(telegram[0]['env']['TELEGRAM_CHAT_ID'], '${{ secrets.TELEGRAM_CHAT_ID }}')
+
+    def test_artifact_kept_seven_days(self):
+        self.assertEqual(step_using(self.workflow, 'actions/upload-artifact')['with']['retention-days'], 7)
+
+
 if __name__ == '__main__':
     unittest.main()
