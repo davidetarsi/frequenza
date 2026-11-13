@@ -25,15 +25,16 @@ def decode_png(data):
         chunks[kind] += data[pos + 8:pos + 8 + length]
         pos += 12 + length
     width, height, depth, color = struct.unpack('>IIBB', chunks[b'IHDR'][:10])
-    assert (depth, color) == (8, 6)
+    assert depth == 8 and color in (2, 6)
+    channels = 4 if color == 6 else 3
     raw = zlib.decompress(chunks[b'IDAT'])
-    stride = width * 4 + 1
+    stride = width * channels + 1
     rows = [raw[y * stride + 1:(y + 1) * stride] for y in range(height)]
-    return width, height, rows
+    return width, height, rows, color
 
 
 def pixel(png, x, y):
-    width, _, rows = png
+    width, _, rows, _ = png
     index = int(x / 108 * width)
     row = rows[int(y / 108 * width)]
     return tuple(row[index * 4:index * 4 + 4])
@@ -59,7 +60,7 @@ def path_points(xml):
 class IconTest(unittest.TestCase):
     def test_png_sizes(self):
         for size in (48, 192, 512):
-            width, height, _ = decode_png(generate.render_png(size))
+            width, height, _, _ = decode_png(generate.render_png(size))
             self.assertEqual((width, height), (size, size))
 
     def test_png_colors(self):
@@ -71,6 +72,15 @@ class IconTest(unittest.TestCase):
     def test_store_icon_is_full_bleed(self):
         png = decode_png(generate.render_png(512, rounded=False))
         self.assertEqual(pixel(png, 1, 1), (0x20, 0x3C, 0x33, 255))
+
+    def test_feature_graphic_has_no_alpha(self):
+        # Google vuole la grafica in primo piano 1024×500, PNG a 24 bit.
+        width, height, rows, color = decode_png(generate.render_feature_graphic())
+        self.assertEqual((width, height, color), (1024, 500, 2))
+        self.assertEqual(tuple(rows[0][:3]), (0x20, 0x3C, 0x33))
+        # Al centro c'è la manopola: la tacca arancione sopra il centro.
+        marker_y = 250 + round((37 - 54) * generate.FEATURE_SCALE)
+        self.assertEqual(tuple(rows[marker_y][512 * 3:512 * 3 + 3]), (0xAD, 0x48, 0x23))
 
     def test_adaptive_fits_safe_zone(self):
         for xml in (generate.foreground_xml(), generate.monochrome_xml()):

@@ -104,6 +104,16 @@ def _pixel(x, y, half_pixel, layers):
     return bytes(round(c / alpha) for c in (red, green, blue)) + bytes([round(alpha * 255)])
 
 
+def _encode_png(width, height, raw, color_type):
+    def chunk(kind, data):
+        body = kind + data
+        return struct.pack('>I', len(data)) + body + struct.pack('>I', zlib.crc32(body))
+
+    header = struct.pack('>IIBBBBB', width, height, 8, color_type, 0, 0, 0)
+    return (b'\x89PNG\r\n\x1a\n' + chunk(b'IHDR', header)
+            + chunk(b'IDAT', zlib.compress(bytes(raw), 9)) + chunk(b'IEND', b''))
+
+
 def render_png(size, rounded=True):
     """PNG RGBA della manopola; `rounded=False` per l'icona del Play Store,
     che Google ritaglia da sé."""
@@ -115,14 +125,54 @@ def render_png(size, rounded=True):
         y = (row + 0.5) * unit
         for column in range(size):
             raw += _pixel((column + 0.5) * unit, y, unit / 2, layers)
+    return _encode_png(size, size, raw, 6)
 
-    def chunk(kind, data):
-        body = kind + data
-        return struct.pack('>I', len(data)) + body + struct.pack('>I', zlib.crc32(body))
 
-    header = struct.pack('>IIBBBBB', size, size, 8, 6, 0, 0, 0)
-    return (b'\x89PNG\r\n\x1a\n' + chunk(b'IHDR', header)
-            + chunk(b'IDAT', zlib.compress(bytes(raw), 9)) + chunk(b'IEND', b''))
+# --- Grafica in primo piano del Play Store -------------------------------------
+# La manopola al centro e, intorno, gli stessi trattini dell'anello ripetuti in
+# onde che si allargano e sbiadiscono: la frequenza che si propaga.
+
+FEATURE_SIZE = (1024, 500)
+FEATURE_SCALE = 2.6
+WAVE_STEP = 16.0
+WAVES = 9
+
+
+def _wave(index):
+    radius = RING_RADIUS + index * WAVE_STEP
+    dashes = round(DASHES * radius / RING_RADIUS)
+    opacity = RING_ALPHA * (1 - index / (WAVES + 1)) ** 1.5
+    step = 2 * math.pi / dashes
+
+    def distance(x, y):
+        dx, dy = x - CENTER, y - CENTER
+        if abs(math.hypot(dx, dy) - radius) > RING_WIDTH:
+            return RING_WIDTH
+        angle = round(math.atan2(dy, dx) / step) * step
+        c, s = math.cos(angle), math.sin(angle)
+        return _box(dx * c + dy * s - radius, -dx * s + dy * c, RING_WIDTH / 2, DASH_LENGTH / 2)
+
+    return RING, opacity, distance
+
+
+def render_feature_graphic():
+    """PNG RGB 1024×500, senza trasparenza come chiede Google."""
+    width, height = FEATURE_SIZE
+    unit = 1 / FEATURE_SCALE
+    knob = _layers(rounded=False)[1:]
+    waves = [_wave(i) for i in range(1, WAVES + 1)]
+    raw = bytearray()
+    for row in range(height):
+        raw.append(0)
+        y = CENTER + (row + 0.5 - height / 2) * unit
+        for column in range(width):
+            x = CENTER + (column + 0.5 - width / 2) * unit
+            # Fuori dalla manopola contano solo le onde: si salta il resto.
+            layers = knob if math.hypot(x - CENTER, y - CENTER) < RING_RADIUS + RING_WIDTH else waves
+            red, green, blue, alpha = _pixel(x, y, unit / 2, layers)
+            a = alpha / 255
+            raw += bytes(round(c * a + b * (1 - a)) for c, b in zip((red, green, blue), BACKGROUND))
+    return _encode_png(width, height, raw, 2)
 
 
 # --- Vettori adattivi ---------------------------------------------------------
@@ -245,8 +295,11 @@ def write_all(root):
     for density, size in LEGACY_SIZES.items():
         files[RES / f'mipmap-{density}/ic_launcher.png'] = render_png(size)
     store = render_png(512, rounded=False)
+    feature = render_feature_graphic()
     for locale in ('it-IT', 'en-US'):
-        files[Path(f'fastlane/metadata/android/{locale}/images/icon.png')] = store
+        images = Path(f'fastlane/metadata/android/{locale}/images')
+        files[images / 'icon.png'] = store
+        files[images / 'featureGraphic.png'] = feature
     for relative, content in files.items():
         target = Path(root) / relative
         target.parent.mkdir(parents=True, exist_ok=True)
