@@ -1,4 +1,4 @@
-# Frequenza — stato verificato al 10 novembre 2026
+# Frequenza — stato verificato al 13 novembre 2026
 
 Fase attiva: 3, UI radio da viaggio integrata; validazione Android reale ancora aperta.
 Piano attivo: superpowers/plans/2026-11-10-travel-radio-ui.md. Roadmap: ../../flutter_starter/docs/project/roadmap.md.
@@ -139,3 +139,15 @@ Passo 2 del design `superpowers/specs/2026-11-12-rotta-sul-mondo-design.md`; pia
 - Flutter 3.38.5 del progetto è installato sulla VPS in `/srv/claude/workspaces/.tools/flutter-3.38.5`. Verificati `tool/check.sh` (lock invariato), analisi pulita e suite 69/69, più una revisione indipendente del branch con quattro correzioni. APK non compilato sulla VPS.
 - Limiti noti: su iOS il volo è muto. Pausa dalla notifica durante il volo: la stazione resta muta, il volo scade in «Segnale perso» e la manopola può riprovare.
 - Prossimo passo: push dei due branch e PR, collaudo su telefono (checklist del passo 1, volo da manopola e Preferiti, niente audio prima dell'atterraggio, notifica «In volo…», modalità aereo, riduzione del movimento), poi aggiornamento di Flutter.
+
+## Pipeline di rilascio — 13 novembre 2026
+
+Design `superpowers/specs/2026-11-12-pipeline-design.md`; piano `superpowers/plans/2026-11-13-pipeline.md`. Branch `feat/pipeline`, che contiene anche la Rotta sul mondo (merge): da unire in `develop` dopo le PR della notifica e della Rotta.
+
+- Due versioni installabili insieme: «Frequenza» (`it.davidetarsi.frequenza`) e «Frequenza Dev» (`.dev`), un solo `main.dart`. `default-flavor: dev` nel pubspec: `flutter run` e `tool/check.sh --apk` costruiscono la dev senza `--flavor`; per la prod `flutter build appbundle --flavor prod`.
+- Firma da `android/key.properties` (ignorato da git); senza il file le release si firmano con la chiave di debug.
+- Icona manopola generata da `python3 tool/icon/generate.py` (adattiva, monocromatica, PNG per densità, 512 per lo Store).
+- Workflow: `ci.yml` (check.sh + `git diff --exit-code`; versione dalle etichette verso `main`), `bump_version.yml`, `build_dev.yml` (APK su Telegram), `release_prod.yml` (prerelease senza file, AAB negli artifact, Play solo con `PLAY_UPLOAD=on`, canale `PLAY_TRACK` o `alpha`), `promote_prod.yml` (a mano), `store_listing.yml`. Logica delle versioni in `.github/scripts/version.cjs`.
+- `tool/check.sh` lancia anche i test Node delle versioni e i test Python (icona, workflow, scheda). Senza PyYAML in locale i test dei workflow si saltano; in CI sono obbligatori.
+- Verificati sulla VPS: check.sh verde (69 test Flutter, 6 Node, test Python), APK dev e prod debug, APK dev release firmata con la chiave di debug (`aapt2`: id e nome giusti), script dei due workflow delle versioni simulati con GitHub finto. Le pipeline vere si verificano solo su GitHub: annotare qui l'esito della prima esecuzione di ognuna.
+- Prossimo passo: azioni manuali in `docs/azioni-manuali.md` (segreti, variabili, etichette, regole), merge in `develop`, prima APK dev su Telegram e collaudo su telefono.
