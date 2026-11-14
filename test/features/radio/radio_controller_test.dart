@@ -475,10 +475,42 @@ void main() {
       expect(read().previous, [numbered(1)]);
     });
 
-    test('tuneBack with an empty stack does nothing', () async {
+    test('tuneBack with nothing on air does nothing', () async {
       await controller.tuneBack();
       expect(read().status, PlaybackStatus.idle);
       expect(audioService.played, isEmpty);
+    });
+
+    test('tuneBack with an empty stack reconnects the station', () async {
+      await landOn(numbered(1));
+      final before = read();
+      await controller.tuneBack();
+      expect(audioService.played, [numbered(1), numbered(1)]);
+      expect(read().station, numbered(1));
+      expect(read().status, PlaybackStatus.playing);
+      expect(read().trips, before.trips);
+      expect(read().leg, before.leg);
+      expect(read().history, before.history);
+      expect(read().previous, isEmpty);
+    });
+
+    test('back after a failed flight returns to the station left', () async {
+      await landOn(numbered(1));
+      await landOn(numbered(2));
+      audioService.autoPlay = false;
+      await landOn(numbered(3));
+      expect(read().status, PlaybackStatus.error);
+      audioService.autoPlay = true;
+      await controller.tuneBack();
+      expect(read().station, numbered(2));
+      expect(read().previous, [numbered(1)]);
+    });
+
+    test('a favorite already on air does not stack itself', () async {
+      await landOn(numbered(1));
+      await landOn(numbered(2));
+      await controller.tuneTo(numbered(2));
+      expect(read().previous, [numbered(1)]);
     });
 
     test('pause and stop control audio service', () async {

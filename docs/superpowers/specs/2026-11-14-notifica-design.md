@@ -20,7 +20,7 @@ Da Android 13 il riquadro dei media lo disegna il sistema, come per Spotify: l'a
    - il ritorno è un volo come gli altri e conta come nuovo viaggio **[C]**;
    - «avanti» va sempre in un posto nuovo a caso, non rifà la strada;
    - la pila tiene **10 stazioni**, dura quanto la sessione;
-   - quando la pila è vuota il tasto non compare **[C]**: la notifica di Android non ha tasti disattivati.
+   - quando la pila è vuota il tasto **resta** e riconnette la stazione in onda, come Spotify che riparte dall'inizio della canzone **[D]**, 14/11 dopo la revisione: Android 13+ altrimenti mette il cuore al posto di «indietro». La riconnessione non conta come viaggio e non cambia rotta né pila **[C]**.
 4. **Cuore** **[D]**:
    - salva o toglie la stazione dai preferiti;
    - pieno se è salvata, vuoto se no;
@@ -68,6 +68,8 @@ Da Android 13 il riquadro dei media lo disegna il sistema, come per Spotify: l'a
 - L'ordine dei tasti oltre il minimo richiesto: Android 13+ può comunque riordinarli.
 
 ## Limiti noti
+
+- Sotto Android 13 il cuore non compare nella notifica: `audio_service` mette i tasti personalizzati solo nella sessione, che i telefoni vecchi non mostrano come tasti. Limite accettato **[D]**.
 
 - Se il logo di una stazione è rotto, Android mostra la notifica senza immagine: l'app non lo sa in anticipo.
 - La resa esatta va provata sul telefono: cambia tra le versioni di Android.

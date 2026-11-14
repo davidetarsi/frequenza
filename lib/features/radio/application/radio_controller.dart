@@ -15,6 +15,10 @@ part 'radio_controller.g.dart';
 const _historyLength = 5;
 const _backStackLength = 10;
 
+/// Forward flights stack the station left; back ones pop it; a reconnect
+/// replays the station on air without moving the journey.
+enum _Flight { forward, back, reconnect }
+
 @Riverpod(keepAlive: true)
 class RadioController extends _$RadioController {
   Object? _currentTuneToken;
@@ -65,14 +69,19 @@ class RadioController extends _$RadioController {
 
   /// Flies to a chosen station (e.g. a favorite), without retrying.
   Future<void> tuneTo(RadioStation station) async =>
-      _fly(() async => station, retries: 0);
+      _fly(() async => station, retries: 0, target: station);
 
   /// Flies back to the last station left behind; it leaves the stack only
-  /// once landed, so a failed or cancelled return keeps it.
+  /// once landed, so a failed or cancelled return keeps it. With nothing
+  /// left behind it reconnects the station on air.
   Future<void> tuneBack() async {
-    if (!state.canGoBack) return;
-    final station = state.previous.last;
-    await _fly(() async => station, retries: 0, back: true);
+    if (state.canGoBack) {
+      final station = state.previous.last;
+      return _fly(() async => station, retries: 0, kind: _Flight.back);
+    }
+    final station = _landed;
+    if (station == null) return;
+    await _fly(() async => station, retries: 0, kind: _Flight.reconnect);
   }
 
   /// One flight: every attempt lasts at least [FlightTiming.minimum] and
@@ -80,10 +89,18 @@ class RadioController extends _$RadioController {
   Future<void> _fly(
     Future<RadioStation?> Function() pick, {
     required int retries,
-    bool back = false,
+    _Flight kind = _Flight.forward,
+    RadioStation? target,
   }) async {
     final token = Object();
     _currentTuneToken = token;
+    // The station on air is left as soon as a forward flight starts: back
+    // returns to it even if this flight fails or is stopped.
+    final left = _landed;
+    if (kind == _Flight.forward && left != null && left.id != target?.id) {
+      state = state.copyWith(previous: _stacked(left));
+      _landed = null;
+    }
     bool current() => _currentTuneToken == token;
     final timing = ref.read(flightTimingProvider);
 
@@ -105,7 +122,7 @@ class RadioController extends _$RadioController {
         station = null;
       }
       if (!current()) return;
-      if (station != null) return _land(station, current, back: back);
+      if (station != null) return _land(station, current, kind: kind);
 
       await _audioService.stop();
       if (!current()) return;
@@ -166,20 +183,30 @@ class RadioController extends _$RadioController {
   Future<void> _land(
     RadioStation station,
     bool Function() current, {
-    required bool back,
+    required _Flight kind,
   }) async {
     await _audioService.stopTuningSound();
     if (!current()) return;
     await _audioService.land(station);
     if (!current()) return;
+    final status = _audioService.currentStatus == PlaybackStatus.paused
+        ? PlaybackStatus.paused
+        : PlaybackStatus.playing;
+    if (kind == _Flight.reconnect) {
+      state = state.copyWith(
+        status: status,
+        station: station,
+        flight: FlightPhase.grounded,
+      );
+      _landed = station;
+      return;
+    }
     final to = placeOf(station);
     final leg = TravelLeg(from: state.departure, to: to);
     final history = [...state.history, if (to != null) leg];
     state = state.copyWith(
       // A pause may have arrived while the status listener ignored events.
-      status: _audioService.currentStatus == PlaybackStatus.paused
-          ? PlaybackStatus.paused
-          : PlaybackStatus.playing,
+      status: status,
       station: station,
       flight: FlightPhase.grounded,
       leg: leg,
@@ -188,15 +215,14 @@ class RadioController extends _$RadioController {
           ? history.sublist(history.length - _historyLength)
           : history,
       trips: state.trips + 1,
-      previous: back
+      previous: kind == _Flight.back && state.previous.isNotEmpty
           ? state.previous.sublist(0, state.previous.length - 1)
-          : _stacked(_landed),
+          : state.previous,
     );
     _landed = station;
   }
 
-  List<RadioStation> _stacked(RadioStation? leftBehind) {
-    if (leftBehind == null) return state.previous;
+  List<RadioStation> _stacked(RadioStation leftBehind) {
     final stack = [...state.previous, leftBehind];
     return stack.length > _backStackLength
         ? stack.sublist(stack.length - _backStackLength)

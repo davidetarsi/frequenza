@@ -36,7 +36,7 @@ class RadioAudioHandler extends BaseAudioHandler implements RadioMediaSession {
   late final StreamSubscription<PlaybackEvent> _events;
   final _commands = StreamController<RadioMediaCommand>.broadcast();
   PlaybackEvent? _event;
-  bool _flying = false, _canGoBack = false, _saved = false;
+  bool _flying = false, _saved = false;
 
   static const favoriteAction = 'favorite';
 
@@ -65,7 +65,7 @@ class RadioAudioHandler extends BaseAudioHandler implements RadioMediaSession {
     final controls = _flying
         ? [playPause]
         : [
-            if (_canGoBack) MediaControl.skipToPrevious,
+            MediaControl.skipToPrevious,
             playPause,
             MediaControl.skipToNext,
             MediaControl.custom(
@@ -76,9 +76,7 @@ class RadioAudioHandler extends BaseAudioHandler implements RadioMediaSession {
               name: favoriteAction,
             ),
           ];
-    final compact = _flying
-        ? const [0]
-        : [for (var i = 0; i < (_canGoBack ? 3 : 2); i++) i];
+    final compact = _flying ? const [0] : const [0, 1, 2];
     playbackState.add(
       PlaybackState(
         controls: controls,
@@ -95,8 +93,8 @@ class RadioAudioHandler extends BaseAudioHandler implements RadioMediaSession {
   Stream<RadioMediaCommand> get commands => _commands.stream;
 
   @override
-  void showControls({required bool canGoBack, required bool saved}) {
-    _canGoBack = canGoBack;
+  void showControls({required bool saved}) {
+    _flying = false;
     _saved = saved;
     _republish();
   }
@@ -115,8 +113,6 @@ class RadioAudioHandler extends BaseAudioHandler implements RadioMediaSession {
             fallbackArt,
       ),
     );
-    _flying = false;
-    _republish();
   }
 
   @override

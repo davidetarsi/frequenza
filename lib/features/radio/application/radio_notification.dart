@@ -11,7 +11,7 @@ import 'radio_providers.dart';
 part 'radio_notification.g.dart';
 
 /// Joins the notification to the app: its keys drive the radio and the
-/// favorites, and its back key and heart follow what the app shows.
+/// favorites, and its heart follows what the app shows.
 @Riverpod(keepAlive: true)
 void radioNotification(Ref ref) {
   final RadioMediaSession? session = ref.watch(radioAudioHandlerProvider);
@@ -21,7 +21,6 @@ void radioNotification(Ref ref) {
     final station = ref.read(radioControllerProvider).station;
     final favorites = ref.read(favoritesProvider).valueOrNull;
     session.showControls(
-      canGoBack: ref.read(radioControllerProvider).canGoBack,
       saved: station != null && favorites?.contains(station.id) == true,
     );
   }

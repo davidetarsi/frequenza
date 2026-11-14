@@ -41,6 +41,10 @@ class EventPlayer extends Fake implements AudioPlayer {
 
 final fallbackArt = Uri.file('/cache/notification_art.png');
 
+MediaControl playPause(PlaybackState state) => state.controls.singleWhere(
+  (c) => c == MediaControl.play || c == MediaControl.pause,
+);
+
 void main() {
   late EventPlayer player;
   late RadioAudioHandler handler;
@@ -70,12 +74,12 @@ void main() {
     final state = await emit(ProcessingState.ready, playing: true);
     expect(state.playing, isTrue);
     expect(state.processingState, AudioProcessingState.ready);
-    expect(state.controls.first, MediaControl.pause);
+    expect(playPause(state), MediaControl.pause);
   });
 
   test('publishes play control while paused', () async {
     final state = await emit(ProcessingState.ready, playing: false);
-    expect(state.controls.first, MediaControl.play);
+    expect(playPause(state), MediaControl.play);
   });
 
   test('maps buffering and idle', () async {
@@ -150,7 +154,7 @@ void main() {
   test('a completed live stream is published as not playing', () async {
     final state = await emit(ProcessingState.completed, playing: true);
     expect(state.playing, isFalse);
-    expect(state.controls.first, MediaControl.play);
+    expect(playPause(state), MediaControl.play);
   });
 
   test('play after a completed stream restarts it', () async {
@@ -184,7 +188,7 @@ void main() {
 
   test('flight shows only play/pause', () async {
     await emit(ProcessingState.ready, playing: true);
-    handler.showControls(canGoBack: true, saved: true);
+    handler.showControls(saved: true);
     handler.showFlight();
     expect(controls(), [MediaControl.pause]);
     expect(compact(), [0]);
@@ -193,7 +197,7 @@ void main() {
   test('grounded shows previous, play/pause, next and heart', () async {
     await emit(ProcessingState.ready, playing: true);
     handler.showStation(station);
-    handler.showControls(canGoBack: true, saved: false);
+    handler.showControls(saved: false);
     expect(controls().map((c) => c.action), [
       MediaAction.skipToPrevious,
       MediaAction.pause,
@@ -206,30 +210,25 @@ void main() {
     expect(heart().customAction?.name, 'favorite');
   });
 
-  test('no previous with an empty stack', () async {
-    await emit(ProcessingState.ready, playing: false);
-    handler.showStation(station);
-    handler.showControls(canGoBack: false, saved: false);
-    expect(controls().map((c) => c.action), [
-      MediaAction.play,
-      MediaAction.skipToNext,
-      MediaAction.custom,
-    ]);
-    expect(compact(), [0, 1]);
-  });
-
   test('saved station fills the heart', () async {
     handler.showStation(station);
-    handler.showControls(canGoBack: false, saved: true);
+    handler.showControls(saved: true);
     expect(heart().androidIcon, 'drawable/ic_favorite');
     expect(heart().label, 'Togli');
   });
 
-  test('landing brings the keys back after the flight', () async {
-    handler.showControls(canGoBack: true, saved: false);
+  test('landing waits for the journey before showing the keys', () async {
+    handler.showControls(saved: false);
     handler.showFlight();
     handler.showStation(station);
+    // No stale heart from the flight: the keys come with the new state.
+    expect(
+      controls().map((c) => c.action),
+      isNot(contains(MediaAction.custom)),
+    );
+    handler.showControls(saved: true);
     expect(controls(), hasLength(4));
+    expect(heart().androidIcon, 'drawable/ic_favorite');
   });
 
   test('notification buttons become commands', () async {
@@ -248,7 +247,7 @@ void main() {
     for (final playing in [true, false]) {
       await emit(ProcessingState.ready, playing: playing);
       handler.showStation(station);
-      handler.showControls(canGoBack: true, saved: true);
+      handler.showControls(saved: true);
       expect(
         controls().map((c) => c.action),
         isNot(contains(MediaAction.stop)),

@@ -86,17 +86,22 @@ void main() {
     expect(container.read(radioControllerProvider).station, numbered(1));
   });
 
-  test('previous flies back, and the key follows the stack', () async {
+  test('previous flies back, then reconnects with an empty stack', () async {
     repository.stationToReturn = numbered(1);
     await controller().tuneRandom();
-    expect(backOffered(), isFalse);
+    expect(backOffered(), isTrue);
     repository.stationToReturn = numbered(2);
     await controller().tuneRandom();
-    expect(backOffered(), isTrue);
     await handler.skipToPrevious();
     await settle();
     expect(container.read(radioControllerProvider).station, numbered(1));
-    expect(backOffered(), isFalse);
+    expect(container.read(radioControllerProvider).previous, isEmpty);
+    final played = audio.played.length;
+    await handler.skipToPrevious();
+    await settle();
+    expect(audio.played, hasLength(played + 1));
+    expect(audio.played.last, numbered(1));
+    expect(backOffered(), isTrue);
   });
 
   test('the heart saves and unsaves the station on air', () async {

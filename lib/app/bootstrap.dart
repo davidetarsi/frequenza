@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:audio_service/audio_service.dart';
 import 'package:just_audio/just_audio.dart';
 
+import '../features/radio/application/radio_notification.dart';
 import '../features/radio/application/radio_providers.dart';
 import '../features/radio/data/native_channel.dart';
 import '../features/radio/data/radio_audio_handler.dart';
@@ -44,9 +45,14 @@ Future<void> bootstrap({AppConfig config = const AppConfig()}) async {
       androidStopForegroundOnPause: true,
     ),
   );
+  final container = ProviderContainer(
+    overrides: [radioAudioHandlerProvider.overrideWithValue(handler)],
+  );
+  // The notification answers from the start, before any page is built.
+  container.read(radioNotificationProvider);
   runApp(
-    ProviderScope(
-      overrides: [radioAudioHandlerProvider.overrideWithValue(handler)],
+    UncontrolledProviderScope(
+      container: container,
       child: StarterApp(config: config),
     ),
   );
@@ -62,7 +68,8 @@ Future<Uri?> _notificationArt() async {
     final file = File('$folder/notification_art.png');
     await file.writeAsBytes(art.buffer.asUint8List(), flush: true);
     return Uri.file(file.path);
-  } on Exception {
+  } catch (_) {
+    // Missing asset or folder: the notification just shows no logo.
     return null;
   }
 }
