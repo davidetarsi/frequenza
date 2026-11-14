@@ -11,6 +11,19 @@ import 'package:frequenza/features/radio/presentation/radio_cabinet.dart';
 import 'features/radio/radio_controller_test.dart';
 import 'features/favorites/favorites_test.dart';
 
+void expectKeysInsideRadio(WidgetTester tester) {
+  final radio = tester.getRect(find.byType(RadioCabinet));
+  for (final key in ['radio-key-play', 'radio-key-save']) {
+    final rect = tester.getRect(find.byKey(ValueKey(key)));
+    expect(
+      radio.contains(rect.topLeft) && radio.contains(rect.bottomRight),
+      isTrue,
+      reason: '$key outside the radio',
+    );
+    expect(rect.height, greaterThanOrEqualTo(44));
+  }
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   setUp(() async {
@@ -82,10 +95,10 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Artista — Titolo'), findsNothing);
       expect(find.byType(Scrollable), findsNothing);
-      expect(find.text('Salva').hitTestable(), findsOneWidget);
-      await tester.tap(find.text('Salva'));
+      expect(find.byTooltip('Salva').hitTestable(), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('radio-key-save')));
       await tester.pumpAndSettle();
-      expect(find.text('Salvata'), findsOneWidget);
+      expect(find.byTooltip('Salvata'), findsOneWidget);
       await tester.tap(find.byKey(const ValueKey('favorites-open')));
       await tester.pumpAndSettle();
       expect(find.text('Le tue frequenze'), findsOneWidget);
@@ -100,12 +113,14 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 100));
       expect(tester.binding.hasScheduledFrame, isTrue);
-      await tester.tap(find.text('Pausa'));
+      await tester.tap(find.byKey(const ValueKey('radio-key-play')));
       await tester.pumpAndSettle();
       expect(find.byKey(const ValueKey('route-map')), findsOneWidget);
       expect(tester.binding.hasScheduledFrame, isFalse);
       await tester.tap(find.byTooltip('Impostazioni'));
       await tester.pumpAndSettle();
+      expect(find.text('Aspetto e lingua della radio.'), findsOneWidget);
+      expect(find.byType(DraggableScrollableSheet), findsOneWidget);
       await tester.tap(find.text('Scuro'));
       await tester.pumpAndSettle();
       expect(
@@ -115,8 +130,9 @@ void main() {
       await tester.tap(find.text('Inglese'));
       await tester.pumpAndSettle();
       expect(find.text('Appearance'), findsOneWidget);
-      await tester.pageBack();
+      await tester.tap(find.byTooltip('Close'));
       await tester.pumpAndSettle();
+      expect(find.text('Appearance'), findsNothing);
       expect(find.text('Next stop: anywhere'), findsOneWidget);
       expect(tester.getSize(cabinet), initialSize);
       expect(find.byType(Scrollable), findsNothing);
@@ -179,15 +195,17 @@ void main() {
       find.byKey(const ValueKey('tune-knob')).hitTestable(),
       findsOneWidget,
     );
-    expect(find.text('Salva').hitTestable(), findsOneWidget);
-    expect(find.text('Riprendi').hitTestable(), findsOneWidget);
+    expect(find.byTooltip('Salva').hitTestable(), findsOneWidget);
+    expect(find.byTooltip('Riprendi').hitTestable(), findsOneWidget);
+    expectKeysInsideRadio(tester);
     await tester.tap(find.byKey(const ValueKey('tune-knob')));
     await tester.pump();
     await tester.pump(const Duration(seconds: 1));
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
-    expect(find.text('Pausa').hitTestable(), findsOneWidget);
-    expect(find.text('Salvata').hitTestable(), findsOneWidget);
+    expect(find.byTooltip('Pausa').hitTestable(), findsOneWidget);
+    expect(find.byTooltip('Salvata').hitTestable(), findsOneWidget);
+    expectKeysInsideRadio(tester);
     expect(
       // On air, the station's local time takes the bars' place.
       find.byIcon(Icons.schedule).hitTestable(),
@@ -202,7 +220,8 @@ void main() {
       find.byKey(const ValueKey('tune-knob')).hitTestable(),
       findsOneWidget,
     );
-    expect(find.text('Salvata').hitTestable(), findsOneWidget);
+    expect(find.byTooltip('Salvata').hitTestable(), findsOneWidget);
+    expectKeysInsideRadio(tester);
     tester.view.physicalSize = const Size(320, 640);
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('favorites-open')));
@@ -250,7 +269,127 @@ void main() {
       await tester.tap(find.byTooltip('Rimuovi dai preferiti'));
       await tester.pumpAndSettle();
       expect(find.byKey(const ValueKey('favorite-play-id')), findsNothing);
-      expect(find.textContaining('Tocca Salva'), findsOneWidget);
+      expect(find.textContaining('tasto con il cuore'), findsOneWidget);
     },
   );
+  testWidgets(
+    'favorites button is a heart with the count in the primary colour',
+    (tester) async {
+      tester.view.physicalSize = const Size(390, 844);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final audio = FakeAudioService();
+      addTearDown(audio.dispose);
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            radioRepositoryProvider.overrideWithValue(FakeRadioRepository()),
+            radioAudioServiceProvider.overrideWithValue(audio),
+            favoritesRepositoryProvider.overrideWithValue(
+              MemoryFavorites()..items = [station],
+            ),
+          ],
+          child: const StarterApp(locale: Locale('it')),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final button = find.byKey(const ValueKey('favorites-open'));
+      final badge = tester.widget<Badge>(
+        find.descendant(of: button, matching: find.byType(Badge)),
+      );
+      final scheme = Theme.of(tester.element(button)).colorScheme;
+      expect(badge.backgroundColor, scheme.primary);
+      expect(badge.textColor, scheme.onPrimary);
+      expect(badge.isLabelVisible, isTrue);
+      expect(
+        find.descendant(of: button, matching: find.text('1')),
+        findsOneWidget,
+      );
+      expect(find.text('Preferiti · 1'), findsNothing);
+      expect(find.byTooltip('Preferiti · 1'), findsOneWidget);
+    },
+  );
+  testWidgets('radio keys do nothing before the first station', (tester) async {
+    final favorites = MemoryFavorites();
+    final audio = FakeAudioService();
+    addTearDown(audio.dispose);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          radioRepositoryProvider.overrideWithValue(FakeRadioRepository()),
+          radioAudioServiceProvider.overrideWithValue(audio),
+          favoritesRepositoryProvider.overrideWithValue(favorites),
+        ],
+        child: const StarterApp(locale: Locale('it')),
+      ),
+    );
+    await tester.pumpAndSettle();
+    for (final key in ['radio-key-play', 'radio-key-save']) {
+      expect(
+        tester.getSemantics(find.byKey(ValueKey(key))),
+        containsSemantics(
+          isButton: true,
+          hasEnabledState: true,
+          isEnabled: false,
+        ),
+      );
+      await tester.tap(find.byKey(ValueKey(key)), warnIfMissed: false);
+      await tester.pumpAndSettle();
+    }
+    expect(favorites.items, isEmpty);
+    expect(audio.lastPlayedStation, isNull);
+  });
+  testWidgets('saved heart uses the primary colour; play key is not a toggle', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({'app.themeMode': 'dark'});
+    tester.platformDispatcher.accessibilityFeaturesTestValue =
+        const FakeAccessibilityFeatures(disableAnimations: true);
+    addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
+    tester.view.physicalSize = const Size(390, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final audio = FakeAudioService();
+    addTearDown(audio.dispose);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          radioRepositoryProvider.overrideWithValue(
+            FakeRadioRepository()..stationToReturn = station,
+          ),
+          radioAudioServiceProvider.overrideWithValue(audio),
+          favoritesRepositoryProvider.overrideWithValue(
+            MemoryFavorites()..items = [station],
+          ),
+        ],
+        child: const StarterApp(locale: Locale('it')),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('tune-knob')));
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
+    await tester.pumpAndSettle();
+    final save = find.byKey(const ValueKey('radio-key-save'));
+    final scheme = Theme.of(tester.element(save)).colorScheme;
+    expect(Theme.of(tester.element(save)).brightness, Brightness.dark);
+    final heart = tester.widget<Icon>(
+      find.descendant(of: save, matching: find.byType(Icon)),
+    );
+    expect(heart.icon, Icons.favorite);
+    expect(heart.color, scheme.primary);
+    final play = find.byKey(const ValueKey('radio-key-play'));
+    expect(
+      tester.getSemantics(play),
+      isNot(containsSemantics(hasToggledState: true)),
+    );
+    await tester.tap(play);
+    await tester.pumpAndSettle();
+    expect(
+      tester.getSemantics(play),
+      containsSemantics(label: 'Riprendi', hasToggledState: false),
+    );
+  });
 }

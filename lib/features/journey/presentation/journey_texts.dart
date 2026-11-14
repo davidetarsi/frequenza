@@ -21,6 +21,7 @@ class FlightDots extends StatefulWidget {
 
   final String label;
   final TextStyle style;
+
   final int maxLines;
 
   @override
@@ -110,10 +111,19 @@ class LandingFocus extends StatelessWidget {
 
 /// The station's local time, refreshed at each minute.
 class LocalTimeText extends StatefulWidget {
-  const LocalTimeText({super.key, required this.station, required this.style});
+  const LocalTimeText({
+    super.key,
+    required this.station,
+    required this.style,
+    this.stacked = true,
+  });
 
   final RadioStation station;
   final TextStyle style;
+
+  /// The «local time» label above the time; false shows a clock icon
+  /// instead, where the status row has room for one line only.
+  final bool stacked;
 
   @override
   State<LocalTimeText> createState() => _LocalTimeTextState();
@@ -150,25 +160,45 @@ class _LocalTimeTextState extends State<LocalTimeText> {
     return Semantics(
       label: LocaleKeys.localTime.tr(context: context, args: [shown]),
       child: ExcludeSemantics(
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.schedule,
-              size: widget.style.fontSize,
-              color: widget.style.color,
-            ),
-            const SizedBox(width: RouteMapDesign.clockIconGap),
-            Flexible(
-              child: Text(
-                shown,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: widget.style,
+        child: widget.stacked
+            ? Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Opacity(
+                    opacity: RouteMapDesign.localTimeLabelOpacity,
+                    child: Text(
+                      LocaleKeys.localTimeLabel
+                          .tr(context: context)
+                          .toUpperCase(),
+                      maxLines: 1,
+                      style: widget.style.merge(
+                        RouteMapDesign.localTimeLabelText,
+                      ),
+                    ),
+                  ),
+                  Text(shown, maxLines: 1, style: widget.style),
+                ],
+              )
+            : Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.schedule,
+                    size: widget.style.fontSize,
+                    color: widget.style.color,
+                  ),
+                  const SizedBox(width: RouteMapDesign.clockIconGap),
+                  Flexible(
+                    child: Text(
+                      shown,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: widget.style,
+                    ),
+                  ),
+                ],
               ),
-            ),
-          ],
-        ),
       ),
     );
   }

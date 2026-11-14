@@ -99,6 +99,14 @@ void main() {
     expect(find.text('FRANCE'), findsOneWidget);
     expect(find.text(' · ≈ $km KM'), findsOneWidget);
     expect(find.bySemanticsLabel(RegExp('ora locale')), findsOneWidget);
+    final label = find.text('ORA LOCALE');
+    expect(label, findsOneWidget);
+    final time = find.textContaining(RegExp(r'^(≈ )?\d\d:\d\d$'));
+    expect(
+      tester.getRect(label).bottom,
+      lessThanOrEqualTo(tester.getRect(time).top),
+    );
+    expect(find.byIcon(Icons.schedule), findsNothing);
     expect(find.text('Viaggio n. 1'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });

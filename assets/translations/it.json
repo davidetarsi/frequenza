@@ -11,7 +11,7 @@
   "favorites": "Preferiti",
   "favoritesTitle": "Le tue frequenze",
   "favoritesSubtitle": "Posti in cui tornare.",
-  "favoritesEmpty": "Tocca Salva sulla radio per aggiungere la tua prima frequenza.",
+  "favoritesEmpty": "Premi il tasto con il cuore sulla radio per aggiungere la tua prima frequenza.",
   "favoritesError": "Non è stato possibile aggiornare i preferiti. Riprova.",
   "savedOnDevice": "Salvate su questo dispositivo",
   "removeFavorite": "Rimuovi dai preferiti",
@@ -41,6 +41,7 @@
   "travelHint": "Lasciati sorprendere dalla prossima radio.",
   "footer": "WEB RADIO · SENZA CONFINI",
   "settings": "Impostazioni",
+  "settingsSubtitle": "Aspetto e lingua della radio.",
   "appearance": "Aspetto",
   "themeSystem": "Sistema",
   "themeLight": "Chiaro",
@@ -83,5 +84,7 @@
   "signalLost": "Segnale perso",
   "distanceKm": "{} km",
   "localTime": "{} ora locale",
-  "tripNumber": "Viaggio n. {}"
+  "localTimeLabel": "ora locale",
+  "tripNumber": "Viaggio n. {}",
+  "titleCopied": "Titolo copiato"
 }

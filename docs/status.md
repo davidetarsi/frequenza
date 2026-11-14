@@ -1,4 +1,4 @@
-# Frequenza — stato verificato al 13 novembre 2026
+# Frequenza — stato verificato al 14 novembre 2026
 
 Fase attiva: 3, UI radio da viaggio integrata; validazione Android reale ancora aperta.
 Piano attivo: superpowers/plans/2026-11-10-travel-radio-ui.md. Roadmap: ../../flutter_starter/docs/project/roadmap.md.
@@ -151,3 +151,16 @@ Design `superpowers/specs/2026-11-12-pipeline-design.md`; piano `superpowers/pla
 - `tool/check.sh` lancia anche i test Node delle versioni e i test Python (icona, workflow, scheda). Senza PyYAML in locale i test dei workflow si saltano; in CI sono obbligatori.
 - Verificati sulla VPS: check.sh verde (69 test Flutter, 6 Node, test Python), APK dev e prod debug, APK dev release firmata con la chiave di debug (`aapt2`: id e nome giusti), script dei due workflow delle versioni simulati con GitHub finto. Le pipeline vere si verificano solo su GitHub: annotare qui l'esito della prima esecuzione di ognuna.
 - Prossimo passo: azioni manuali in `docs/azioni-manuali.md` (segreti, variabili, etichette, regole), merge in `develop`, prima APK dev su Telegram e collaudo su telefono.
+
+## Ritocchi interfaccia — 14 novembre 2026
+
+Design `superpowers/specs/2026-11-14-ritocchi-ui-design.md`, piano `superpowers/plans/2026-11-14-ritocchi-ui.md`, branch `feat/ritocchi-ui`.
+
+- Pausa e Salva sono tasti a leva dentro la radio, solo icone; restano abbassati in pausa o con la stazione salvata. Radio larga 320, mappa alta 84.
+- In alto solo il cuore, con il numero dei preferiti nel colore primario.
+- Impostazioni nello stesso foglio dei Preferiti (`TravelSheet`); la pagina `/settings` non c'è più.
+- «ORA LOCALE» sopra l'orario nella disposizione normale; in quella compatta resta l'icona dell'orologio.
+- Pressione lunga sul titolo della canzone: copia, vibrazione, «Titolo copiato» solo sotto Android 13 (metodo `sdkInt` sul canale nativo).
+- Verificato: `tool/check.sh` verde (76 test Flutter), build dev debug.
+- Aperto: collaudo sul telefono (aspetto dei tasti nei due temi, vibrazione, conferma di copia su Android 13+).
+- Prossimo passo dopo il collaudo: ricerca per paese o per nome della stazione (Radio Browser ha già i filtri necessari).

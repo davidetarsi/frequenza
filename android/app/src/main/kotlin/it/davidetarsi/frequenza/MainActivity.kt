@@ -2,6 +2,7 @@ package it.davidetarsi.frequenza
 
 import android.media.AudioAttributes
 import android.media.SoundPool
+import android.os.Build
 import com.ryanheise.audioservice.AudioServiceActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
@@ -47,6 +48,8 @@ class MainActivity : AudioServiceActivity() {
                     stopTuningSound()
                     result.success(null)
                 }
+                // Dal 13 Android conferma da sé ogni copia negli appunti.
+                "sdkInt" -> result.success(Build.VERSION.SDK_INT)
                 else -> result.notImplemented()
             }
         }

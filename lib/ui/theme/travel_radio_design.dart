@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'app_spacing.dart';
 
 abstract final class TravelRadioLayout {
-  static const cabinetWidth = 344.0;
+  static const cabinetWidth = 320.0;
   static const landscapeMinWidth = 520.0;
   static const landscapeMaxHeight = 560.0;
   static const landscapeContentWidth = 720.0;
@@ -15,7 +15,6 @@ abstract final class TravelRadioLayout {
   static const headingTracking = -1.0;
   static const captionLineHeight = 1.1;
   static const captionTracking = 0.0;
-  static const headerIconSize = 18.0;
 }
 
 abstract final class RadioCabinetDesign {
@@ -35,6 +34,8 @@ abstract final class RadioCabinetDesign {
     dialLabelHeightFactor: 1.25,
     handleHeight: 20.0,
     controlsGap: 6.0,
+    keyHeight: 44.0,
+    keysGap: 6.0,
     textLines: 1,
   );
   static const regular = (
@@ -53,6 +54,8 @@ abstract final class RadioCabinetDesign {
     dialLabelHeightFactor: 2.8,
     handleHeight: 30.0,
     controlsGap: 20.0,
+    keyHeight: 46.0,
+    keysGap: 16.0,
     textLines: 2,
   );
 
@@ -129,6 +132,22 @@ abstract final class RadioCabinetDesign {
   static const dialShadowOffset = Offset(0, 5);
 }
 
+abstract final class RadioKeyDesign {
+  static const radius = BorderRadius.all(Radius.circular(8));
+  static const slotRadius = BorderRadius.all(Radius.circular(12));
+  static const slotPadding = 6.0;
+  static const slotHighlightOpacity = .35;
+  static const slotHighlightOffset = Offset(0, 1);
+  static const iconSize = 22.0;
+  static const edgeOffset = Offset(0, 3);
+  static const shadowOffset = Offset(0, 4);
+  static const shadowBlur = 6.0;
+  static const shadowOpacity = .3;
+  static const downSlide = Offset(0, .06);
+  static const travel = Duration(milliseconds: 90);
+  static const disabledOpacity = .45;
+}
+
 abstract final class RadioEqualizerDesign {
   static const height = 26.0;
   static const compactHeight = 14.0;
@@ -148,6 +167,7 @@ abstract final class RadioEqualizerDesign {
 }
 
 abstract final class RadioFavoritesDesign {
+  static const maxWidth = 520.0;
   static const initialHeight = .62;
   static const minHeight = .3;
   static const maxHeight = .94;
@@ -196,7 +216,7 @@ abstract final class RadioDiagnosticsDesign {
 }
 
 abstract final class RouteMapDesign {
-  static const height = 96.0;
+  static const height = 84.0;
   static const north = 80.0;
   static const south = -60.0;
   static const dotRadius = .55;
@@ -218,4 +238,10 @@ abstract final class RouteMapDesign {
   static const landingBlur = 6.0;
   static const dotsCycle = Duration(milliseconds: 1200);
   static const clockIconGap = 3.0;
+  static const localTimeLabelOpacity = .75;
+  static const localTimeLabelText = TextStyle(
+    fontSize: 9,
+    height: 1.1,
+    letterSpacing: 1.5,
+  );
 }

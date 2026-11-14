@@ -9,13 +9,12 @@ import '../../l10n/locale_keys.g.dart';
 import '../../ui/theme/app_spacing.dart';
 import '../../ui/widgets/app_icon_button.dart';
 import '../../ui/widgets/app_message.dart';
-import '../presentation/app_settings_page.dart';
+import '../presentation/app_settings_sheet.dart';
 
 part 'app_router.g.dart';
 
 abstract final class AppRoutes {
   static const home = '/';
-  static const settings = '/settings';
 }
 
 @riverpod
@@ -29,13 +28,9 @@ GoRouter appRouter(Ref ref, String appName) {
           settingsAction: AppIconButton(
             tooltip: LocaleKeys.settings.tr(context: context),
             icon: const Icon(Icons.settings_outlined),
-            onPressed: () => context.push(AppRoutes.settings),
+            onPressed: () => showSettings(context),
           ),
         ),
-      ),
-      GoRoute(
-        path: AppRoutes.settings,
-        builder: (_, _) => const AppSettingsPage(),
       ),
     ],
     errorBuilder: (context, _) => Scaffold(

@@ -27,7 +27,8 @@ class CodegenLoader extends AssetLoader {
     "favorites": "Favorites",
     "favoritesTitle": "Your frequencies",
     "favoritesSubtitle": "Places to return to.",
-    "favoritesEmpty": "Tap Save on the radio to add your first station.",
+    "favoritesEmpty":
+        "Press the heart key on the radio to add your first station.",
     "favoritesError": "Your favorites could not be updated. Try again.",
     "savedOnDevice": "Saved on this device",
     "removeFavorite": "Remove from favorites",
@@ -58,6 +59,7 @@ class CodegenLoader extends AssetLoader {
     "travelHint": "Let the next station surprise you.",
     "footer": "WEB RADIO · WITHOUT BORDERS",
     "settings": "Settings",
+    "settingsSubtitle": "Look and language of the radio.",
     "appearance": "Appearance",
     "themeSystem": "System",
     "themeLight": "Light",
@@ -100,7 +102,9 @@ class CodegenLoader extends AssetLoader {
     "signalLost": "Signal lost",
     "distanceKm": "{} km",
     "localTime": "{} local time",
+    "localTimeLabel": "local time",
     "tripNumber": "Trip no. {}",
+    "titleCopied": "Title copied",
   };
   static const Map<String, dynamic> _it = {
     "welcomeTitle": "Una nuova partenza",
@@ -116,7 +120,7 @@ class CodegenLoader extends AssetLoader {
     "favoritesTitle": "Le tue frequenze",
     "favoritesSubtitle": "Posti in cui tornare.",
     "favoritesEmpty":
-        "Tocca Salva sulla radio per aggiungere la tua prima frequenza.",
+        "Premi il tasto con il cuore sulla radio per aggiungere la tua prima frequenza.",
     "favoritesError": "Non è stato possibile aggiornare i preferiti. Riprova.",
     "savedOnDevice": "Salvate su questo dispositivo",
     "removeFavorite": "Rimuovi dai preferiti",
@@ -147,6 +151,7 @@ class CodegenLoader extends AssetLoader {
     "travelHint": "Lasciati sorprendere dalla prossima radio.",
     "footer": "WEB RADIO · SENZA CONFINI",
     "settings": "Impostazioni",
+    "settingsSubtitle": "Aspetto e lingua della radio.",
     "appearance": "Aspetto",
     "themeSystem": "Sistema",
     "themeLight": "Chiaro",
@@ -189,7 +194,9 @@ class CodegenLoader extends AssetLoader {
     "signalLost": "Segnale perso",
     "distanceKm": "{} km",
     "localTime": "{} ora locale",
+    "localTimeLabel": "ora locale",
     "tripNumber": "Viaggio n. {}",
+    "titleCopied": "Titolo copiato",
   };
   static const Map<String, Map<String, dynamic>> mapLocales = {
     "en": _en,
