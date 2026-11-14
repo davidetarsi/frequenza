@@ -85,5 +85,6 @@
   "distanceKm": "{} km",
   "localTime": "{} ora locale",
   "localTimeLabel": "ora locale",
-  "tripNumber": "Viaggio n. {}"
+  "tripNumber": "Viaggio n. {}",
+  "titleCopied": "Titolo copiato"
 }

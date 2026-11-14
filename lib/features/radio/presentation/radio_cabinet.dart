@@ -31,6 +31,7 @@ class RadioCabinet extends StatelessWidget {
     this.tripLabel,
     this.playKey,
     this.saveKey,
+    this.onDetailLongPress,
   });
   final String country, station, detail, status, knobLabel, tuneLabel;
 
@@ -52,6 +53,9 @@ class RadioCabinet extends StatelessWidget {
 
   /// Pause/resume and save, as piano keys inside the cabinet.
   final RadioKey? playKey, saveKey;
+
+  /// Set only while [detail] is the song on air: a long press copies it.
+  final VoidCallback? onDetailLongPress;
 
   Widget _equalizer({required double height}) => SizedBox(
     height: height,
@@ -169,11 +173,16 @@ class RadioCabinet extends StatelessWidget {
                 height:
                     scaler.scale(RadioCabinetDesign.detailText.fontSize!) *
                     metrics.detailHeightFactor,
-                child: Text(
-                  detail,
-                  maxLines: metrics.textLines,
-                  overflow: TextOverflow.ellipsis,
-                  style: RadioCabinetDesign.detailText,
+                child: GestureDetector(
+                  key: const ValueKey('radio-detail'),
+                  behavior: HitTestBehavior.opaque,
+                  onLongPress: onDetailLongPress,
+                  child: Text(
+                    detail,
+                    maxLines: metrics.textLines,
+                    overflow: TextOverflow.ellipsis,
+                    style: RadioCabinetDesign.detailText,
+                  ),
                 ),
               ),
               if (!compact) ...[

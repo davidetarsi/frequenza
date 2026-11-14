@@ -90,4 +90,5 @@ abstract class LocaleKeys {
   static const localTime = 'localTime';
   static const localTimeLabel = 'localTimeLabel';
   static const tripNumber = 'tripNumber';
+  static const titleCopied = 'titleCopied';
 }

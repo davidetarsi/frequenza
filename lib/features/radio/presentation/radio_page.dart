@@ -12,6 +12,7 @@ import '../../journey/presentation/journey_texts.dart';
 import '../../journey/presentation/route_map.dart';
 import '../application/radio_controller.dart';
 import '../domain/radio_player_state.dart';
+import 'copy_track_title.dart';
 import 'radio_cabinet.dart';
 import 'radio_keys.dart';
 
@@ -33,6 +34,11 @@ class RadioPage extends ConsumerWidget {
     final station = player.station;
     final busy = player.isLoading;
     final idle = station == null;
+    final song = busy
+        ? null
+        : player.isPlaying || player.status == PlaybackStatus.paused
+        ? player.trackTitle
+        : null;
     final saved = station != null && favorites?.contains(station.id) == true;
     final theme = Theme.of(context);
     ref.listen(favoritesProvider, (before, after) {
@@ -132,11 +138,12 @@ class RadioPage extends ConsumerWidget {
               station: title,
               detail: busy
                   ? ''
-                  : (player.isPlaying || player.status == PlaybackStatus.paused
-                            ? player.trackTitle
-                            : null) ??
+                  : song ??
                         station?.tags.take(2).join(' · ') ??
                         LocaleKeys.firstTrip.tr(context: context),
+              onDetailLongPress: song == null
+                  ? null
+                  : () => copyTrackTitle(context, song),
               status: status,
               flying: flying,
               landings: player.trips,

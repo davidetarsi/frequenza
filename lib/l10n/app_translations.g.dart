@@ -104,6 +104,7 @@ class CodegenLoader extends AssetLoader {
     "localTime": "{} local time",
     "localTimeLabel": "local time",
     "tripNumber": "Trip no. {}",
+    "titleCopied": "Title copied",
   };
   static const Map<String, dynamic> _it = {
     "welcomeTitle": "Una nuova partenza",
@@ -195,6 +196,7 @@ class CodegenLoader extends AssetLoader {
     "localTime": "{} ora locale",
     "localTimeLabel": "ora locale",
     "tripNumber": "Viaggio n. {}",
+    "titleCopied": "Titolo copiato",
   };
   static const Map<String, Map<String, dynamic>> mapLocales = {
     "en": _en,
