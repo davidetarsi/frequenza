@@ -10,6 +10,7 @@ import '../../favorites/presentation/favorites_sheet.dart';
 import '../../journey/presentation/journey_texts.dart';
 import '../../journey/presentation/route_map.dart';
 import '../application/radio_controller.dart';
+import '../application/radio_notification.dart';
 import '../domain/radio_player_state.dart';
 import 'copy_track_title.dart';
 import 'radio_cabinet.dart';
@@ -25,6 +26,8 @@ class RadioPage extends ConsumerWidget {
   final Widget settingsAction;
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Keeps the notification's keys wired while the radio is open.
+    ref.watch(radioNotificationProvider);
     final player = ref.watch(radioControllerProvider);
     final favoritesState = ref.watch(favoritesProvider);
     final favorites = favoritesState.valueOrNull;
