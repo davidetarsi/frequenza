@@ -13,12 +13,17 @@ class RadioKey extends StatelessWidget {
     required this.down,
     required this.onPressed,
     this.iconColor,
+    this.toggles = true,
   });
   final IconData icon;
   final String label;
   final bool down;
   final VoidCallback? onPressed;
   final Color? iconColor;
+
+  /// False when [label] already names the next action (pause/resume): then
+  /// TalkBack hears the action, not a contradicting on/off state.
+  final bool toggles;
   @override
   Widget build(BuildContext context) {
     final p = TravelRadioPalette.of(context);
@@ -26,7 +31,7 @@ class RadioKey extends StatelessWidget {
     return Semantics(
       button: true,
       enabled: enabled,
-      toggled: down,
+      toggled: toggles ? down : null,
       label: label,
       onTap: onPressed,
       child: ExcludeSemantics(

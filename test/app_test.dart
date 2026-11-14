@@ -340,4 +340,56 @@ void main() {
     expect(favorites.items, isEmpty);
     expect(audio.lastPlayedStation, isNull);
   });
+  testWidgets('saved heart uses the primary colour; play key is not a toggle', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({'app.themeMode': 'dark'});
+    tester.platformDispatcher.accessibilityFeaturesTestValue =
+        const FakeAccessibilityFeatures(disableAnimations: true);
+    addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
+    tester.view.physicalSize = const Size(390, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final audio = FakeAudioService();
+    addTearDown(audio.dispose);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          radioRepositoryProvider.overrideWithValue(
+            FakeRadioRepository()..stationToReturn = station,
+          ),
+          radioAudioServiceProvider.overrideWithValue(audio),
+          favoritesRepositoryProvider.overrideWithValue(
+            MemoryFavorites()..items = [station],
+          ),
+        ],
+        child: const StarterApp(locale: Locale('it')),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('tune-knob')));
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
+    await tester.pumpAndSettle();
+    final save = find.byKey(const ValueKey('radio-key-save'));
+    final scheme = Theme.of(tester.element(save)).colorScheme;
+    expect(Theme.of(tester.element(save)).brightness, Brightness.dark);
+    final heart = tester.widget<Icon>(
+      find.descendant(of: save, matching: find.byType(Icon)),
+    );
+    expect(heart.icon, Icons.favorite);
+    expect(heart.color, scheme.primary);
+    final play = find.byKey(const ValueKey('radio-key-play'));
+    expect(
+      tester.getSemantics(play),
+      isNot(containsSemantics(hasToggledState: true)),
+    );
+    await tester.tap(play);
+    await tester.pumpAndSettle();
+    expect(
+      tester.getSemantics(play),
+      containsSemantics(label: 'Riprendi', hasToggledState: false),
+    );
+  });
 }

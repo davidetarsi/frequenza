@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../l10n/locale_keys.g.dart';
 import '../../../ui/theme/app_spacing.dart';
 import '../../../ui/theme/travel_radio_design.dart';
-import '../../../ui/theme/travel_radio_palette.dart';
 import '../../../ui/widgets/app_icon_button.dart';
 import '../../favorites/application/favorites_controller.dart';
 import '../../favorites/presentation/favorites_sheet.dart';
@@ -173,6 +172,7 @@ class RadioPage extends ConsumerWidget {
               onTune: busy ? null : () => controller.tuneRandom(),
               playKey: RadioKey(
                 key: const ValueKey('radio-key-play'),
+                toggles: false,
                 icon: player.isPlaying ? Icons.pause : Icons.play_arrow,
                 label: player.isPlaying
                     ? LocaleKeys.pause.tr(context: context)
@@ -187,7 +187,7 @@ class RadioPage extends ConsumerWidget {
               saveKey: RadioKey(
                 key: const ValueKey('radio-key-save'),
                 icon: saved ? Icons.favorite : Icons.favorite_border,
-                iconColor: saved ? TravelRadioPalette.accent : null,
+                iconColor: saved ? theme.colorScheme.primary : null,
                 label: saved
                     ? LocaleKeys.saved.tr(context: context)
                     : LocaleKeys.save.tr(context: context),
