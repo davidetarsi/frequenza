@@ -84,5 +84,6 @@
   "signalLost": "Signal lost",
   "distanceKm": "{} km",
   "localTime": "{} local time",
+  "localTimeLabel": "local time",
   "tripNumber": "Trip no. {}"
 }

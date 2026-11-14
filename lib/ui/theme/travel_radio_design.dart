@@ -238,4 +238,10 @@ abstract final class RouteMapDesign {
   static const landingBlur = 6.0;
   static const dotsCycle = Duration(milliseconds: 1200);
   static const clockIconGap = 3.0;
+  static const localTimeLabelOpacity = .75;
+  static const localTimeLabelText = TextStyle(
+    fontSize: 9,
+    height: 1.1,
+    letterSpacing: 1.5,
+  );
 }

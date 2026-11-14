@@ -88,5 +88,6 @@ abstract class LocaleKeys {
   static const signalLost = 'signalLost';
   static const distanceKm = 'distanceKm';
   static const localTime = 'localTime';
+  static const localTimeLabel = 'localTimeLabel';
   static const tripNumber = 'tripNumber';
 }

@@ -152,6 +152,7 @@ class RadioPage extends ConsumerWidget {
                   ? null
                   : LocalTimeText(
                       station: station,
+                      stacked: !compact,
                       style: RadioCabinetDesign.statusText,
                     ),
               tripLabel: player.trips == 0

@@ -102,6 +102,7 @@ class CodegenLoader extends AssetLoader {
     "signalLost": "Signal lost",
     "distanceKm": "{} km",
     "localTime": "{} local time",
+    "localTimeLabel": "local time",
     "tripNumber": "Trip no. {}",
   };
   static const Map<String, dynamic> _it = {
@@ -192,6 +193,7 @@ class CodegenLoader extends AssetLoader {
     "signalLost": "Segnale perso",
     "distanceKm": "{} km",
     "localTime": "{} ora locale",
+    "localTimeLabel": "ora locale",
     "tripNumber": "Viaggio n. {}",
   };
   static const Map<String, Map<String, dynamic>> mapLocales = {
