@@ -160,8 +160,9 @@ class JustAudioService implements RadioAudioService {
 
       final audioSource = AudioSource.uri(Uri.parse(station.streamUrl));
 
-      await _player.stop();
+      // The flight first: the stop below must not close the notification.
       _mediaSession?.showFlight();
+      await _player.stop();
       // Silent until land(): the static plays while the stream loads.
       _muted = true;
       await _player.setVolume(_volume);

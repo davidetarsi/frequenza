@@ -5,6 +5,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../favorites/application/favorites_controller.dart';
 import '../data/radio_media_session.dart';
+import '../domain/radio_player_state.dart';
 import 'radio_controller.dart';
 import 'radio_providers.dart';
 
@@ -18,9 +19,11 @@ void radioNotification(Ref ref) {
   if (session == null) return;
 
   void publish() {
-    final station = ref.read(radioControllerProvider).station;
+    final radio = ref.read(radioControllerProvider);
+    final station = radio.station;
     final favorites = ref.read(favoritesProvider).valueOrNull;
     session.showControls(
+      flying: radio.status == PlaybackStatus.tuning,
       saved: station != null && favorites?.contains(station.id) == true,
     );
   }

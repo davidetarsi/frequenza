@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -102,6 +104,24 @@ void main() {
     expect(audio.played, hasLength(played + 1));
     expect(audio.played.last, numbered(1));
     expect(backOffered(), isTrue);
+  });
+
+  test('during a flight the notification stays up, connecting', () async {
+    final pending = Completer<RadioStation?>();
+    repository.pendingStation = pending;
+    final flight = controller().tuneRandom();
+    await Future<void>.delayed(const Duration(milliseconds: 10));
+    expect(
+      handler.playbackState.value.processingState,
+      AudioProcessingState.loading,
+    );
+    repository.pendingStation = null;
+    pending.complete(numbered(1));
+    await flight;
+    expect(
+      handler.playbackState.value.processingState,
+      isNot(AudioProcessingState.loading),
+    );
   });
 
   test('the heart saves and unsaves the station on air', () async {
