@@ -7,6 +7,7 @@ import '../../../ui/theme/travel_radio_design.dart';
 import '../../../ui/theme/travel_radio_palette.dart';
 import '../../../ui/theme/app_motion.dart';
 import '../../journey/presentation/journey_texts.dart';
+import 'radio_keys.dart';
 
 class RadioCabinet extends StatelessWidget {
   const RadioCabinet({
@@ -28,6 +29,8 @@ class RadioCabinet extends StatelessWidget {
     this.map,
     this.localTime,
     this.tripLabel,
+    this.playKey,
+    this.saveKey,
   });
   final String country, station, detail, status, knobLabel, tuneLabel;
 
@@ -46,6 +49,9 @@ class RadioCabinet extends StatelessWidget {
   final Widget? map;
   final Widget? localTime;
   final String? tripLabel;
+
+  /// Pause/resume and save, as piano keys inside the cabinet.
+  final RadioKey? playKey, saveKey;
 
   Widget _equalizer({required double height}) => SizedBox(
     height: height,
@@ -288,6 +294,9 @@ class RadioCabinet extends StatelessWidget {
         ),
       ],
     );
+    final keys = playKey == null || saveKey == null
+        ? null
+        : RadioKeys(play: playKey!, save: saveKey!, height: metrics.keyHeight);
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -380,7 +389,16 @@ class RadioCabinet extends StatelessWidget {
                         const SizedBox(width: AppSpacing.standard),
                         SizedBox(
                           width: diameter * 2 + AppSpacing.small,
-                          child: controls,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              controls,
+                              if (keys != null) ...[
+                                SizedBox(height: metrics.keysGap),
+                                keys,
+                              ],
+                            ],
+                          ),
                         ),
                       ],
                     )
@@ -388,8 +406,12 @@ class RadioCabinet extends StatelessWidget {
                     display,
                     SizedBox(height: metrics.controlsGap),
                     controls,
+                    if (keys != null) ...[
+                      SizedBox(height: metrics.keysGap),
+                      keys,
+                    ],
                   ],
-                  if (!compact) ...[
+                  if (!compact && keys == null) ...[
                     const SizedBox(height: RadioCabinetDesign.trimGap),
                     Row(
                       children: [

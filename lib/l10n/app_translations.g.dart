@@ -27,7 +27,8 @@ class CodegenLoader extends AssetLoader {
     "favorites": "Favorites",
     "favoritesTitle": "Your frequencies",
     "favoritesSubtitle": "Places to return to.",
-    "favoritesEmpty": "Tap Save on the radio to add your first station.",
+    "favoritesEmpty":
+        "Press the heart key on the radio to add your first station.",
     "favoritesError": "Your favorites could not be updated. Try again.",
     "savedOnDevice": "Saved on this device",
     "removeFavorite": "Remove from favorites",
@@ -117,7 +118,7 @@ class CodegenLoader extends AssetLoader {
     "favoritesTitle": "Le tue frequenze",
     "favoritesSubtitle": "Posti in cui tornare.",
     "favoritesEmpty":
-        "Tocca Salva sulla radio per aggiungere la tua prima frequenza.",
+        "Premi il tasto con il cuore sulla radio per aggiungere la tua prima frequenza.",
     "favoritesError": "Non è stato possibile aggiornare i preferiti. Riprova.",
     "savedOnDevice": "Salvate su questo dispositivo",
     "removeFavorite": "Rimuovi dai preferiti",

@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../l10n/locale_keys.g.dart';
 import '../../../ui/theme/app_spacing.dart';
 import '../../../ui/theme/travel_radio_design.dart';
-import '../../../ui/widgets/app_button.dart';
+import '../../../ui/theme/travel_radio_palette.dart';
 import '../../../ui/widgets/app_icon_button.dart';
 import '../../favorites/application/favorites_controller.dart';
 import '../../favorites/presentation/favorites_sheet.dart';
@@ -13,6 +13,7 @@ import '../../journey/presentation/route_map.dart';
 import '../application/radio_controller.dart';
 import '../domain/radio_player_state.dart';
 import 'radio_cabinet.dart';
+import 'radio_keys.dart';
 
 class RadioPage extends ConsumerWidget {
   const RadioPage({
@@ -32,6 +33,7 @@ class RadioPage extends ConsumerWidget {
     final station = player.station;
     final busy = player.isLoading;
     final idle = station == null;
+    final saved = station != null && favorites?.contains(station.id) == true;
     final theme = Theme.of(context);
     ref.listen(favoritesProvider, (before, after) {
       if (after.hasError && before?.hasError != true) {
@@ -161,29 +163,38 @@ class RadioPage extends ConsumerWidget {
               knobLabel: label.toUpperCase(),
               tuneLabel: LocaleKeys.tuneAccessibility.tr(context: context),
               onTune: busy ? null : () => controller.tuneRandom(),
+              playKey: RadioKey(
+                key: const ValueKey('radio-key-play'),
+                icon: player.isPlaying ? Icons.pause : Icons.play_arrow,
+                label: player.isPlaying
+                    ? LocaleKeys.pause.tr(context: context)
+                    : LocaleKeys.resume.tr(context: context),
+                down: player.status == PlaybackStatus.paused,
+                onPressed: idle || busy || player.status == PlaybackStatus.error
+                    ? null
+                    : () => player.isPlaying
+                          ? controller.pause()
+                          : controller.play(),
+              ),
+              saveKey: RadioKey(
+                key: const ValueKey('radio-key-save'),
+                icon: saved ? Icons.favorite : Icons.favorite_border,
+                iconColor: saved ? TravelRadioPalette.accent : null,
+                label: saved
+                    ? LocaleKeys.saved.tr(context: context)
+                    : LocaleKeys.save.tr(context: context),
+                down: saved,
+                onPressed:
+                    idle ||
+                        busy ||
+                        favorites == null ||
+                        favoritesState.isLoading
+                    ? null
+                    : () =>
+                          ref.read(favoritesProvider.notifier).toggle(station),
+              ),
               isBusy: busy,
               isPlaying: player.isPlaying,
-            );
-            final pause = AppButton(
-              variant: AppButtonVariant.outlined,
-              onPressed: idle || busy || player.status == PlaybackStatus.error
-                  ? null
-                  : () => player.isPlaying
-                        ? controller.pause()
-                        : controller.play(),
-              label: player.isPlaying
-                  ? LocaleKeys.pause.tr(context: context)
-                  : LocaleKeys.resume.tr(context: context),
-            );
-            final save = AppButton(
-              variant: AppButtonVariant.outlined,
-              onPressed:
-                  idle || busy || favorites == null || favoritesState.isLoading
-                  ? null
-                  : () => ref.read(favoritesProvider.notifier).toggle(station),
-              label: station != null && favorites?.contains(station.id) == true
-                  ? LocaleKeys.saved.tr(context: context)
-                  : LocaleKeys.save.tr(context: context),
             );
             final nextStop = Text(
               (tuning ? LocaleKeys.nextStopPending : LocaleKeys.nextStop).tr(
@@ -229,8 +240,6 @@ class RadioPage extends ConsumerWidget {
                                       settingsAction,
                                     ],
                                   ),
-                                  pause,
-                                  save,
                                 ],
                               ),
                             ),
@@ -261,13 +270,6 @@ class RadioPage extends ConsumerWidget {
                     ),
                     nextStop,
                     cabinet,
-                    Row(
-                      children: [
-                        Expanded(child: pause),
-                        const SizedBox(width: AppSpacing.standard),
-                        Expanded(child: save),
-                      ],
-                    ),
                     credits,
                   ],
                 ),
