@@ -64,6 +64,10 @@ void main() {
       final initialSize = tester.getSize(cabinet);
       tester.view.physicalSize = const Size(620, 900);
       await tester.pumpAndSettle();
+      // Wider screens widen the radio, up to its maximum.
+      expect(tester.getSize(cabinet).width, 420);
+      tester.view.physicalSize = const Size(390, 900);
+      await tester.pumpAndSettle();
       expect(tester.getSize(cabinet), initialSize);
       expect(find.text('Tocca la manopola per cambiare radio'), findsNothing);
 
@@ -392,4 +396,39 @@ void main() {
       containsSemantics(label: 'Riprendi', hasToggledState: false),
     );
   });
+  for (final (width, expected, gutter) in [
+    (390.0, 343.0, 12.0),
+    (320.0, 281.0, 12.0),
+    (430.0, 378.0, 12.0),
+  ]) {
+    testWidgets('at $width points the radio and the header follow the screen', (
+      tester,
+    ) async {
+      tester.view.physicalSize = Size(width, 900);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final audio = FakeAudioService();
+      addTearDown(audio.dispose);
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            radioRepositoryProvider.overrideWithValue(FakeRadioRepository()),
+            radioAudioServiceProvider.overrideWithValue(audio),
+            favoritesRepositoryProvider.overrideWithValue(MemoryFavorites()),
+          ],
+          child: const StarterApp(locale: Locale('it')),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final radio = tester.getRect(find.byType(RadioCabinet));
+      expect(radio.width, moreOrLessEquals(expected, epsilon: .5));
+      expect(radio.center.dx, moreOrLessEquals(width / 2, epsilon: .5));
+      final heading = tester.getRect(find.text('frequenza'));
+      expect(heading.left, moreOrLessEquals(gutter, epsilon: .5));
+      // The icon button keeps 4 points of its own touch padding.
+      final settings = tester.getRect(find.byTooltip('Impostazioni'));
+      expect(settings.right, moreOrLessEquals(width - gutter - 4, epsilon: .5));
+    });
+  }
 }

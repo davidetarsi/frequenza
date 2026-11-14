@@ -3,7 +3,27 @@ import 'package:flutter/material.dart';
 import 'app_spacing.dart';
 
 abstract final class TravelRadioLayout {
-  static const cabinetWidth = 320.0;
+  /// Side margin: a share of the screen width, within limits.
+  static const gutterShare = .03;
+  static const minGutter = 12.0;
+  static const maxGutter = 24.0;
+
+  /// Radio width: a share of the screen width, within limits; never wider
+  /// than the room left by the margins.
+  static const cabinetShare = .88;
+  static const minCabinetWidth = 280.0;
+  static const maxCabinetWidth = 420.0;
+
+  /// Whole points, so the radio's parts stay on the pixel grid.
+  static double gutter(double screenWidth) =>
+      (screenWidth * gutterShare).clamp(minGutter, maxGutter).floorToDouble();
+
+  static double cabinetWidth(double screenWidth, double available) =>
+      (screenWidth * cabinetShare)
+          .clamp(minCabinetWidth, maxCabinetWidth)
+          .clamp(0.0, available)
+          .floorToDouble();
+
   static const landscapeMinWidth = 520.0;
   static const landscapeMaxHeight = 560.0;
   static const landscapeContentWidth = 720.0;

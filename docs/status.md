@@ -175,3 +175,9 @@ Design `superpowers/specs/2026-11-14-notifica-design.md`, piano `superpowers/pla
 - Icona piccola: manopola bianca `ic_stat_frequenza`; immagine grande: logo della stazione o, se manca, il logo di Frequenza copiato nella cache.
 - Verificato: `tool/check.sh` verde, build dev debug con icone e logo nell'APK.
 - Da provare sul telefono: aspetto su Android 13+ e sotto, tasti da schermata di blocco, cuore e indietro dopo vari voli, logo di ripiego su una stazione senza logo.
+
+## Larghezze in proporzione allo schermo — 14 novembre 2026
+
+- Titolo e icone in alto usano tutta la larghezza, meno un margine del 3% dello schermo (12–24 punti).
+- La radio è l'88% della larghezza dello schermo (280–420 punti, mai oltre lo spazio disponibile), arrotondata a punti interi: 343 su un telefono da 390, 281 su uno da 320.
+- Tutti i valori in `TravelRadioLayout`; i pezzi interni della radio restano a misura fissa (la radio tutta in proporzione è rimandata).
