@@ -101,6 +101,15 @@ class IconTest(unittest.TestCase):
                 visible = set(re.findall(r'#[0-9A-F]{8}', xml)) - {'#00000000'}
                 self.assertEqual(visible, {'#FFFFFFFF'}, name)
 
+    def test_release_keeps_notification_icons(self):
+        # Le icone le nomina solo il codice Dart: senza keep.xml lo shrinker
+        # della build release le toglie.
+        with tempfile.TemporaryDirectory() as tmp:
+            generate.write_all(Path(tmp))
+            keep = (Path(tmp) / 'android/app/src/main/res/raw/keep.xml').read_text()
+            for name in ('ic_stat_frequenza', 'ic_favorite', 'ic_favorite_border'):
+                self.assertIn(f'@drawable/{name}', keep)
+
     def test_notification_art_is_the_store_icon(self):
         with tempfile.TemporaryDirectory() as tmp:
             generate.write_all(Path(tmp))

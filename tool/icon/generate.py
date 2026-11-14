@@ -299,6 +299,19 @@ def heart_xml(filled):
     return _small_vector(24, [_fill(HEART if filled else HEART_BORDER, WHITE)])
 
 
+NOTIFICATION_DRAWABLES = ('ic_stat_frequenza', 'ic_favorite', 'ic_favorite_border')
+
+
+def keep_xml():
+    """Le icone della notifica le nomina solo il codice Dart: lo shrinker
+    della build release non le vede e senza questo file le toglie."""
+    keep = ','.join(f'@drawable/{name}' for name in NOTIFICATION_DRAWABLES)
+    return ('<?xml version="1.0" encoding="utf-8"?>\n'
+            '<!-- Generato da tool/icon/generate.py: non modificare a mano. -->\n'
+            '<resources xmlns:tools="http://schemas.android.com/tools"\n'
+            f'    tools:keep="{keep}" />\n')
+
+
 def monochrome_xml():
     white = (0xFF, 0xFF, 0xFF)
     dashes = ''.join(_dash(angle) for angle in _dash_angles())
@@ -337,6 +350,7 @@ def write_all(root):
         RES / 'drawable/ic_stat_frequenza.xml': notification_icon_xml().encode(),
         RES / 'drawable/ic_favorite.xml': heart_xml(True).encode(),
         RES / 'drawable/ic_favorite_border.xml': heart_xml(False).encode(),
+        RES / 'raw/keep.xml': keep_xml().encode(),
     }
     for density, size in LEGACY_SIZES.items():
         files[RES / f'mipmap-{density}/ic_launcher.png'] = render_png(size)
