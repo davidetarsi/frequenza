@@ -96,5 +96,38 @@ void main() {
 
       expect(() => repository.getCandidates(), throwsA(isA<Exception>()));
     });
+    test('reads valid station coordinates only', () async {
+      Map<String, Object?> raw(String id, Object? lat, Object? lon) => {
+        'stationuuid': id,
+        'name': 'Radio $id',
+        'url_resolved': 'https://stream.example.com/$id',
+        'country': 'Japan',
+        'countrycode': 'JP',
+        'geo_lat': lat,
+        'geo_long': lon,
+      };
+      final client = MockClient(
+        (request) async => http.Response(
+          jsonEncode([
+            raw('tokyo', 35.68, 139.76),
+            raw('missing', null, null),
+            raw('zero', 0, 0),
+            raw('range', 120, 10),
+          ]),
+          200,
+        ),
+      );
+      final repository = RadioBrowserRepository(
+        client: client,
+        mirrors: ['https://mirror1.test'],
+      );
+
+      final stations = await repository.getCandidates();
+
+      expect(stations.first.point?.latitude, 35.68);
+      expect(stations.first.point?.longitude, 139.76);
+      expect(stations.skip(1).map((s) => s.point), everyElement(isNull));
+      expect(stations.skip(1).map((s) => s.latitude), everyElement(isNull));
+    });
   });
 }

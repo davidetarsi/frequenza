@@ -1,4 +1,4 @@
-# Frequenza — stato verificato al 10 novembre 2026
+# Frequenza — stato verificato al 13 novembre 2026
 
 Fase attiva: 3, UI radio da viaggio integrata; validazione Android reale ancora aperta.
 Piano attivo: superpowers/plans/2026-11-10-travel-radio-ui.md. Roadmap: ../../flutter_starter/docs/project/roadmap.md.
@@ -128,3 +128,26 @@ Passo 1 del design `superpowers/specs/2026-11-12-rotta-sul-mondo-design.md`; pia
 - Verificati sulla VPS: formattazione, analisi senza segnalazioni, controlli dello stato del player, suite 31/31, bundle debug. Una revisione indipendente del branch ha portato a due correzioni: notifica ferma quando lo stream finisce e lock riportato sulle versioni del progetto. APK release non verificato: la build sulla VPS è stata fermata per memoria insufficiente.
 - La VPS ha Flutter 3.47.4: `pub get` riscrive il lock e `build_runner` si blocca sull'analyzer. Il lock è stato modificato a mano e il provider `radioAudioHandler` scritto a mano nel `.g.dart`: rieseguire `bash tool/check.sh --apk` con Flutter 3.38.5 e versionare eventuali differenze.
 - Prossimo passo: collaudo su telefono (checklist in fondo al piano), poi passo 2, la Rotta sul mondo.
+
+## Rotta sul mondo — 12 novembre 2026
+
+Passo 2 del design `superpowers/specs/2026-11-12-rotta-sul-mondo-design.md`; piano `superpowers/plans/2026-11-12-rotta-sul-mondo.md`. Branch `feat/rotta-sul-mondo` sopra `feat/audio-service`, non ancora pubblicato.
+
+- Manopola e Preferiti seguono lo stesso volo. Il volo dura almeno 1 s, con il fruscio e la stazione a volume zero. L'atterraggio avviene solo con la riproduzione avviata e solo allora la notifica mostra la stazione. Dopo 12 s senza riproduzione compare «Segnale perso»: la manopola fa fino a 2 nuovi tentativi, il preferito nessuno. Una pausa di sistema durante il volo (cuffie, chiamata) annulla il volo.
+- Display: mappa a puntini (Natural Earth) al posto delle barre nel layout normale, con scia radar, arco, storico di 5 rotte e «Viaggio n. X». Mostra anche distanza del tratto e ora locale con icona. Nel layout compatto l'ora prende il posto delle barre.
+- L'atlante (`lib/features/journey/data/world_atlas.g.dart`) si rigenera con `bash tool/world_atlas/generate.sh`, che usa la tzdata del sistema. L'Egitto e Lord Howe usano l'ora solare. Il Cile può sbagliare l'ora legale di una settimana in alcuni anni.
+- Flutter 3.38.5 del progetto è installato sulla VPS in `/srv/claude/workspaces/.tools/flutter-3.38.5`. Verificati `tool/check.sh` (lock invariato), analisi pulita e suite 69/69, più una revisione indipendente del branch con quattro correzioni. APK non compilato sulla VPS.
+- Limiti noti: su iOS il volo è muto. Pausa dalla notifica durante il volo: la stazione resta muta, il volo scade in «Segnale perso» e la manopola può riprovare.
+- Prossimo passo: push dei due branch e PR, collaudo su telefono (checklist del passo 1, volo da manopola e Preferiti, niente audio prima dell'atterraggio, notifica «In volo…», modalità aereo, riduzione del movimento), poi aggiornamento di Flutter.
+
+## Pipeline di rilascio — 13 novembre 2026
+
+Design `superpowers/specs/2026-11-12-pipeline-design.md`; piano `superpowers/plans/2026-11-13-pipeline.md`. Branch `feat/pipeline`, che contiene anche la Rotta sul mondo (merge): da unire in `develop` dopo le PR della notifica e della Rotta.
+
+- Due versioni installabili insieme: «Frequenza» (`it.davidetarsi.frequenza`) e «Frequenza Dev» (`.dev`), un solo `main.dart`. `default-flavor: dev` nel pubspec: `flutter run` e `tool/check.sh --apk` costruiscono la dev senza `--flavor`; per la prod `flutter build appbundle --flavor prod`.
+- Firma da `android/key.properties` (ignorato da git); senza il file le release si firmano con la chiave di debug.
+- Icona manopola generata da `python3 tool/icon/generate.py` (adattiva, monocromatica, PNG per densità, 512 per lo Store).
+- Workflow: `ci.yml` (check.sh + `git diff --exit-code`; versione dalle etichette verso `main`), `bump_version.yml`, `build_dev.yml` (APK su Telegram), `release_prod.yml` (prerelease senza file, AAB negli artifact, Play solo con `PLAY_UPLOAD=on`, canale `PLAY_TRACK` o `alpha`), `promote_prod.yml` (a mano), `store_listing.yml`. Logica delle versioni in `.github/scripts/version.cjs`.
+- `tool/check.sh` lancia anche i test Node delle versioni e i test Python (icona, workflow, scheda). Senza PyYAML in locale i test dei workflow si saltano; in CI sono obbligatori.
+- Verificati sulla VPS: check.sh verde (69 test Flutter, 6 Node, test Python), APK dev e prod debug, APK dev release firmata con la chiave di debug (`aapt2`: id e nome giusti), script dei due workflow delle versioni simulati con GitHub finto. Le pipeline vere si verificano solo su GitHub: annotare qui l'esito della prima esecuzione di ognuna.
+- Prossimo passo: azioni manuali in `docs/azioni-manuali.md` (segreti, variabili, etichette, regole), merge in `develop`, prima APK dev su Telegram e collaudo su telefono.

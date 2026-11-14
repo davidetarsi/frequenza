@@ -1,0 +1,147 @@
+name: 🚀 Android Release Candidate
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: android-release-candidate
+  cancel-in-progress: false
+
+jobs:
+  build-and-release:
+    name: Build & Upload Closed Testing Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: ⬇️ Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 📖 Validate release version and tag
+        shell: bash
+        run: |
+          set -euo pipefail
+          APP_VERSION=$(sed -nE 's/^version: ([0-9]+\.[0-9]+\.[0-9]+\+[0-9]+)$/\1/p' pubspec.yaml)
+          if [[ -z "$APP_VERSION" ]]; then
+            echo 'pubspec.yaml must contain version: MAJOR.MINOR.PATCH+BUILD' >&2
+            exit 1
+          fi
+          TAG="v${APP_VERSION%%+*}"
+          if git rev-parse -q --verify "refs/tags/$TAG^{}" >/dev/null; then
+            TAG_SHA=$(git rev-list -n 1 "$TAG")
+            if [[ "$TAG_SHA" != "$GITHUB_SHA" ]]; then
+              echo "$TAG already points to another commit; bump the version in the PR" >&2
+              exit 1
+            fi
+          fi
+          echo "APP_VERSION=$APP_VERSION" >> "$GITHUB_ENV"
+          echo "TAG=$TAG" >> "$GITHUB_ENV"
+
+      - name: ⚙️ Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: 🐦 Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          flutter-version: '3.38.5'
+          cache: true
+
+      - name: 📦 Install Dependencies
+        run: flutter pub get
+
+      - name: 🔐 Decode Android Keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        run: echo "$KEYSTORE_BASE64" | base64 --decode > android/app/upload-keystore.jks
+
+      - name: 🔑 Create key.properties
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+        run: |
+          echo "storePassword=$KEYSTORE_PASSWORD" > android/key.properties
+          echo "keyPassword=$KEY_PASSWORD" >> android/key.properties
+          echo "keyAlias=$KEY_ALIAS" >> android/key.properties
+          echo "storeFile=upload-keystore.jks" >> android/key.properties
+
+      - name: 🏗️ Build PROD AppBundle (AAB) & APK
+        run: |
+          flutter build appbundle --flavor prod --release
+          flutter build apk --flavor prod --release --target-platform android-arm64
+
+      - name: 🏷️ Rename Artifacts
+        run: |
+          mv build/app/outputs/flutter-apk/app-prod-release.apk \
+             build/app/outputs/flutter-apk/Frequenza-prod-v${{ env.APP_VERSION }}.apk
+          mv build/app/outputs/bundle/prodRelease/app-prod-release.aab \
+             build/app/outputs/bundle/prodRelease/Frequenza-prod-v${{ env.APP_VERSION }}.aab
+
+      # Il repo è pubblico: i file firmati restano qui, non sulla release.
+      # Il primo AAB da caricare a mano nella Play Console si scarica da qui.
+      - name: ☁️ Keep the signed build as a workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Frequenza-prod-v${{ env.APP_VERSION }}
+          path: |
+            build/app/outputs/bundle/prodRelease/Frequenza-prod-v${{ env.APP_VERSION }}.aab
+            build/app/outputs/flutter-apk/Frequenza-prod-v${{ env.APP_VERSION }}.apk
+          retention-days: 30
+
+      - name: 🏷️ Create immutable release tag
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! git rev-parse -q --verify "refs/tags/$TAG^{}" >/dev/null; then
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git config user.name "github-actions[bot]"
+            git tag -a "$TAG" -m "Android release candidate $TAG"
+            git push origin "refs/tags/$TAG"
+          fi
+
+      - name: 🏷️ Create GitHub prerelease
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.TAG }}
+          prerelease: true
+          generate_release_notes: true
+
+      # Google accetta caricamenti automatici solo dopo il primo AAB caricato a
+      # mano: finché la variabile del repository PLAY_UPLOAD non vale "on" il
+      # rilascio si ferma qui, verde.
+      - name: 🔑 Check Play Console service account
+        if: vars.PLAY_UPLOAD == 'on'
+        env:
+          GOOGLE_PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+        run: |
+          if [[ -z "$GOOGLE_PLAY_SERVICE_ACCOUNT_JSON" ]]; then
+            echo 'Configure GOOGLE_PLAY_SERVICE_ACCOUNT_JSON to upload to the closed test' >&2
+            exit 1
+          fi
+
+      - name: 📲 Upload the exact signed AAB to the closed test
+        if: vars.PLAY_UPLOAD == 'on'
+        uses: r0adkll/upload-google-play@e738b9dd8f2476ea806d921b64aacd24f34515a5 # v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: it.davidetarsi.frequenza
+          releaseFiles: build/app/outputs/bundle/prodRelease/Frequenza-prod-v${{ env.APP_VERSION }}.aab
+          # Canale del test chiuso: "alpha" è quello predefinito della Play Console.
+          tracks: ${{ vars.PLAY_TRACK || 'alpha' }}
+          # Novità della versione, una per lingua: vanno aggiornate nella PR
+          # del rilascio e seguono la release quando la si promuove.
+          whatsNewDirectory: distribution/whatsnew
+          status: completed
+
+      - name: ℹ️ Play Store upload switched off
+        if: vars.PLAY_UPLOAD != 'on'
+        run: |
+          echo "::notice::Caricamento sul Play Store spento (PLAY_UPLOAD non è on): AAB negli artifact della run."

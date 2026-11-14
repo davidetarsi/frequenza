@@ -19,6 +19,8 @@ _$RadioStationImpl _$$RadioStationImplFromJson(Map<String, dynamic> json) =>
           const [],
       codec: json['codec'] as String?,
       bitrate: (json['bitrate'] as num?)?.toInt(),
+      latitude: (json['lat'] as num?)?.toDouble(),
+      longitude: (json['lon'] as num?)?.toDouble(),
     );
 
 Map<String, dynamic> _$$RadioStationImplToJson(_$RadioStationImpl instance) =>
@@ -32,4 +34,6 @@ Map<String, dynamic> _$$RadioStationImplToJson(_$RadioStationImpl instance) =>
       'tags': instance.tags,
       'codec': instance.codec,
       'bitrate': instance.bitrate,
+      'lat': instance.latitude,
+      'lon': instance.longitude,
     };

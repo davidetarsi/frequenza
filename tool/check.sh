@@ -11,6 +11,8 @@ dart run build_runner build --delete-conflicting-outputs
 dart format --output=none --set-exit-if-changed lib test tool
 flutter analyze --no-pub
 dart tool/check_player_state.dart
+node --test .github/scripts/version.test.cjs
+python3 -m unittest discover -s tool -p 'test_*.py'
 flutter test --no-pub --reporter expanded
 if [[ "${1:-}" == '--apk' ]]; then
   flutter build apk --release --no-pub

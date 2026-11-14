@@ -1,7 +1,7 @@
 name: frequenza
 description: "Ascolto e scoperta di web radio nel mondo."
 publish_to: 'none'
-version: 0.1.0
+version: 0.1.0+1
 
 environment:
   sdk: ^3.10.4
@@ -34,4 +34,6 @@ dev_dependencies:
   build_runner: ^2.5.4
 
 flutter:
+  # `flutter run` e le build senza --flavor usano la versione dev.
+  default-flavor: dev
   uses-material-design: true

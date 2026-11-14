@@ -6,11 +6,15 @@ import '../data/radio_audio_handler.dart';
 import '../data/radio_browser_repository.dart';
 import '../domain/radio_audio_service.dart';
 import '../domain/radio_repository.dart';
+import 'flight_timing.dart';
 
 part 'radio_providers.g.dart';
 
 @Riverpod(keepAlive: true)
 RadioRepository radioRepository(Ref ref) => RadioBrowserRepository();
+
+@Riverpod(keepAlive: true)
+FlightTiming flightTiming(Ref ref) => const FlightTiming();
 
 /// The system media session, overridden at startup by `bootstrap`.
 @Riverpod(keepAlive: true)

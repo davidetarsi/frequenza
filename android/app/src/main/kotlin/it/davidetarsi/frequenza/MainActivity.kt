@@ -1,4 +1,4 @@
-package dev.davidetarsi.frequenza
+package it.davidetarsi.frequenza
 
 import android.media.AudioAttributes
 import android.media.SoundPool

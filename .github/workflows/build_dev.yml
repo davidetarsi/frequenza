@@ -1,0 +1,128 @@
+name: 🛠️ Build DEV
+
+on:
+  push:
+    branches: [ "develop" ]
+    # Niente APK se il push cambia solo cose che non entrano nell'app
+    # (documentazione, test): sarebbe identico al precedente.
+    # Basta un file fuori da questi percorsi per avviare la build.
+    paths-ignore:
+      - "docs/**"
+      - "test/**"
+      - "**/*.md"
+  # Avvio manuale dalla tab Actions (es. per rimandare l'ultima build).
+  workflow_dispatch:
+
+jobs:
+  build-dev-apk:
+    name: Build & Upload DEV APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: ⬇️ Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: 🐦 Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          flutter-version: '3.38.5'
+          cache: true
+
+      - name: 📦 Install Dependencies
+        run: flutter pub get
+
+      - name: 🔐 Decode and convert debug keystore to JKS
+        env:
+          KEYSTORE_B64: ${{ secrets.DEBUG_KEYSTORE_BASE64 }}
+        run: |
+          echo "$KEYSTORE_B64" | base64 --decode > /tmp/debug.p12
+          keytool -importkeystore \
+            -srckeystore /tmp/debug.p12 \
+            -srcstoretype PKCS12 \
+            -destkeystore android/app/debug.keystore \
+            -deststoretype JKS \
+            -srcalias androiddebugkey \
+            -destalias androiddebugkey \
+            -srcstorepass android \
+            -deststorepass android \
+            -srckeypass android \
+            -destkeypass android \
+            -noprompt
+
+      - name: 🔑 Create key.properties (debug signing)
+        run: |
+          echo "storePassword=android" > android/key.properties
+          echo "keyPassword=android" >> android/key.properties
+          echo "keyAlias=androiddebugkey" >> android/key.properties
+          echo "storeFile=debug.keystore" >> android/key.properties
+
+      - name: 📖 Extract Version from pubspec.yaml
+        id: get_version
+        run: |
+          # Da "version: 1.1.3+6" prende "1.1.3" e ci aggiunge il numero della
+          # run: ogni build dev è riconoscibile (1.1.3-dev.42) e, con il numero
+          # della run come versionCode, si installa sempre sopra la precedente.
+          # L'app dev ha un id suo (.dev), quindi non interferisce con la prod.
+          VERSION=$(grep '^version: ' pubspec.yaml | cut -d ' ' -f 2)
+          DEV_VERSION="${VERSION%%+*}-dev.${{ github.run_number }}"
+          echo "App version is $VERSION, dev build $DEV_VERSION"
+          echo "DEV_VERSION=$DEV_VERSION" >> $GITHUB_ENV
+
+      - name: 🏗️ Build DEV APK
+        run: |
+          flutter build apk --flavor dev --release --target-platform android-arm64 \
+            --build-name=${{ env.DEV_VERSION }} \
+            --build-number=${{ github.run_number }}
+
+      - name: 🏷️ Rename APK File
+        run: |
+          # Es.: Frequenza-dev-v1.1.3-dev.42.apk
+          mv build/app/outputs/flutter-apk/app-dev-release.apk build/app/outputs/flutter-apk/Frequenza-dev-v${{ env.DEV_VERSION }}.apk
+
+      - name: ☁️ Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          # Il "name" qui definisce come si chiamerà lo ZIP che GitHub ti fa scaricare
+          name: Frequenza-dev-v${{ env.DEV_VERSION }}
+          path: build/app/outputs/flutter-apk/Frequenza-dev-v${{ env.DEV_VERSION }}.apk
+          retention-days: 7
+
+      # Manda l'APK in chat Telegram, così si installa direttamente dal telefono.
+      # Senza i due segreti lo step si salta: l'APK resta comunque come artifact.
+      - name: 📲 Send APK to Telegram
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          if [[ -z "$TELEGRAM_BOT_TOKEN" || -z "$TELEGRAM_CHAT_ID" ]]; then
+            echo "::notice::TELEGRAM_BOT_TOKEN o TELEGRAM_CHAT_ID non configurati: APK solo come artifact."
+            exit 0
+          fi
+          APK="build/app/outputs/flutter-apk/Frequenza-dev-v${DEV_VERSION}.apk"
+          SUBJECT=$(git log -1 --format=%s | cut -c1-200)
+          RUN_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          CAPTION=$(printf 'Frequenza dev %s\n%s\n%s' "$DEV_VERSION" "$SUBJECT" "$RUN_URL")
+          # I bot Telegram accettano file fino a 50 MB: oltre, arriva almeno un
+          # messaggio con il link alla run, da cui scaricare l'artifact.
+          SIZE=$(stat -c %s "$APK")
+          if (( SIZE > 50 * 1024 * 1024 )); then
+            SIZE_MB=$((SIZE / 1024 / 1024))
+            echo "::warning::APK di ${SIZE_MB} MB: oltre il limite di 50 MB dei bot Telegram, mando solo il link."
+            curl -sS --fail-with-body -o /dev/null \
+              --data-urlencode chat_id="$TELEGRAM_CHAT_ID" \
+              --data-urlencode text="$(printf '%s\n\nAPK di %s MB, troppo grande per Telegram: scaricalo dalla run (artifact).' "$CAPTION" "$SIZE_MB")" \
+              "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage"
+            exit 0
+          fi
+          curl -sS --fail-with-body -o /dev/null \
+            -F chat_id="$TELEGRAM_CHAT_ID" \
+            -F caption="$CAPTION" \
+            -F document=@"$APK" \
+            "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument"

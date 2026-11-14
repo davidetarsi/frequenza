@@ -6,9 +6,18 @@ abstract interface class RadioAudioService {
   PlaybackStatus get currentStatus;
   Stream<String?> get trackTitleStream;
 
+  /// Pause requests (headphones unplugged, a call…) that arrive while a
+  /// station is still flying silently.
+  Stream<void> get flightInterruptions;
+
   Future<void> startTuningSound();
   Future<void> stopTuningSound();
+
+  /// Starts [station] silently, showing only a flight in the media session.
   Future<void> playStation(RadioStation station);
+
+  /// Makes the started station audible and names it in the media session.
+  Future<void> land(RadioStation station);
   Future<void> play();
   Future<void> pause();
   Future<void> stop();
