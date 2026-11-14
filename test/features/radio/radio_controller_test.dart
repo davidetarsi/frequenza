@@ -416,6 +416,103 @@ void main() {
       expect(read().leg, isNull);
     });
 
+    RadioStation numbered(int n) => RadioStation(
+      id: 'station-$n',
+      name: 'Radio $n',
+      streamUrl: 'https://stream.test/$n.mp3',
+      country: 'Italy',
+      countryCode: 'IT',
+    );
+
+    Future<void> landOn(RadioStation station) async {
+      repository.stationToReturn = station;
+      await controller.tuneRandom();
+    }
+
+    test('forward landings stack the stations left behind', () async {
+      for (final n in [1, 2, 3]) {
+        await landOn(numbered(n));
+      }
+      expect(read().previous, [numbered(1), numbered(2)]);
+      expect(read().canGoBack, isTrue);
+    });
+
+    test('tuneBack flies to the last station and pops it', () async {
+      for (final n in [1, 2, 3]) {
+        await landOn(numbered(n));
+      }
+      await controller.tuneBack();
+      expect(read().station, numbered(2));
+      expect(read().previous, [numbered(1)]);
+      expect(read().trips, 4);
+      await controller.tuneBack();
+      expect(read().station, numbered(1));
+      expect(read().previous, isEmpty);
+      expect(read().canGoBack, isFalse);
+    });
+
+    test('a favorite chosen in the app is a forward flight', () async {
+      await landOn(numbered(1));
+      await controller.tuneTo(numbered(2));
+      expect(read().previous, [numbered(1)]);
+    });
+
+    test('the stack keeps the last 10', () async {
+      for (var n = 1; n <= 12; n++) {
+        await landOn(numbered(n));
+      }
+      expect(read().previous, hasLength(10));
+      expect(read().previous.first, numbered(2));
+      expect(read().previous.last, numbered(11));
+    });
+
+    test('a failed flight back keeps the stack', () async {
+      await landOn(numbered(1));
+      await landOn(numbered(2));
+      audioService.autoPlay = false;
+      await controller.tuneBack();
+      expect(read().status, PlaybackStatus.error);
+      expect(read().previous, [numbered(1)]);
+    });
+
+    test('tuneBack with nothing on air does nothing', () async {
+      await controller.tuneBack();
+      expect(read().status, PlaybackStatus.idle);
+      expect(audioService.played, isEmpty);
+    });
+
+    test('tuneBack with an empty stack reconnects the station', () async {
+      await landOn(numbered(1));
+      final before = read();
+      await controller.tuneBack();
+      expect(audioService.played, [numbered(1), numbered(1)]);
+      expect(read().station, numbered(1));
+      expect(read().status, PlaybackStatus.playing);
+      expect(read().trips, before.trips);
+      expect(read().leg, before.leg);
+      expect(read().history, before.history);
+      expect(read().previous, isEmpty);
+    });
+
+    test('back after a failed flight returns to the station left', () async {
+      await landOn(numbered(1));
+      await landOn(numbered(2));
+      audioService.autoPlay = false;
+      await landOn(numbered(3));
+      expect(read().status, PlaybackStatus.error);
+      audioService.autoPlay = true;
+      await controller.tuneBack();
+      expect(read().station, numbered(2));
+      expect(read().previous, [numbered(1)]);
+    });
+
+    test('a favorite already on air does not stack itself', () async {
+      await landOn(numbered(1));
+      await landOn(numbered(2));
+      await controller.tuneTo(numbered(2));
+      expect(read().previous, [numbered(1)]);
+    });
+
     test('pause and stop control audio service', () async {
       repository.stationToReturn = testStation;
       await controller.tuneRandom();

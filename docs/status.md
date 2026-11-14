@@ -164,3 +164,14 @@ Design `superpowers/specs/2026-11-14-ritocchi-ui-design.md`, piano `superpowers/
 - Verificato: `tool/check.sh` verde (76 test Flutter), build dev debug.
 - Aperto: collaudo sul telefono (aspetto dei tasti nei due temi, vibrazione, conferma di copia su Android 13+).
 - Prossimo passo dopo il collaudo: ricerca per paese o per nome della stazione (Radio Browser ha già i filtri necessari).
+
+## Notifica — 14 novembre 2026
+
+Design `superpowers/specs/2026-11-14-notifica-design.md`, piano `superpowers/plans/2026-11-14-notifica.md`, branch `feat/notifica`.
+
+- Tasti: indietro (a pila vuota riconnette la stazione), play/pausa, avanti, cuore; niente stop; in volo solo play/pausa. Sotto Android 13 il cuore non compare (limite accettato).
+- Indietro: pila delle ultime 10 stazioni lasciate, solo sessione; il ritorno è un volo e conta come viaggio.
+- Cuore della notifica e preferiti dell'app sempre allineati (provider `radioNotification`).
+- Icona piccola: manopola bianca `ic_stat_frequenza`; immagine grande: logo della stazione o, se manca, il logo di Frequenza copiato nella cache.
+- Verificato: `tool/check.sh` verde, build dev debug con icone e logo nell'APK.
+- Da provare sul telefono: aspetto su Android 13+ e sotto, tasti da schermata di blocco, cuore e indietro dopo vari voli, logo di ripiego su una stazione senza logo.

@@ -83,6 +83,8 @@ abstract class LocaleKeys {
   static const audioChannelName = 'audioChannelName';
   static const cabinetBrand = 'cabinetBrand';
   static const notificationFlying = 'notificationFlying';
+  static const notificationSave = 'notificationSave';
+  static const notificationRemove = 'notificationRemove';
   static const flyingTo = 'flyingTo';
   static const nextStopPending = 'nextStopPending';
   static const signalLost = 'signalLost';

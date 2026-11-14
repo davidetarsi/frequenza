@@ -89,6 +89,33 @@ class IconTest(unittest.TestCase):
             for x, y, half in points:
                 self.assertLessEqual(math.hypot(x - 54, y - 54) + half, 33.0)
 
+    def test_notification_icons_are_white_vectors(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            written = {str(p) for p in generate.write_all(Path(tmp))}
+            for name in ('ic_stat_frequenza', 'ic_favorite', 'ic_favorite_border'):
+                relative = f'android/app/src/main/res/drawable/{name}.xml'
+                self.assertIn(relative, written)
+                xml = (Path(tmp) / relative).read_text()
+                self.assertIn('android:width="24dp"', xml)
+                # Ignora i riempimenti del tutto trasparenti dei tratti.
+                visible = set(re.findall(r'#[0-9A-F]{8}', xml)) - {'#00000000'}
+                self.assertEqual(visible, {'#FFFFFFFF'}, name)
+
+    def test_release_keeps_notification_icons(self):
+        # Le icone le nomina solo il codice Dart: senza keep.xml lo shrinker
+        # della build release le toglie.
+        with tempfile.TemporaryDirectory() as tmp:
+            generate.write_all(Path(tmp))
+            keep = (Path(tmp) / 'android/app/src/main/res/raw/keep.xml').read_text()
+            for name in ('ic_stat_frequenza', 'ic_favorite', 'ic_favorite_border'):
+                self.assertIn(f'@drawable/{name}', keep)
+
+    def test_notification_art_is_the_store_icon(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            generate.write_all(Path(tmp))
+            art = (Path(tmp) / 'assets/images/notification_art.png').read_bytes()
+            self.assertEqual(art, generate.render_png(512, rounded=False))
+
     def test_generated_files_up_to_date(self):
         with tempfile.TemporaryDirectory() as tmp:
             written = generate.write_all(Path(tmp))

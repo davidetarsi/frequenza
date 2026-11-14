@@ -54,6 +54,12 @@ class RecordingSession implements RadioMediaSession {
 
   @override
   void showFlight() => flights++;
+
+  @override
+  void showControls({required bool saved}) {}
+
+  @override
+  Stream<RadioMediaCommand> get commands => const Stream.empty();
 }
 
 void main() {

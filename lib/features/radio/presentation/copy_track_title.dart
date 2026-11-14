@@ -3,14 +3,13 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../l10n/locale_keys.g.dart';
-
-const _platform = MethodChannel('frequenza/tuning_sound');
+import '../data/native_channel.dart';
 
 /// From Android 13 the system shows its own confirmation for every copy.
 Future<bool> systemConfirmsCopy() async {
   if (defaultTargetPlatform != TargetPlatform.android) return false;
   try {
-    final sdk = await _platform
+    final sdk = await nativeChannel
         .invokeMethod<int>('sdkInt')
         .timeout(const Duration(seconds: 1));
     return (sdk ?? 0) >= 33;

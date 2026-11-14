@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frequenza/features/radio/data/radio_audio_handler.dart';
+import 'package:frequenza/features/radio/data/radio_media_session.dart';
 import 'package:frequenza/features/radio/domain/radio_station.dart';
 import 'package:just_audio/just_audio.dart';
 
@@ -38,6 +39,12 @@ class EventPlayer extends Fake implements AudioPlayer {
   Future<void> stop() async => stops++;
 }
 
+final fallbackArt = Uri.file('/cache/notification_art.png');
+
+MediaControl playPause(PlaybackState state) => state.controls.singleWhere(
+  (c) => c == MediaControl.play || c == MediaControl.pause,
+);
+
 void main() {
   late EventPlayer player;
   late RadioAudioHandler handler;
@@ -48,6 +55,9 @@ void main() {
       player,
       flightTitle: 'Frequenza',
       flightSubtitle: 'In volo…',
+      saveLabel: 'Salva',
+      removeLabel: 'Togli',
+      fallbackArt: fallbackArt,
     );
   });
   tearDown(() => handler.dispose());
@@ -64,13 +74,12 @@ void main() {
     final state = await emit(ProcessingState.ready, playing: true);
     expect(state.playing, isTrue);
     expect(state.processingState, AudioProcessingState.ready);
-    expect(state.controls.first, MediaControl.pause);
-    expect(state.controls, contains(MediaControl.stop));
+    expect(playPause(state), MediaControl.pause);
   });
 
   test('publishes play control while paused', () async {
     final state = await emit(ProcessingState.ready, playing: false);
-    expect(state.controls.first, MediaControl.play);
+    expect(playPause(state), MediaControl.play);
   });
 
   test('maps buffering and idle', () async {
@@ -131,7 +140,7 @@ void main() {
         countryCode: 'US',
       ),
     );
-    expect(handler.mediaItem.value!.artUri, isNull);
+    expect(handler.mediaItem.value!.artUri, fallbackArt);
   });
 
   test('player event errors become error state', () async {
@@ -145,7 +154,7 @@ void main() {
   test('a completed live stream is published as not playing', () async {
     final state = await emit(ProcessingState.completed, playing: true);
     expect(state.playing, isFalse);
-    expect(state.controls.first, MediaControl.play);
+    expect(playPause(state), MediaControl.play);
   });
 
   test('play after a completed stream restarts it', () async {
@@ -161,5 +170,93 @@ void main() {
     expect(item.title, 'Frequenza');
     expect(item.artist, 'In volo…');
     expect(item.artUri, isNull);
+  });
+
+  const station = RadioStation(
+    id: 'fip',
+    name: 'FIP',
+    streamUrl: 'https://example.com/fip',
+    country: 'France',
+    countryCode: 'FR',
+  );
+
+  List<MediaControl> controls() => handler.playbackState.value.controls;
+  List<int> compact() =>
+      handler.playbackState.value.androidCompactActionIndices ?? const [];
+  MediaControl heart() =>
+      controls().singleWhere((c) => c.action == MediaAction.custom);
+
+  test('flight shows only play/pause', () async {
+    await emit(ProcessingState.ready, playing: true);
+    handler.showControls(saved: true);
+    handler.showFlight();
+    expect(controls(), [MediaControl.pause]);
+    expect(compact(), [0]);
+  });
+
+  test('grounded shows previous, play/pause, next and heart', () async {
+    await emit(ProcessingState.ready, playing: true);
+    handler.showStation(station);
+    handler.showControls(saved: false);
+    expect(controls().map((c) => c.action), [
+      MediaAction.skipToPrevious,
+      MediaAction.pause,
+      MediaAction.skipToNext,
+      MediaAction.custom,
+    ]);
+    expect(compact(), [0, 1, 2]);
+    expect(heart().androidIcon, 'drawable/ic_favorite_border');
+    expect(heart().label, 'Salva');
+    expect(heart().customAction?.name, 'favorite');
+  });
+
+  test('saved station fills the heart', () async {
+    handler.showStation(station);
+    handler.showControls(saved: true);
+    expect(heart().androidIcon, 'drawable/ic_favorite');
+    expect(heart().label, 'Togli');
+  });
+
+  test('landing waits for the journey before showing the keys', () async {
+    handler.showControls(saved: false);
+    handler.showFlight();
+    handler.showStation(station);
+    // No stale heart from the flight: the keys come with the new state.
+    expect(
+      controls().map((c) => c.action),
+      isNot(contains(MediaAction.custom)),
+    );
+    handler.showControls(saved: true);
+    expect(controls(), hasLength(4));
+    expect(heart().androidIcon, 'drawable/ic_favorite');
+  });
+
+  test('notification buttons become commands', () async {
+    final commands = handler.commands.take(3).toList();
+    await handler.skipToNext();
+    await handler.skipToPrevious();
+    await handler.customAction('favorite');
+    expect(await commands, [
+      RadioMediaCommand.next,
+      RadioMediaCommand.previous,
+      RadioMediaCommand.toggleFavorite,
+    ]);
+  });
+
+  test('stop is never offered', () async {
+    for (final playing in [true, false]) {
+      await emit(ProcessingState.ready, playing: playing);
+      handler.showStation(station);
+      handler.showControls(saved: true);
+      expect(
+        controls().map((c) => c.action),
+        isNot(contains(MediaAction.stop)),
+      );
+      handler.showFlight();
+      expect(
+        controls().map((c) => c.action),
+        isNot(contains(MediaAction.stop)),
+      );
+    }
   });
 }
