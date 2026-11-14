@@ -169,7 +169,7 @@ Design `superpowers/specs/2026-11-14-ritocchi-ui-design.md`, piano `superpowers/
 
 Design `superpowers/specs/2026-11-14-notifica-design.md`, piano `superpowers/plans/2026-11-14-notifica.md`, branch `feat/notifica`.
 
-- Tasti: indietro (solo con stazioni in pila), play/pausa, avanti, cuore; niente stop; in volo solo play/pausa.
+- Tasti: indietro (a pila vuota riconnette la stazione), play/pausa, avanti, cuore; niente stop; in volo solo play/pausa. Sotto Android 13 il cuore non compare (limite accettato).
 - Indietro: pila delle ultime 10 stazioni lasciate, solo sessione; il ritorno è un volo e conta come viaggio.
 - Cuore della notifica e preferiti dell'app sempre allineati (provider `radioNotification`).
 - Icona piccola: manopola bianca `ic_stat_frequenza`; immagine grande: logo della stazione o, se manca, il logo di Frequenza copiato nella cache.
