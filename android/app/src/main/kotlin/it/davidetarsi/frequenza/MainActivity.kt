@@ -50,6 +50,8 @@ class MainActivity : AudioServiceActivity() {
                 }
                 // Dal 13 Android conferma da sé ogni copia negli appunti.
                 "sdkInt" -> result.success(Build.VERSION.SDK_INT)
+                // Dove copiare il logo di ripiego della notifica.
+                "cacheDir" -> result.success(cacheDir.absolutePath)
                 else -> result.notImplemented()
             }
         }

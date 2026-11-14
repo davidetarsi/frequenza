@@ -256,6 +256,49 @@ def foreground_xml():
     ])
 
 
+# --- Notifica ------------------------------------------------------------------
+# Icona piccola della barra di stato: la manopola monocromatica, ritagliata
+# intorno all'anello. Cuori pieno e vuoto per il tasto dei preferiti
+# (tracciati delle Material Icons, licenza Apache 2.0).
+
+WHITE = (0xFF, 0xFF, 0xFF)
+HEART = ('M12,21.35l-1.45,-1.32C5.4,15.36 2,12.28 2,8.5 2,5.42 4.42,3 7.5,3'
+         'c1.74,0 3.41,0.81 4.5,2.09C13.09,3.81 14.76,3 16.5,3 19.58,3 22,5.42 22,8.5'
+         'c0,3.78 -3.4,6.86 -8.55,11.54L12,21.35z')
+HEART_BORDER = ('M16.5,3c-1.74,0 -3.41,0.81 -4.5,2.09C10.91,3.81 9.24,3 7.5,3 4.42,3 2,5.42 2,8.5'
+                'c0,3.78 3.4,6.86 8.55,11.54L12,21.35l1.45,-1.32C18.6,15.36 22,12.28 22,8.5'
+                ' 22,5.42 19.58,3 16.5,3zM12.1,18.55l-0.1,0.1 -0.1,-0.1C7.14,14.24 4,11.39 4,8.5'
+                ' 4,6.5 5.5,5 7.5,5c1.54,0 3.04,0.99 3.57,2.36h1.87C13.46,5.99 14.96,5 16.5,5'
+                'c2,0 3.5,1.5 3.5,3.5 0,2.89 -3.14,5.74 -7.9,10.05z')
+
+
+def _small_vector(viewport, paths, offset=0):
+    group_open = (f'    <group android:translateX="{_n(-offset)}" android:translateY="{_n(-offset)}">\n'
+                  if offset else '')
+    group_close = '    </group>\n' if offset else ''
+    return ('<?xml version="1.0" encoding="utf-8"?>\n'
+            '<!-- Generato da tool/icon/generate.py: non modificare a mano. -->\n'
+            '<vector xmlns:android="http://schemas.android.com/apk/res/android"\n'
+            '    android:width="24dp"\n    android:height="24dp"\n'
+            f'    android:viewportWidth="{_n(viewport)}"\n    android:viewportHeight="{_n(viewport)}">\n'
+            + group_open + ''.join(paths) + group_close + '</vector>\n')
+
+
+def notification_icon_xml():
+    dashes = ''.join(_dash(angle) for angle in _dash_angles())
+    paths = [
+        _fill(dashes, WHITE),
+        _stroke(_circle(27), WHITE, 2),
+        _stroke(_circle(13), WHITE, 2),
+        _fill(_marker(), WHITE),
+    ]
+    return _small_vector(2 * SAFE_RADIUS + 0.2, paths, offset=CENTER - SAFE_RADIUS - 0.1)
+
+
+def heart_xml(filled):
+    return _small_vector(24, [_fill(HEART if filled else HEART_BORDER, WHITE)])
+
+
 def monochrome_xml():
     white = (0xFF, 0xFF, 0xFF)
     dashes = ''.join(_dash(angle) for angle in _dash_angles())
@@ -291,10 +334,14 @@ def write_all(root):
         RES / 'values/ic_launcher_background.xml': BACKGROUND_COLOR.encode(),
         RES / 'drawable/ic_launcher_foreground.xml': foreground_xml().encode(),
         RES / 'drawable/ic_launcher_monochrome.xml': monochrome_xml().encode(),
+        RES / 'drawable/ic_stat_frequenza.xml': notification_icon_xml().encode(),
+        RES / 'drawable/ic_favorite.xml': heart_xml(True).encode(),
+        RES / 'drawable/ic_favorite_border.xml': heart_xml(False).encode(),
     }
     for density, size in LEGACY_SIZES.items():
         files[RES / f'mipmap-{density}/ic_launcher.png'] = render_png(size)
     store = render_png(512, rounded=False)
+    files[Path('assets/images/notification_art.png')] = store
     feature = render_feature_graphic()
     for locale in ('it-IT', 'en-US'):
         images = Path(f'fastlane/metadata/android/{locale}/images')

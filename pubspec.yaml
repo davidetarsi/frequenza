@@ -37,3 +37,5 @@ flutter:
   # `flutter run` e le build senza --flavor usano la versione dev.
   default-flavor: dev
   uses-material-design: true
+  assets:
+    - assets/images/notification_art.png

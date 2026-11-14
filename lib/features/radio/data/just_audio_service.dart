@@ -8,6 +8,7 @@ import 'package:just_audio/just_audio.dart';
 import '../domain/radio_audio_service.dart';
 import '../domain/radio_player_state.dart';
 import '../domain/radio_station.dart';
+import 'native_channel.dart';
 import 'radio_media_session.dart';
 
 class JustAudioService implements RadioAudioService {
@@ -18,7 +19,7 @@ class JustAudioService implements RadioAudioService {
     _subscribeToPlayerState();
   }
 
-  static const _tuningChannel = MethodChannel('frequenza/tuning_sound');
+  static const _tuningChannel = nativeChannel;
   final AudioPlayer _player;
   final RadioMediaSession? _mediaSession;
   Object? _tuningSoundRequest;
