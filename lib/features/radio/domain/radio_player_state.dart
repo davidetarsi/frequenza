@@ -31,9 +31,14 @@ class RadioPlayerState with _$RadioPlayerState {
     /// The last placed legs of this session, oldest first.
     @Default(<TravelLeg>[]) List<TravelLeg> history,
     @Default(0) int trips,
+
+    /// Stations left behind by forward flights, oldest first: where the
+    /// notification's back key returns.
+    @Default(<RadioStation>[]) List<RadioStation> previous,
   }) = _RadioPlayerState;
 
   bool get isPlaying => status == PlaybackStatus.playing;
+  bool get canGoBack => previous.isNotEmpty;
   bool get isLoading =>
       status == PlaybackStatus.tuning || status == PlaybackStatus.buffering;
 }

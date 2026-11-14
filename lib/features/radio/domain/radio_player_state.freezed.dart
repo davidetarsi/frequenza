@@ -33,6 +33,10 @@ mixin _$RadioPlayerState {
   List<TravelLeg> get history => throw _privateConstructorUsedError;
   int get trips => throw _privateConstructorUsedError;
 
+  /// Stations left behind by forward flights, oldest first: where the
+  /// notification's back key returns.
+  List<RadioStation> get previous => throw _privateConstructorUsedError;
+
   /// Create a copy of RadioPlayerState
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -57,6 +61,7 @@ abstract class $RadioPlayerStateCopyWith<$Res> {
     TravelLeg? leg,
     List<TravelLeg> history,
     int trips,
+    List<RadioStation> previous,
   });
 
   $RadioStationCopyWith<$Res>? get station;
@@ -86,6 +91,7 @@ class _$RadioPlayerStateCopyWithImpl<$Res, $Val extends RadioPlayerState>
     Object? leg = freezed,
     Object? history = null,
     Object? trips = null,
+    Object? previous = null,
   }) {
     return _then(
       _value.copyWith(
@@ -125,6 +131,10 @@ class _$RadioPlayerStateCopyWithImpl<$Res, $Val extends RadioPlayerState>
                 ? _value.trips
                 : trips // ignore: cast_nullable_to_non_nullable
                       as int,
+            previous: null == previous
+                ? _value.previous
+                : previous // ignore: cast_nullable_to_non_nullable
+                      as List<RadioStation>,
           )
           as $Val,
     );
@@ -164,6 +174,7 @@ abstract class _$$RadioPlayerStateImplCopyWith<$Res>
     TravelLeg? leg,
     List<TravelLeg> history,
     int trips,
+    List<RadioStation> previous,
   });
 
   @override
@@ -193,6 +204,7 @@ class __$$RadioPlayerStateImplCopyWithImpl<$Res>
     Object? leg = freezed,
     Object? history = null,
     Object? trips = null,
+    Object? previous = null,
   }) {
     return _then(
       _$RadioPlayerStateImpl(
@@ -232,6 +244,10 @@ class __$$RadioPlayerStateImplCopyWithImpl<$Res>
             ? _value.trips
             : trips // ignore: cast_nullable_to_non_nullable
                   as int,
+        previous: null == previous
+            ? _value._previous
+            : previous // ignore: cast_nullable_to_non_nullable
+                  as List<RadioStation>,
       ),
     );
   }
@@ -250,7 +266,9 @@ class _$RadioPlayerStateImpl extends _RadioPlayerState {
     this.leg,
     final List<TravelLeg> history = const <TravelLeg>[],
     this.trips = 0,
+    final List<RadioStation> previous = const <RadioStation>[],
   }) : _history = history,
+       _previous = previous,
        super._();
 
   @override
@@ -291,9 +309,23 @@ class _$RadioPlayerStateImpl extends _RadioPlayerState {
   @JsonKey()
   final int trips;
 
+  /// Stations left behind by forward flights, oldest first: where the
+  /// notification's back key returns.
+  final List<RadioStation> _previous;
+
+  /// Stations left behind by forward flights, oldest first: where the
+  /// notification's back key returns.
+  @override
+  @JsonKey()
+  List<RadioStation> get previous {
+    if (_previous is EqualUnmodifiableListView) return _previous;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_previous);
+  }
+
   @override
   String toString() {
-    return 'RadioPlayerState(status: $status, station: $station, errorMessage: $errorMessage, trackTitle: $trackTitle, flight: $flight, departure: $departure, leg: $leg, history: $history, trips: $trips)';
+    return 'RadioPlayerState(status: $status, station: $station, errorMessage: $errorMessage, trackTitle: $trackTitle, flight: $flight, departure: $departure, leg: $leg, history: $history, trips: $trips, previous: $previous)';
   }
 
   @override
@@ -312,7 +344,8 @@ class _$RadioPlayerStateImpl extends _RadioPlayerState {
                 other.departure == departure) &&
             (identical(other.leg, leg) || other.leg == leg) &&
             const DeepCollectionEquality().equals(other._history, _history) &&
-            (identical(other.trips, trips) || other.trips == trips));
+            (identical(other.trips, trips) || other.trips == trips) &&
+            const DeepCollectionEquality().equals(other._previous, _previous));
   }
 
   @override
@@ -327,6 +360,7 @@ class _$RadioPlayerStateImpl extends _RadioPlayerState {
     leg,
     const DeepCollectionEquality().hash(_history),
     trips,
+    const DeepCollectionEquality().hash(_previous),
   );
 
   /// Create a copy of RadioPlayerState
@@ -352,6 +386,7 @@ abstract class _RadioPlayerState extends RadioPlayerState {
     final TravelLeg? leg,
     final List<TravelLeg> history,
     final int trips,
+    final List<RadioStation> previous,
   }) = _$RadioPlayerStateImpl;
   const _RadioPlayerState._() : super._();
 
@@ -379,6 +414,11 @@ abstract class _RadioPlayerState extends RadioPlayerState {
   List<TravelLeg> get history;
   @override
   int get trips;
+
+  /// Stations left behind by forward flights, oldest first: where the
+  /// notification's back key returns.
+  @override
+  List<RadioStation> get previous;
 
   /// Create a copy of RadioPlayerState
   /// with the given fields replaced by the non-null parameter values.

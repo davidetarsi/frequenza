@@ -13,10 +13,14 @@ import 'radio_providers.dart';
 part 'radio_controller.g.dart';
 
 const _historyLength = 5;
+const _backStackLength = 10;
 
 @Riverpod(keepAlive: true)
 class RadioController extends _$RadioController {
   Object? _currentTuneToken;
+
+  /// The last station that landed, even while a new flight hides it.
+  RadioStation? _landed;
 
   RadioAudioService get _audioService => ref.read(radioAudioServiceProvider);
 
@@ -63,11 +67,20 @@ class RadioController extends _$RadioController {
   Future<void> tuneTo(RadioStation station) async =>
       _fly(() async => station, retries: 0);
 
+  /// Flies back to the last station left behind; it leaves the stack only
+  /// once landed, so a failed or cancelled return keeps it.
+  Future<void> tuneBack() async {
+    if (!state.canGoBack) return;
+    final station = state.previous.last;
+    await _fly(() async => station, retries: 0, back: true);
+  }
+
   /// One flight: every attempt lasts at least [FlightTiming.minimum] and
   /// lands only once the station really plays.
   Future<void> _fly(
     Future<RadioStation?> Function() pick, {
     required int retries,
+    bool back = false,
   }) async {
     final token = Object();
     _currentTuneToken = token;
@@ -92,7 +105,7 @@ class RadioController extends _$RadioController {
         station = null;
       }
       if (!current()) return;
-      if (station != null) return _land(station, current);
+      if (station != null) return _land(station, current, back: back);
 
       await _audioService.stop();
       if (!current()) return;
@@ -150,7 +163,11 @@ class RadioController extends _$RadioController {
     if (status == PlaybackStatus.error) throw StateError('Stream failed');
   }
 
-  Future<void> _land(RadioStation station, bool Function() current) async {
+  Future<void> _land(
+    RadioStation station,
+    bool Function() current, {
+    required bool back,
+  }) async {
     await _audioService.stopTuningSound();
     if (!current()) return;
     await _audioService.land(station);
@@ -171,7 +188,19 @@ class RadioController extends _$RadioController {
           ? history.sublist(history.length - _historyLength)
           : history,
       trips: state.trips + 1,
+      previous: back
+          ? state.previous.sublist(0, state.previous.length - 1)
+          : _stacked(_landed),
     );
+    _landed = station;
+  }
+
+  List<RadioStation> _stacked(RadioStation? leftBehind) {
+    if (leftBehind == null) return state.previous;
+    final stack = [...state.previous, leftBehind];
+    return stack.length > _backStackLength
+        ? stack.sublist(stack.length - _backStackLength)
+        : stack;
   }
 
   Future<void> play() async {
