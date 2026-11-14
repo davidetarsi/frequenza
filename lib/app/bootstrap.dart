@@ -27,6 +27,8 @@ Future<void> bootstrap({AppConfig config = const AppConfig()}) async {
       player,
       flightTitle: config.appName,
       flightSubtitle: text(LocaleKeys.notificationFlying),
+      saveLabel: text(LocaleKeys.notificationSave),
+      removeLabel: text(LocaleKeys.notificationRemove),
     ),
     config: AudioServiceConfig(
       androidNotificationChannelId: 'it.davidetarsi.frequenza.channel.audio',

@@ -11,6 +11,9 @@ class RadioAudioHandler extends BaseAudioHandler implements RadioMediaSession {
     this.player, {
     required this.flightTitle,
     required this.flightSubtitle,
+    required this.saveLabel,
+    required this.removeLabel,
+    this.fallbackArt,
   }) {
     _events = player.playbackEventStream.listen(
       _publish,
@@ -26,8 +29,16 @@ class RadioAudioHandler extends BaseAudioHandler implements RadioMediaSession {
   }
 
   final AudioPlayer player;
-  final String flightTitle, flightSubtitle;
+  final String flightTitle, flightSubtitle, saveLabel, removeLabel;
+
+  /// Frequenza's logo, for stations without one.
+  final Uri? fallbackArt;
   late final StreamSubscription<PlaybackEvent> _events;
+  final _commands = StreamController<RadioMediaCommand>.broadcast();
+  PlaybackEvent? _event;
+  bool _flying = false, _canGoBack = false, _saved = false;
+
+  static const favoriteAction = 'favorite';
 
   static const _processingStates = {
     ProcessingState.idle: AudioProcessingState.idle,
@@ -38,24 +49,56 @@ class RadioAudioHandler extends BaseAudioHandler implements RadioMediaSession {
   };
 
   void _publish(PlaybackEvent event) {
+    _event = event;
+    _republish();
+  }
+
+  void _republish() {
+    final event = _event;
+    final processing = event?.processingState ?? ProcessingState.idle;
     // just_audio keeps `playing` true after a stream ends, until pause or stop.
     final playing =
         player.playing &&
-        event.processingState != ProcessingState.idle &&
-        event.processingState != ProcessingState.completed;
+        processing != ProcessingState.idle &&
+        processing != ProcessingState.completed;
+    final playPause = playing ? MediaControl.pause : MediaControl.play;
+    final controls = _flying
+        ? [playPause]
+        : [
+            if (_canGoBack) MediaControl.skipToPrevious,
+            playPause,
+            MediaControl.skipToNext,
+            MediaControl.custom(
+              androidIcon: _saved
+                  ? 'drawable/ic_favorite'
+                  : 'drawable/ic_favorite_border',
+              label: _saved ? removeLabel : saveLabel,
+              name: favoriteAction,
+            ),
+          ];
+    final compact = _flying
+        ? const [0]
+        : [for (var i = 0; i < (_canGoBack ? 3 : 2); i++) i];
     playbackState.add(
       PlaybackState(
-        controls: [
-          playing ? MediaControl.pause : MediaControl.play,
-          MediaControl.stop,
-        ],
-        androidCompactActionIndices: const [0],
-        processingState: _processingStates[event.processingState]!,
+        controls: controls,
+        androidCompactActionIndices: compact,
+        processingState: _processingStates[processing]!,
         playing: playing,
-        updatePosition: event.updatePosition,
-        bufferedPosition: event.bufferedPosition,
+        updatePosition: event?.updatePosition ?? Duration.zero,
+        bufferedPosition: event?.bufferedPosition ?? Duration.zero,
       ),
     );
+  }
+
+  @override
+  Stream<RadioMediaCommand> get commands => _commands.stream;
+
+  @override
+  void showControls({required bool canGoBack, required bool saved}) {
+    _canGoBack = canGoBack;
+    _saved = saved;
+    _republish();
   }
 
   @override
@@ -65,11 +108,15 @@ class RadioAudioHandler extends BaseAudioHandler implements RadioMediaSession {
         id: station.id,
         title: station.name,
         artist: station.country,
-        artUri: station.faviconUrl != null
-            ? Uri.tryParse(station.faviconUrl!)
-            : null,
+        artUri:
+            (station.faviconUrl == null
+                ? null
+                : Uri.tryParse(station.faviconUrl!)) ??
+            fallbackArt,
       ),
     );
+    _flying = false;
+    _republish();
   }
 
   @override
@@ -77,6 +124,8 @@ class RadioAudioHandler extends BaseAudioHandler implements RadioMediaSession {
     mediaItem.add(
       MediaItem(id: 'flight', title: flightTitle, artist: flightSubtitle),
     );
+    _flying = true;
+    _republish();
   }
 
   @override
@@ -94,5 +143,23 @@ class RadioAudioHandler extends BaseAudioHandler implements RadioMediaSession {
   @override
   Future<void> stop() => player.stop();
 
-  Future<void> dispose() => _events.cancel();
+  @override
+  Future<void> skipToNext() async => _commands.add(RadioMediaCommand.next);
+
+  @override
+  Future<void> skipToPrevious() async =>
+      _commands.add(RadioMediaCommand.previous);
+
+  @override
+  Future<dynamic> customAction(
+    String name, [
+    Map<String, dynamic>? extras,
+  ]) async {
+    if (name == favoriteAction) _commands.add(RadioMediaCommand.toggleFavorite);
+  }
+
+  Future<void> dispose() async {
+    await _events.cancel();
+    await _commands.close();
+  }
 }
