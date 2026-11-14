@@ -186,18 +186,57 @@ void main() {
   MediaControl heart() =>
       controls().singleWhere((c) => c.action == MediaAction.custom);
 
-  test('flight shows only play/pause', () async {
-    await emit(ProcessingState.ready, playing: true);
-    handler.showControls(saved: true);
+  test('a flight keeps the notification up, connecting', () async {
+    handler.showControls(flying: true, saved: false);
+    final state = await emit(ProcessingState.idle, playing: false);
+    expect(state.processingState, AudioProcessingState.loading);
+    expect(state.playing, isTrue);
+    expect(controls().map((c) => c.action), [
+      MediaAction.skipToPrevious,
+      MediaAction.pause,
+      MediaAction.skipToNext,
+      MediaAction.custom,
+    ]);
+    expect(heart().androidIcon, 'drawable/ic_favorite_border');
+  });
+
+  test('showFlight alone already keeps the notification up', () async {
     handler.showFlight();
-    expect(controls(), [MediaControl.pause]);
-    expect(compact(), [0]);
+    final state = await emit(ProcessingState.idle, playing: false);
+    expect(state.processingState, AudioProcessingState.loading);
+  });
+
+  test('keys do nothing during the flight', () async {
+    handler.showControls(flying: true, saved: false);
+    final commands = <RadioMediaCommand>[];
+    final listening = handler.commands.listen(commands.add);
+    await handler.skipToNext();
+    await handler.skipToPrevious();
+    await handler.customAction('favorite');
+    await handler.pause();
+    await handler.play();
+    await handler.click();
+    await Future<void>.delayed(Duration.zero);
+    await listening.cancel();
+    expect(commands, isEmpty);
+    expect(player.pauses, 0);
+    expect(player.plays, 0);
+  });
+
+  test('after the flight an idle player closes the notification', () async {
+    handler.showControls(flying: true, saved: false);
+    await emit(ProcessingState.idle, playing: false);
+    handler.showControls(flying: false, saved: false);
+    expect(
+      handler.playbackState.value.processingState,
+      AudioProcessingState.idle,
+    );
   });
 
   test('grounded shows previous, play/pause, next and heart', () async {
     await emit(ProcessingState.ready, playing: true);
     handler.showStation(station);
-    handler.showControls(saved: false);
+    handler.showControls(flying: false, saved: false);
     expect(controls().map((c) => c.action), [
       MediaAction.skipToPrevious,
       MediaAction.pause,
@@ -212,24 +251,31 @@ void main() {
 
   test('saved station fills the heart', () async {
     handler.showStation(station);
-    handler.showControls(saved: true);
+    handler.showControls(flying: false, saved: true);
     expect(heart().androidIcon, 'drawable/ic_favorite');
     expect(heart().label, 'Togli');
   });
 
-  test('landing waits for the journey before showing the keys', () async {
-    handler.showControls(saved: false);
-    handler.showFlight();
-    handler.showStation(station);
-    // No stale heart from the flight: the keys come with the new state.
-    expect(
-      controls().map((c) => c.action),
-      isNot(contains(MediaAction.custom)),
-    );
-    handler.showControls(saved: true);
-    expect(controls(), hasLength(4));
-    expect(heart().androidIcon, 'drawable/ic_favorite');
-  });
+  test(
+    'landing keeps the flight look until the journey state arrives',
+    () async {
+      await emit(ProcessingState.ready, playing: true);
+      handler.showControls(flying: true, saved: false);
+      handler.showFlight();
+      handler.showStation(station);
+      // No stale heart, no early keys: the landed state comes with the bridge.
+      expect(
+        handler.playbackState.value.processingState,
+        AudioProcessingState.loading,
+      );
+      handler.showControls(flying: false, saved: true);
+      expect(
+        handler.playbackState.value.processingState,
+        AudioProcessingState.ready,
+      );
+      expect(heart().androidIcon, 'drawable/ic_favorite');
+    },
+  );
 
   test('notification buttons become commands', () async {
     final commands = handler.commands.take(3).toList();
@@ -247,7 +293,7 @@ void main() {
     for (final playing in [true, false]) {
       await emit(ProcessingState.ready, playing: playing);
       handler.showStation(station);
-      handler.showControls(saved: true);
+      handler.showControls(flying: false, saved: true);
       expect(
         controls().map((c) => c.action),
         isNot(contains(MediaAction.stop)),

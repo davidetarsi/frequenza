@@ -10,10 +10,10 @@ abstract interface class RadioMediaSession {
   /// A placeholder that never reveals the destination.
   void showFlight();
 
-  /// The keys of a landed station, with the heart filled when it is saved.
-  /// After [showStation] they wait for this call, so they never show the
-  /// flight's stale state.
-  void showControls({required bool saved});
+  /// The journey as the app sees it. While [flying] the notification stays
+  /// up as «connecting» and its keys do nothing; once landed it shows the
+  /// station's keys, the heart filled when the station is [saved].
+  void showControls({required bool flying, required bool saved});
 
   /// Back, next and heart pressed in the notification.
   Stream<RadioMediaCommand> get commands;
