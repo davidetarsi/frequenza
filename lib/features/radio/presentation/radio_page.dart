@@ -78,10 +78,11 @@ class RadioPage extends ConsumerWidget {
         : idle
         ? LocaleKeys.powerOn.tr(context: context)
         : LocaleKeys.tune.tr(context: context);
+    final screenWidth = MediaQuery.sizeOf(context).width;
     return Scaffold(
       body: SafeArea(
-        minimum: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.standard,
+        minimum: EdgeInsets.symmetric(
+          horizontal: TravelRadioLayout.gutter(screenWidth),
           vertical: AppSpacing.small,
         ),
         child: LayoutBuilder(
@@ -262,26 +263,27 @@ class RadioPage extends ConsumerWidget {
                 ),
               );
             }
-            return Center(
-              child: SizedBox(
-                width: TravelRadioLayout.cabinetWidth,
-                height: double.infinity,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            // The header spans the screen; the radio takes its share of it.
+            return Column(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Row(
                   children: [
-                    Row(
-                      children: [
-                        Expanded(child: heading),
-                        favoritesButton,
-                        settingsAction,
-                      ],
-                    ),
-                    nextStop,
-                    cabinet,
-                    credits,
+                    Expanded(child: heading),
+                    favoritesButton,
+                    settingsAction,
                   ],
                 ),
-              ),
+                nextStop,
+                SizedBox(
+                  width: TravelRadioLayout.cabinetWidth(
+                    screenWidth,
+                    constraints.maxWidth,
+                  ),
+                  child: cabinet,
+                ),
+                credits,
+              ],
             );
           },
         ),
