@@ -15,7 +15,6 @@ abstract final class TravelRadioLayout {
   static const headingTracking = -1.0;
   static const captionLineHeight = 1.1;
   static const captionTracking = 0.0;
-  static const headerIconSize = 18.0;
 }
 
 abstract final class RadioCabinetDesign {

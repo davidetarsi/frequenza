@@ -108,28 +108,20 @@ class RadioPage extends ConsumerWidget {
             );
             final favoritesLabel =
                 '${LocaleKeys.favorites.tr(context: context)} · $favoritesCount';
-            final favoritesButton = compact
-                ? AppIconButton(
-                    variant: AppIconButtonVariant.outlined,
-                    key: const ValueKey('favorites-open'),
-                    tooltip: favoritesLabel,
-                    onPressed: () => showFavorites(context),
-                    icon: Badge.count(
-                      count: favoritesCount,
-                      isLabelVisible: favoritesCount > 0,
-                      child: const Icon(Icons.favorite_border),
-                    ),
-                  )
-                : AppButton(
-                    variant: AppButtonVariant.outlined,
-                    key: const ValueKey('favorites-open'),
-                    onPressed: () => showFavorites(context),
-                    icon: const Icon(
-                      Icons.favorite_border,
-                      size: TravelRadioLayout.headerIconSize,
-                    ),
-                    label: favoritesLabel,
-                  );
+            final favoritesButton = AppIconButton(
+              variant: AppIconButtonVariant.outlined,
+              key: const ValueKey('favorites-open'),
+              tooltip: favoritesLabel,
+              foregroundColor: theme.colorScheme.primary,
+              onPressed: () => showFavorites(context),
+              icon: Badge.count(
+                count: favoritesCount,
+                isLabelVisible: favoritesCount > 0,
+                backgroundColor: theme.colorScheme.primary,
+                textColor: theme.colorScheme.onPrimary,
+                child: const Icon(Icons.favorite_border),
+              ),
+            );
             final cabinet = RadioCabinet(
               compact: compact,
               horizontal: wide,

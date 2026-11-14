@@ -256,4 +256,42 @@ void main() {
       expect(find.textContaining('Tocca Salva'), findsOneWidget);
     },
   );
+  testWidgets(
+    'favorites button is a heart with the count in the primary colour',
+    (tester) async {
+      tester.view.physicalSize = const Size(390, 844);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final audio = FakeAudioService();
+      addTearDown(audio.dispose);
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            radioRepositoryProvider.overrideWithValue(FakeRadioRepository()),
+            radioAudioServiceProvider.overrideWithValue(audio),
+            favoritesRepositoryProvider.overrideWithValue(
+              MemoryFavorites()..items = [station],
+            ),
+          ],
+          child: const StarterApp(locale: Locale('it')),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final button = find.byKey(const ValueKey('favorites-open'));
+      final badge = tester.widget<Badge>(
+        find.descendant(of: button, matching: find.byType(Badge)),
+      );
+      final scheme = Theme.of(tester.element(button)).colorScheme;
+      expect(badge.backgroundColor, scheme.primary);
+      expect(badge.textColor, scheme.onPrimary);
+      expect(badge.isLabelVisible, isTrue);
+      expect(
+        find.descendant(of: button, matching: find.text('1')),
+        findsOneWidget,
+      );
+      expect(find.text('Preferiti · 1'), findsNothing);
+      expect(find.byTooltip('Preferiti · 1'), findsOneWidget);
+    },
+  );
 }
