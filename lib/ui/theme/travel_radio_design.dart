@@ -148,6 +148,7 @@ abstract final class RadioEqualizerDesign {
 }
 
 abstract final class RadioFavoritesDesign {
+  static const maxWidth = 520.0;
   static const initialHeight = .62;
   static const minHeight = .3;
   static const maxHeight = .94;

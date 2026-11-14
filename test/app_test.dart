@@ -106,6 +106,8 @@ void main() {
       expect(tester.binding.hasScheduledFrame, isFalse);
       await tester.tap(find.byTooltip('Impostazioni'));
       await tester.pumpAndSettle();
+      expect(find.text('Aspetto e lingua della radio.'), findsOneWidget);
+      expect(find.byType(DraggableScrollableSheet), findsOneWidget);
       await tester.tap(find.text('Scuro'));
       await tester.pumpAndSettle();
       expect(
@@ -115,8 +117,9 @@ void main() {
       await tester.tap(find.text('Inglese'));
       await tester.pumpAndSettle();
       expect(find.text('Appearance'), findsOneWidget);
-      await tester.pageBack();
+      await tester.tap(find.byTooltip('Close'));
       await tester.pumpAndSettle();
+      expect(find.text('Appearance'), findsNothing);
       expect(find.text('Next stop: anywhere'), findsOneWidget);
       expect(tester.getSize(cabinet), initialSize);
       expect(find.byType(Scrollable), findsNothing);

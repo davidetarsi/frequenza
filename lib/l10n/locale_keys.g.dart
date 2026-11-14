@@ -45,6 +45,7 @@ abstract class LocaleKeys {
   static const travelHint = 'travelHint';
   static const footer = 'footer';
   static const settings = 'settings';
+  static const settingsSubtitle = 'settingsSubtitle';
   static const appearance = 'appearance';
   static const themeSystem = 'themeSystem';
   static const themeLight = 'themeLight';
