@@ -66,7 +66,7 @@ pleasure of getting lost on the airwaves.
 
 ## 🛠️ For developers
 
-Curious about how something works? Read the code, or just ask.
+Curious about how something works? Just ask me or your LLM :) (I know you are lazy as me, and reading the code is no more an option)
 
 ### Tech stack
 
