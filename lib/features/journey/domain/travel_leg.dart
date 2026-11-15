@@ -1,11 +1,18 @@
+import 'package:freezed_annotation/freezed_annotation.dart';
+
 import 'station_place.dart';
 
-/// One flight. [to] is null when the station could not be placed.
-class TravelLeg {
-  const TravelLeg({required this.from, required this.to});
+part 'travel_leg.freezed.dart';
 
-  final StationPlace from;
-  final StationPlace? to;
+/// One flight. [to] is null when the station could not be placed.
+@freezed
+class TravelLeg with _$TravelLeg {
+  const TravelLeg._();
+
+  const factory TravelLeg({
+    required StationPlace from,
+    required StationPlace? to,
+  }) = _TravelLeg;
 
   /// Length of the leg, hidden when a country centre would make a
   /// same-country distance meaningless.
@@ -19,11 +26,4 @@ class TravelLeg {
       approximate: approximate,
     );
   }
-
-  @override
-  bool operator ==(Object other) =>
-      other is TravelLeg && other.from == from && other.to == to;
-
-  @override
-  int get hashCode => Object.hash(from, to);
 }

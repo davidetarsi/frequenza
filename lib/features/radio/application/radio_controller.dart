@@ -108,7 +108,6 @@ class RadioController extends _$RadioController {
       status: PlaybackStatus.tuning,
       station: null,
       trackTitle: null,
-      errorMessage: null,
       flight: FlightPhase.flying,
     );
     await _audioService.startTuningSound();
@@ -130,10 +129,7 @@ class RadioController extends _$RadioController {
       if (attempt >= retries) {
         await _audioService.stopTuningSound();
         if (current()) {
-          state = state.copyWith(
-            status: PlaybackStatus.error,
-            errorMessage: 'Impossibile riprodurre lo stream audio',
-          );
+          state = state.copyWith(status: PlaybackStatus.error);
         }
         return;
       }
@@ -248,7 +244,6 @@ class RadioController extends _$RadioController {
     if (_currentTuneToken == token) {
       state = state.copyWith(
         status: PlaybackStatus.idle,
-        errorMessage: null,
         trackTitle: null,
         flight: FlightPhase.grounded,
         leg: null,

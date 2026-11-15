@@ -100,7 +100,7 @@ class RadioBrowserRepository implements RadioRepository {
     final id = json['stationuuid']?.toString() ?? '';
     final name = (json['name']?.toString() ?? '').trim();
     final urlResolved = (json['url_resolved']?.toString() ?? '').trim();
-    final country = (json['country']?.toString() ?? 'Sconosciuto').trim();
+    final country = (json['country']?.toString() ?? '').trim();
     final countryCode = (json['countrycode']?.toString() ?? '')
         .trim()
         .toUpperCase();
@@ -137,7 +137,7 @@ class RadioBrowserRepository implements RadioRepository {
       id: id,
       name: name,
       streamUrl: urlResolved,
-      country: country.isEmpty ? 'Mondo' : country,
+      country: country,
       countryCode: countryCode,
       faviconUrl: faviconUrl,
       tags: tags,

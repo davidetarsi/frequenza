@@ -156,7 +156,6 @@ void main() {
         PlaybackStatus.idle,
       );
       expect(container.read(radioControllerProvider).station, isNull);
-      expect(container.read(radioControllerProvider).errorMessage, isNull);
     });
 
     test('tuneRandom fetches station and starts playback', () async {
@@ -228,13 +227,15 @@ void main() {
         PlaybackStatus.error,
       );
       expect(audioService.tuningSoundActive, isFalse);
-      expect(container.read(radioControllerProvider).errorMessage, isNotNull);
     });
 
     test('a new tune clears the error from a failed attempt', () async {
       repository.errorToThrow = Exception('Offline');
       await controller.tuneRandom();
-      expect(container.read(radioControllerProvider).errorMessage, isNotNull);
+      expect(
+        container.read(radioControllerProvider).status,
+        PlaybackStatus.error,
+      );
       repository.errorToThrow = null;
       repository.stationToReturn = testStation;
       await controller.tuneRandom();
@@ -242,7 +243,6 @@ void main() {
         container.read(radioControllerProvider).status,
         PlaybackStatus.playing,
       );
-      expect(container.read(radioControllerProvider).errorMessage, isNull);
     });
 
     RadioPlayerState read() => container.read(radioControllerProvider);

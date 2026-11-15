@@ -71,7 +71,7 @@ class _FlightDotsState extends State<FlightDots>
                     text: '.',
                     style: i < shown
                         ? null
-                        : const TextStyle(color: Color(0x00000000)),
+                        : const TextStyle(color: Colors.transparent),
                   ),
               ],
             ),

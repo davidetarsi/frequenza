@@ -1,29 +1,20 @@
+import 'package:freezed_annotation/freezed_annotation.dart';
+
 import '../../radio/domain/radio_station.dart';
 import '../data/world_atlas.g.dart';
 import 'geo_point.dart';
 
+part 'station_place.freezed.dart';
+
 /// Where a station is on the map. [approximate] marks a country centre used
 /// in place of the station's own coordinates.
-class StationPlace {
-  const StationPlace({
-    required this.point,
-    required this.approximate,
-    required this.countryCode,
-  });
-
-  final GeoPoint point;
-  final bool approximate;
-  final String countryCode;
-
-  @override
-  bool operator ==(Object other) =>
-      other is StationPlace &&
-      other.point == point &&
-      other.approximate == approximate &&
-      other.countryCode == countryCode;
-
-  @override
-  int get hashCode => Object.hash(point, approximate, countryCode);
+@freezed
+class StationPlace with _$StationPlace {
+  const factory StationPlace({
+    required GeoPoint point,
+    required bool approximate,
+    required String countryCode,
+  }) = _StationPlace;
 }
 
 /// The first departure: the centre of Italy (`countryCentroids['IT']`).
