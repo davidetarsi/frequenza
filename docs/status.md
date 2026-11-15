@@ -262,3 +262,14 @@ Branch `feat/informazioni-e-vite`, sopra `feat/suono-sintonia`.
 - **La chiusura:** audio_service chiude il servizio sul passaggio a `idle`, ma non lo toglie dal primo piano, e la notifica di un servizio in primo piano non si cancella. Per questo, quando la radio si ferma davvero (stop, fine dello stream, errore), `RadioAudioHandler` chiede ad Android, prima di mostrare il nuovo stato, di togliere il servizio dal primo piano: metodo `leaveForeground` di `MainActivity`, che chiama `RadioForeground` (nel package del plugin) e la routine del plugin `exitForegroundState`, tenuta da R8 in `android/app/proguard-rules.pro`. Così si rilascia anche il wake lock. Rilievo della revisione indipendente.
 - **Da provare sul telefono:** «Spegni» con l'app aperta, la notifica deve sparire; pausa, poi altra app, poi play dal tasto delle cuffie Bluetooth; la radio in background per qualche minuto mentre si usano altre app; la pausa lunga (si chiude dopo 10 minuti); togliere l'app dalle recenti in pausa.
 
+## Pagina di benvenuto — 15 novembre 2026
+
+- **Quando:** solo alla prima apertura (`WelcomeSeen`, chiave `app.welcomeSeen`); `bootstrap` la legge prima del primo frame e il router rimanda `/` a `/welcome`.
+- **Cosa mostra:**
+  - in alto le targhette EN · IT, che cambiano subito la lingua di tutta l'app;
+  - al centro la radio vera (`RadioCabinet`) guidata da un copione di 6 secondi in loop: spenta, la manopola gira e la radio vola, poi atterra su «Radio Paraíso» (Brasile) con la rotta sulla mappa. È muta; con la riduzione del movimento resta ferma sulla stazione atterrata;
+  - sotto, titolo e frase; con poco spazio e testo grande scorrono, così la radio resta visibile;
+  - il pulsante «Turn it on» / «Accendi la radio» segna la pagina come vista e porta alla radio.
+- **Lingua preselezionata:** quella con cui l'app si apre già, cioè l'italiano su un telefono italiano e l'inglese altrove. Scelta di Claude, nel design.
+- **Da provare sul telefono:** prima apertura (per rivederla: cancellare i dati dell'app); cambio di lingua dal benvenuto, che deve restare anche nella radio e alle aperture successive; tema chiaro e scuro; schermo piccolo; riduzione del movimento.
+

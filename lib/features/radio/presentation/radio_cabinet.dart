@@ -33,8 +33,13 @@ class RadioCabinet extends StatelessWidget {
     this.playKey,
     this.saveKey,
     this.onDetailLongPress,
+    this.dialTurns = 0,
   });
   final String country, station, detail, status, knobLabel, tuneLabel;
+
+  /// How far the dial is turned, in full turns: only the welcome demo
+  /// turns it.
+  final double dialTurns;
 
   /// Shown after [country] and never cut: the country shrinks instead.
   final String? countryDetail;
@@ -279,6 +284,7 @@ class RadioCabinet extends StatelessWidget {
                 label: tuneLabel,
                 onTap: onTune,
                 diameter: diameter,
+                turns: dialTurns,
               ),
               SizedBox(height: metrics.dialLabelGap),
               SizedBox(
@@ -624,11 +630,13 @@ class _TuningDial extends StatelessWidget {
     required this.label,
     required this.onTap,
     required this.diameter,
+    required this.turns,
   });
   final TravelRadioPalette palette;
   final String label;
   final VoidCallback? onTap;
   final double diameter;
+  final double turns;
   @override
   Widget build(BuildContext context) {
     final face = Ink(
@@ -706,7 +714,10 @@ class _TuningDial extends StatelessWidget {
                   color: TravelRadioPalette.hardware,
                   shape: const CircleBorder(),
                   clipBehavior: Clip.antiAlias,
-                  child: face,
+                  child: Transform.rotate(
+                    angle: turns * 2 * math.pi,
+                    child: face,
+                  ),
                 ),
               ),
             ),
