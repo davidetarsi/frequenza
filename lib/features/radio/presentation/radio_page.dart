@@ -70,7 +70,11 @@ class RadioPage extends ConsumerWidget {
     final distance = station == null ? null : player.leg?.distance;
     final country = tuning
         ? ''
-        : station?.country ?? LocaleKeys.worldAwaits.tr(context: context);
+        : station == null
+        ? LocaleKeys.worldAwaits.tr(context: context)
+        : station.country.isEmpty
+        ? LocaleKeys.unknownCountry.tr(context: context)
+        : station.country;
     final countryDetail = tuning || distance == null
         ? null
         : '${distance.approximate ? '≈ ' : ''}${LocaleKeys.distanceKm.tr(context: context, args: [NumberFormat.decimalPattern(context.locale.toLanguageTag()).format(distance.km)])}';
