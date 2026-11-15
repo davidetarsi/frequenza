@@ -24,15 +24,16 @@ Future<void> showTravelSheet(
 );
 
 /// The paper drawer shared by favorites and settings: handle, title,
-/// subtitle and close button, then [children] in a draggable list.
+/// optional subtitle and close button, then [children] in a draggable list.
 class TravelSheet extends StatelessWidget {
   const TravelSheet({
     super.key,
     required this.title,
-    required this.subtitle,
+    this.subtitle,
     required this.children,
   });
-  final String title, subtitle;
+  final String title;
+  final String? subtitle;
   final List<Widget> children;
   @override
   Widget build(BuildContext context) {
@@ -94,10 +95,12 @@ class TravelSheet extends StatelessWidget {
                                         RadioFavoritesDesign.titleTracking,
                                   ),
                             ),
-                            const SizedBox(
-                              height: RadioFavoritesDesign.titleGap,
-                            ),
-                            Text(subtitle, style: TextStyle(color: p.muted)),
+                            if (subtitle case final subtitle?) ...[
+                              const SizedBox(
+                                height: RadioFavoritesDesign.titleGap,
+                              ),
+                              Text(subtitle, style: TextStyle(color: p.muted)),
+                            ],
                           ],
                         ),
                       ),

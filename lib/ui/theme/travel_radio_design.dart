@@ -225,6 +225,11 @@ abstract final class RadioFavoritesDesign {
   static const trailingInset = 4.0;
 }
 
+abstract final class CodeBadgeDesign {
+  static const size = Size(34, 26);
+  static const borderOpacity = .55;
+}
+
 abstract final class RadioDiagnosticsDesign {
   static const cardElevation = 2.0;
   static const iconSize = 32.0;

@@ -1,10 +1,15 @@
 import 'dart:math' as math;
 
-/// A position on Earth in decimal degrees.
-class GeoPoint {
-  const GeoPoint(this.latitude, this.longitude);
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-  final double latitude, longitude;
+part 'geo_point.freezed.dart';
+
+/// A position on Earth in decimal degrees.
+@freezed
+class GeoPoint with _$GeoPoint {
+  const GeoPoint._();
+
+  const factory GeoPoint(double latitude, double longitude) = _GeoPoint;
 
   static const _earthRadiusKm = 6371.0;
 
@@ -30,16 +35,4 @@ class GeoPoint {
             math.pow(math.sin(dLon / 2), 2);
     return 2 * _earthRadiusKm * math.asin(math.min(1, math.sqrt(a)));
   }
-
-  @override
-  bool operator ==(Object other) =>
-      other is GeoPoint &&
-      other.latitude == latitude &&
-      other.longitude == longitude;
-
-  @override
-  int get hashCode => Object.hash(latitude, longitude);
-
-  @override
-  String toString() => 'GeoPoint($latitude, $longitude)';
 }

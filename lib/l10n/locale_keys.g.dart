@@ -29,6 +29,7 @@ abstract class LocaleKeys {
   static const stationError = 'stationError';
   static const whereTo = 'whereTo';
   static const worldAwaits = 'worldAwaits';
+  static const unknownCountry = 'unknownCountry';
   static const tuning = 'tuning';
   static const powerOn = 'powerOn';
   static const tune = 'tune';
@@ -45,7 +46,6 @@ abstract class LocaleKeys {
   static const travelHint = 'travelHint';
   static const footer = 'footer';
   static const settings = 'settings';
-  static const settingsSubtitle = 'settingsSubtitle';
   static const appearance = 'appearance';
   static const themeSystem = 'themeSystem';
   static const themeLight = 'themeLight';

@@ -6,13 +6,14 @@ import '../theme/app_spacing.dart';
 class AppSettingsOption extends StatelessWidget {
   const AppSettingsOption({
     super.key,
-    required this.icon,
+    required this.leading,
     required this.label,
     required this.selected,
     required this.onTap,
   });
 
-  final IconData icon;
+  /// An icon, or a [CodeBadge] where a code says more.
+  final Widget leading;
   final String label;
   final bool selected;
   final VoidCallback? onTap;
@@ -22,7 +23,7 @@ class AppSettingsOption extends StatelessWidget {
     shape: const RoundedRectangleBorder(borderRadius: AppShape.controlRadius),
     minTileHeight: AppShape.minControlHeight,
     contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.small),
-    leading: Icon(icon),
+    leading: leading,
     title: Text(label),
     selected: selected,
     trailing: selected ? const Icon(Icons.check) : null,

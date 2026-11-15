@@ -181,3 +181,35 @@ Design `superpowers/specs/2026-11-14-notifica-design.md`, piano `superpowers/pla
 - Titolo e icone in alto usano tutta la larghezza, meno un margine del 3% dello schermo (12–24 punti).
 - La radio è l'88% della larghezza dello schermo (280–420 punti, mai oltre lo spazio disponibile), arrotondata a punti interi: 343 su un telefono da 390, 281 su uno da 320.
 - Tutti i valori in `TravelRadioLayout`; i pezzi interni della radio restano a misura fissa (la radio tutta in proporzione è rimandata).
+
+## Allineamento alle convenzioni dello starter — 15 novembre 2026
+
+- Controllo contro le convenzioni ereditate da PackLog. Allineati: code generation, Riverpod annotato, Easy Localization, tema chiaro e scuro, UI in `lib/ui`, feature first, pipeline GitHub. Supabase e Drift non servono.
+- Corretti tre scostamenti:
+  - `GeoPoint`, `StationPlace` e `TravelLeg` ora sono Freezed;
+  - tolte dal codice tre stringhe in italiano (errore dello stream, «Sconosciuto», «Mondo»). Il paese mancante ora resta vuoto e l'interfaccia mostra «Paese sconosciuto» tradotto;
+  - colore trasparente scritto a mano sostituito con `Colors.transparent`.
+- Rimosso `RadioPlayerState.errorMessage`, che non veniva mai mostrato. Rimosso anche `tool/check_player_state.dart`: il suo caso è coperto dai test del controller.
+- I preferiti salvati prima con paese «Mondo» lo conservano: è un dato già scritto in memoria.
+- Da fare quando lo starter sarà su GitHub: confronto completo file per file.
+
+## Etichetta della manopola su una riga — 15 novembre 2026
+
+- La scritta sotto la manopola non va mai a capo. Se non ci sta, scorre verso sinistra (`MarqueeText` in `lib/ui/widgets`): pausa di 1,2 secondi con l'inizio in vista, poi 3 giri e si ferma sull'inizio. Con le animazioni disattivate è tagliata con «…». TalkBack la legge una volta sola.
+- Il calcolo è dinamico: si misura il testo con la scala del carattere e lo si confronta con lo spazio disponibile. Nessuna larghezza fissata a mano; velocità, spazio tra le copie, pausa e giri sono token in `AppMotion`.
+- Impostazioni senza sottotitolo: in `TravelSheet` il sottotitolo ora è facoltativo.
+
+## Lingue con la sigla — 15 novembre 2026
+
+- Nelle impostazioni ogni lingua ha la sua targhetta «IT» / «EN» al posto del globo, nello stile delle sigle dei Preferiti (`CodeBadge` in `lib/ui/widgets`, misure in `CodeBadgeDesign`). Prende il colore dell'icona, quindi anche quello della selezione.
+- Ogni lingua è scritta nel suo nome in entrambe le lingue dell'app: «Italiano», «English».
+- Scelta al posto delle bandiere: una lingua non è un paese, e le bandiere emoji cambiano da telefono a telefono.
+
+## Radio bloccata in «Connessione alla radio» — 15 novembre 2026
+
+Segnalato da Davide: con l'app in background la musica si ferma dopo pochi secondi, la notifica gira a vuoto e, riaperta l'app, manopola e tasti sono spenti.
+
+- Lo stream smette di arrivare (buffering) e niente lo interrompeva: ora, se una stazione atterrata resta in buffering per 10 secondi (`FlightTiming.stallTimeout`), la radio si riconnette da sola con il volo di riconnessione, fino a 3 tentativi; se fallisce mostra l'errore con «Riprova».
+- Durante il buffering di una stazione accesa manopola, pausa e cuore restano attivi: solo il volo li spegne.
+- Una pausa mentre lo stream si riempie vale come pausa (`JustAudioService`), così la riconnessione non riaccende una radio messa in pausa.
+- Ancora da capire: perché lo stream si ferma in background. Ipotesi: Android limita la rete all'app quando il servizio in primo piano cade. Serve un logcat dal telefono per confermarla.

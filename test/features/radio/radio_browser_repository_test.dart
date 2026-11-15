@@ -96,6 +96,29 @@ void main() {
 
       expect(() => repository.getCandidates(), throwsA(isA<Exception>()));
     });
+    test('a station without a country keeps it empty', () async {
+      final client = MockClient(
+        (request) async => http.Response(
+          jsonEncode([
+            {
+              'stationuuid': 'blank',
+              'name': 'Radio Blank',
+              'url_resolved': 'https://stream.example.com/blank',
+              'countrycode': 'JP',
+            },
+          ]),
+          200,
+        ),
+      );
+      final repository = RadioBrowserRepository(
+        client: client,
+        mirrors: ['https://mirror1.test'],
+      );
+
+      final stations = await repository.getCandidates();
+
+      expect(stations.single.country, isEmpty);
+    });
     test('reads valid station coordinates only', () async {
       Map<String, Object?> raw(String id, Object? lat, Object? lon) => {
         'stationuuid': id,

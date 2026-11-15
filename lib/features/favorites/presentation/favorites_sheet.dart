@@ -73,7 +73,10 @@ class FavoritesSheet extends ConsumerWidget {
               name: station.name,
               code: station.countryCode,
               subtitle: [
-                station.country,
+                if (station.country.isEmpty)
+                  LocaleKeys.unknownCountry.tr(context: context)
+                else
+                  station.country,
                 if (player.station?.id == station.id && player.isPlaying)
                   LocaleKeys.playing.tr(context: context)
                 else
