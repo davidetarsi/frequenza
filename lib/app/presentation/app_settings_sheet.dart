@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../l10n/locale_keys.g.dart';
 import '../../ui/theme/app_spacing.dart';
 import '../../ui/widgets/app_settings_option.dart';
+import '../../ui/widgets/code_badge.dart';
 import '../../ui/widgets/travel_sheet.dart';
 import '../config/app_localization.dart';
 import '../theme/app_theme_mode.dart';
@@ -37,7 +38,7 @@ class AppSettingsSheet extends ConsumerWidget {
           (ThemeMode.dark, LocaleKeys.themeDark, Icons.dark_mode_outlined),
         ])
           AppSettingsOption(
-            icon: icon,
+            leading: Icon(icon),
             label: label.tr(context: context),
             selected: currentMode == mode,
             onTap: theme.isLoading
@@ -67,7 +68,7 @@ class AppSettingsSheet extends ConsumerWidget {
           (AppLocalization.english, LocaleKeys.english),
         ])
           AppSettingsOption(
-            icon: Icons.language,
+            leading: CodeBadge(locale.languageCode.toUpperCase()),
             label: label.tr(context: context),
             selected: context.locale == locale,
             onTap: () => context.setLocale(locale),

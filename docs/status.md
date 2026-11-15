@@ -187,3 +187,9 @@ Design `superpowers/specs/2026-11-14-notifica-design.md`, piano `superpowers/pla
 - La scritta sotto la manopola non va mai a capo. Se non ci sta, scorre verso sinistra (`MarqueeText` in `lib/ui/widgets`): pausa di 1,2 secondi con l'inizio in vista, poi 3 giri e si ferma sull'inizio. Con le animazioni disattivate è tagliata con «…». TalkBack la legge una volta sola.
 - Il calcolo è dinamico: si misura il testo con la scala del carattere e lo si confronta con lo spazio disponibile. Nessuna larghezza fissata a mano; velocità, spazio tra le copie, pausa e giri sono token in `AppMotion`.
 - Impostazioni senza sottotitolo: in `TravelSheet` il sottotitolo ora è facoltativo.
+
+## Lingue con la sigla — 15 novembre 2026
+
+- Nelle impostazioni ogni lingua ha la sua targhetta «IT» / «EN» al posto del globo, nello stile delle sigle dei Preferiti (`CodeBadge` in `lib/ui/widgets`, misure in `CodeBadgeDesign`). Prende il colore dell'icona, quindi anche quello della selezione.
+- Ogni lingua è scritta nel suo nome in entrambe le lingue dell'app: «Italiano», «English».
+- Scelta al posto delle bandiere: una lingua non è un paese, e le bandiere emoji cambiano da telefono a telefono.

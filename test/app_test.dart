@@ -132,9 +132,16 @@ void main() {
         Theme.of(tester.element(find.text('Aspetto'))).brightness,
         Brightness.dark,
       );
-      await tester.tap(find.text('Inglese'));
+      // Each language in its own name, marked by its code.
+      expect(find.text('Italiano'), findsOneWidget);
+      expect(find.text('IT'), findsOneWidget);
+      expect(find.text('EN'), findsOneWidget);
+      expect(find.byIcon(Icons.language), findsNothing);
+      await tester.tap(find.text('English'));
       await tester.pumpAndSettle();
       expect(find.text('Appearance'), findsOneWidget);
+      expect(find.text('Italiano'), findsOneWidget);
+      expect(find.text('English'), findsOneWidget);
       await tester.tap(find.byTooltip('Close'));
       await tester.pumpAndSettle();
       expect(find.text('Appearance'), findsNothing);
