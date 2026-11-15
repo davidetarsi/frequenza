@@ -1,51 +1,43 @@
 package it.davidetarsi.frequenza
 
 import android.media.AudioAttributes
-import android.media.SoundPool
+import android.media.MediaPlayer
+import android.media.AudioManager
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import com.ryanheise.audioservice.AudioServiceActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
+import kotlin.random.Random
 
 class MainActivity : AudioServiceActivity() {
     private var tuningChannel: MethodChannel? = null
-    private var tuningPool: SoundPool? = null
-    private var tuningSample = 0
-    private var tuningStream = 0
-    private var tuningRequested = false
-    private var tuningLoaded = false
+    private var tuningPlayer: MediaPlayer? = null
+    private val fades = Handler(Looper.getMainLooper())
     private var inForeground = false
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
-        val pool = SoundPool.Builder()
-            .setMaxStreams(1)
-            .setAudioAttributes(
-                AudioAttributes.Builder()
-                    .setUsage(AudioAttributes.USAGE_MEDIA)
-                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-                    .build()
-            )
-            .build()
-        tuningPool = pool
-        pool.setOnLoadCompleteListener { loadedPool, sampleId, status ->
-            if (loadedPool === tuningPool && sampleId == tuningSample && status == 0) {
-                tuningLoaded = true
-                playTuningSound()
-            }
-        }
-        tuningSample = pool.load(this, R.raw.tuning_static, 1)
+        tuningPlayer = MediaPlayer.create(
+            this,
+            R.raw.tuning_static,
+            AudioAttributes.Builder()
+                .setUsage(AudioAttributes.USAGE_MEDIA)
+                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                .build(),
+            AudioManager.AUDIO_SESSION_ID_GENERATE,
+        )?.apply { isLooping = true }
 
         tuningChannel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "frequenza/tuning_sound")
         tuningChannel?.setMethodCallHandler { call, result ->
             when (call.method) {
                 "start" -> {
-                    tuningRequested = inForeground
-                    playTuningSound()
+                    if (inForeground) startTuningSound()
                     result.success(null)
                 }
                 "stop" -> {
-                    stopTuningSound()
+                    fadeOutTuningSound()
                     result.success(null)
                 }
                 // Dal 13 Android conferma da sé ogni copia negli appunti.
@@ -57,15 +49,38 @@ class MainActivity : AudioServiceActivity() {
         }
     }
 
-    private fun playTuningSound() {
-        if (!tuningRequested || !tuningLoaded || tuningStream != 0) return
-        tuningStream = tuningPool?.play(tuningSample, 0.42f, 0.42f, 1, -1, 1f) ?: 0
+    // Ogni volo parte da un punto diverso del fruscio, così non suona mai uguale.
+    private fun startTuningSound() {
+        val player = tuningPlayer ?: return
+        fades.removeCallbacksAndMessages(null)
+        player.setVolume(TUNING_VOLUME, TUNING_VOLUME)
+        if (!player.isPlaying) {
+            player.seekTo(Random.nextInt(maxOf(player.duration, 1)))
+            player.start()
+        }
+    }
+
+    // All'atterraggio il fruscio sfuma mentre la stazione sale.
+    private fun fadeOutTuningSound() {
+        val player = tuningPlayer ?: return
+        if (!player.isPlaying) return
+        fades.removeCallbacksAndMessages(null)
+        val steps = FADE_MS / FADE_STEP_MS
+        for (step in 1..steps) {
+            fades.postDelayed({
+                val volume = TUNING_VOLUME * (steps - step) / steps
+                if (step < steps) {
+                    player.setVolume(volume, volume)
+                } else {
+                    stopTuningSound()
+                }
+            }, step * FADE_STEP_MS)
+        }
     }
 
     private fun stopTuningSound() {
-        tuningRequested = false
-        if (tuningStream != 0) tuningPool?.stop(tuningStream)
-        tuningStream = 0
+        fades.removeCallbacksAndMessages(null)
+        tuningPlayer?.let { if (it.isPlaying) it.pause() }
     }
 
     override fun onStart() {
@@ -83,9 +98,14 @@ class MainActivity : AudioServiceActivity() {
         stopTuningSound()
         tuningChannel?.setMethodCallHandler(null)
         tuningChannel = null
-        tuningPool?.release()
-        tuningPool = null
-        tuningLoaded = false
+        tuningPlayer?.release()
+        tuningPlayer = null
         super.cleanUpFlutterEngine(flutterEngine)
+    }
+
+    private companion object {
+        const val TUNING_VOLUME = 0.42f
+        const val FADE_MS = 400L
+        const val FADE_STEP_MS = 40L
     }
 }

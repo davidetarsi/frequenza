@@ -236,3 +236,12 @@ Design `superpowers/specs/2026-11-15-notifica-in-pausa-design.md`, piano `superp
 - Play su uno stream chiuso (app, cuffie, Bluetooth) rifà il volo di riconnessione verso la stessa stazione (`RadioMediaCommand.resume` → `RadioController.play`).
 - Da provare sul telefono: scorrere via la notifica in pausa; togliere l'app dalle recenti mentre suona e in pausa; pausa lunga (per provarla, abbassare `pauseTimeout`); play dalle cuffie dopo la chiusura.
 - Limite noto: dopo aver tolto l'app dalle recenti in pausa, il servizio e il motore Dart si chiudono; un play dalle cuffie riapre l'app da spenta, senza riconnettere. Da verificare anche che non chiuda l'app per errore (Android 12+ e avvio del servizio da un tasto multimediale).
+
+## Suono di sintonizzazione — 15 novembre 2026
+
+Design `superpowers/specs/2026-11-15-suono-sintonia-design.md`, piano `superpowers/plans/2026-11-15-suono-sintonia.md`, branch `feat/suono-sintonia`, sopra `feat/notifica-in-pausa`.
+
+- Nuovo fruscio «C2» scelto da Davide: morbido e ovattato, timbro che scivola dal cupo al chiaro, stazioni che affiorano; 7,4 s in loop senza stacco. Generato da `tool/tuning_sound/generate.py` (seme fisso, test in `tool/test_tuning_sound.py`); il WAV passa da 44 KB a 650 KB.
+- Android: `MediaPlayer` al posto di `SoundPool`; ogni volo parte da un punto a caso; volume `TUNING_VOLUME = 0.42f`; all'atterraggio sfuma in 400 ms; uscendo dall'app si ferma subito.
+- La stazione sale di volume in 400 ms (8 passi) mentre il fruscio sfuma; una nuova sintonia interrompe la salita.
+- Verificato: `tool/check.sh --apk` verde. Da provare sul telefono: volo lungo con il passaggio di fine loop; dissolvenza all'atterraggio; due voli di fila non identici; voli ravvicinati (il fruscio deve ripartire, non spegnersi).
