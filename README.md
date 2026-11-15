@@ -64,47 +64,11 @@ pleasure of getting lost on the airwaves.
 3. **Landing.** Only when the station really plays does the static fade out
    while the station fades in. The map, the distance and the clock follow.
 
-## 🔧 Under the hood
+## 🛠️ For developers
 
-A few decisions that shape the app, and why.
+Curious about how something works? Read the code, or just ask.
 
-### 1. The radio is an explicit state machine
-The whole radio is one sealed `RadioSession`: `Off`, `Flying`, `OnAir` or
-`Failed`, each carrying its `Journey`. A pure `next(session, event)` function
-decides every transition.
-> **Why:** a radio has many moving parts (flights, retries, pauses from the
-> headphones, streams that stall). Sealed states make impossible combinations
-> impossible to write, and the transition table is tested without a player.
-
-### 2. A flight is not a fetch
-A station counts as found only when its stream is actually playing, never
-when the request returns. Until then the player stays muted under the static.
-> **Why:** many web radios answer and then never send a sound. Landing on
-> silence is the worst thing a radio can do.
-
-### 3. The service never leaves the foreground on a pause
-Playback runs in an Android foreground service (`audio_service`), and it
-stays there while paused. It leaves only when the radio really stops.
-> **Why:** Android forbids an app in the background from going back to the
-> foreground. A radio paused by a phone call and resumed from the headphones
-> would otherwise be muted, then frozen by the system.
-
-### 4. A watchdog for silent streams
-A station stuck buffering for ten seconds is reconnected on its own.
-> **Why:** live streams drop more often than files do, and a radio should
-> recover without asking.
-
-### 5. The static is generated, not downloaded
-The tuning sound comes from a small Python script (`tool/tuning_sound/`):
-filtered noise, a tone that drifts from dull to bright, faint stations
-surfacing, and a loop with no seam. It starts at a random point on every flight.
-> **Why:** reproducible, tweakable, and free of third-party licences.
-
-### 6. No backend
-Stations come straight from Radio Browser; favourites and history stay on the
-phone. The world map is drawn from [Natural Earth](https://www.naturalearthdata.com) data.
-
-## 🧰 Tech stack
+### Tech stack
 
 - **Core:** Flutter 3.38, Dart 3.10
 - **State:** Riverpod 2.6 with code generation; Freezed sealed unions
@@ -113,27 +77,7 @@ phone. The world map is drawn from [Natural Earth](https://www.naturalearthdata.
 - **Translations:** easy_localization (English, Italian)
 - **Storage:** shared_preferences
 
-## 🚀 Build it yourself
-
-You need the Flutter SDK 3.38 and an Android device or emulator.
-
-```bash
-git clone https://github.com/davidetarsi/frequenza.git
-cd frequenza
-flutter pub get
-bash tool/generate_l10n.sh
-dart run build_runner build --delete-conflicting-outputs
-flutter run            # the dev flavour, installable next to the store app
-```
-
-Before a pull request, the same checks as the CI:
-
-```bash
-bash tool/check.sh          # format, analysis and every test
-bash tool/check.sh --apk    # …and a release APK
-```
-
-## 🚦 From commit to store
+### From commit to store
 
 - **develop:** every merge builds a dev APK and sends it to the testers' Telegram chat.
 - **Versions:** a `version:major`, `version:minor` or `version:patch` label on the release pull request bumps the version.
