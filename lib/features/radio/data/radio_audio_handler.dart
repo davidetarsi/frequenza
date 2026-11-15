@@ -120,8 +120,6 @@ class RadioAudioHandler extends BaseAudioHandler implements RadioMediaSession {
     mediaItem.add(
       MediaItem(id: 'flight', title: flightTitle, artist: flightSubtitle),
     );
-    _flying = true;
-    _republish();
   }
 
   @override

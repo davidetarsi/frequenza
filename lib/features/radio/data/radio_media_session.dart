@@ -7,7 +7,8 @@ enum RadioMediaCommand { next, previous, toggleFavorite }
 abstract interface class RadioMediaSession {
   void showStation(RadioStation station);
 
-  /// A placeholder that never reveals the destination.
+  /// A placeholder that never reveals the destination. Whether the radio
+  /// flies is said only by [showControls].
   void showFlight();
 
   /// The journey as the app sees it. While [flying] the notification stays

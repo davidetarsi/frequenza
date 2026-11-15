@@ -6,7 +6,7 @@ part of 'radio_controller.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$radioControllerHash() => r'c4cb9980c06f7ab61d907afbeeb4a3df55d1c0b7';
+String _$radioControllerHash() => r'dfaf7b05e1fe10922826959f627b991fa34643cb';
 
 /// Runs the radio's effects (static, stream, timers); every change of
 /// state is decided by [next].

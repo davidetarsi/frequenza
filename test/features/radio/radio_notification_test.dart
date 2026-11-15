@@ -9,8 +9,10 @@ import 'package:frequenza/features/radio/application/flight_timing.dart';
 import 'package:frequenza/features/radio/application/radio_controller.dart';
 import 'package:frequenza/features/radio/application/radio_notification.dart';
 import 'package:frequenza/features/radio/application/radio_providers.dart';
+import 'package:frequenza/features/radio/data/just_audio_service.dart';
 import 'package:frequenza/features/radio/data/radio_audio_handler.dart';
 import 'package:frequenza/features/radio/domain/radio_station.dart';
+import 'package:just_audio/just_audio.dart';
 import '../favorites/favorites_test.dart';
 import 'radio_audio_handler_test.dart';
 import 'radio_controller_test.dart';
@@ -24,7 +26,66 @@ RadioStation numbered(int n) => RadioStation(
   countryCode: 'IT',
 );
 
+/// One player for the real audio engine and the real notification: what
+/// the engine does to the stream reaches the notification as it would on
+/// a phone.
+class SharedPlayer extends EventPlayer {
+  final states = StreamController<PlayerState>.broadcast();
+
+  void _publish(ProcessingState state, {required bool playing}) {
+    processingState = state;
+    this.playing = playing;
+    events.add(PlaybackEvent(processingState: state));
+    states.add(PlayerState(playing, state));
+  }
+
+  @override
+  Stream<PlayerState> get playerStateStream => states.stream;
+
+  @override
+  Stream<IcyMetadata?> get icyMetadataStream => const Stream.empty();
+
+  @override
+  Future<void> setVolume(double volume) async {}
+
+  @override
+  Future<Duration?> setAudioSource(
+    AudioSource source, {
+    bool preload = true,
+    int? initialIndex,
+    Duration? initialPosition,
+  }) async {
+    _publish(ProcessingState.loading, playing: playing);
+    return null;
+  }
+
+  @override
+  Future<void> play() {
+    plays++;
+    _publish(ProcessingState.ready, playing: true);
+    return playback.future;
+  }
+
+  @override
+  Future<void> pause() async {
+    pauses++;
+    _publish(processingState, playing: false);
+  }
+
+  @override
+  Future<void> stop() async {
+    stops++;
+    _publish(ProcessingState.idle, playing: false);
+  }
+
+  @override
+  Future<void> dispose() async {
+    if (!playback.isCompleted) playback.complete();
+  }
+}
+
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
   late RadioAudioHandler handler;
   late FakeRadioRepository repository;
   late FakeAudioService audio;
@@ -150,6 +211,59 @@ void main() {
       expect(heartIcon(), 'drawable/ic_favorite_border');
     },
   );
+
+  test('a retune from a station on air keeps the notification up', () async {
+    final player = SharedPlayer();
+    final shared = RadioAudioHandler(
+      player,
+      flightTitle: 'Frequenza',
+      flightSubtitle: 'In volo…',
+      saveLabel: 'Salva',
+      removeLabel: 'Togli',
+    );
+    final engine = JustAudioService(player: player, mediaSession: shared);
+    addTearDown(() async {
+      await engine.dispose();
+      await shared.dispose();
+    });
+    final live = ProviderContainer(
+      overrides: [
+        radioAudioHandlerProvider.overrideWithValue(shared),
+        radioRepositoryProvider.overrideWithValue(repository),
+        radioAudioServiceProvider.overrideWithValue(engine),
+        favoritesRepositoryProvider.overrideWithValue(favorites),
+        flightTimingProvider.overrideWithValue(
+          const FlightTiming(
+            minimum: Duration(milliseconds: 20),
+            attemptTimeout: Duration(milliseconds: 300),
+            signalLostPause: Duration(milliseconds: 10),
+          ),
+        ),
+      ],
+    );
+    addTearDown(live.dispose);
+    live.read(radioNotificationProvider);
+    final radio = live.read(radioControllerProvider.notifier);
+    repository.stationToReturn = numbered(1);
+    await radio.tuneRandom();
+    expect(live.read(radioControllerProvider).station, numbered(1));
+
+    final published = <AudioProcessingState>[];
+    final watching = shared.playbackState.listen(
+      (state) => published.add(state.processingState),
+    );
+    addTearDown(watching.cancel);
+    repository.stationToReturn = numbered(2);
+    await radio.tuneRandom();
+
+    expect(player.stops, greaterThan(0), reason: 'the old stream stopped');
+    expect(live.read(radioControllerProvider).station, numbered(2));
+    expect(
+      published,
+      isNot(contains(AudioProcessingState.idle)),
+      reason: 'an idle state would close the notification mid-flight',
+    );
+  });
 
   test('heart before any station does nothing', () async {
     await handler.customAction('favorite');

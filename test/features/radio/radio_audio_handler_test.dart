@@ -200,11 +200,15 @@ void main() {
     expect(heart().androidIcon, 'drawable/ic_favorite_border');
   });
 
-  test('showFlight alone already keeps the notification up', () async {
-    handler.showFlight();
-    final state = await emit(ProcessingState.idle, playing: false);
-    expect(state.processingState, AudioProcessingState.loading);
-  });
+  test(
+    'showFlight only names the flight: the flag comes from showControls',
+    () async {
+      handler.showFlight();
+      final state = await emit(ProcessingState.idle, playing: false);
+      expect(state.processingState, AudioProcessingState.idle);
+      expect(handler.mediaItem.value?.id, 'flight');
+    },
+  );
 
   test('keys do nothing during the flight', () async {
     handler.showControls(flying: true, saved: false);

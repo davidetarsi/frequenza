@@ -41,6 +41,9 @@ class LivePlayer extends Fake implements AudioPlayer {
   Future<void> stop() async {}
 
   @override
+  Future<void> pause() async => calls.add('pause');
+
+  @override
   Future<void> dispose() async {
     if (!playback.isCompleted) playback.complete();
   }
@@ -132,27 +135,37 @@ void main() {
     expect(session.shown?.id, station.id);
   });
 
-  test(
-    'a pause during the flight is reported, after landing it is not',
-    () async {
-      final player = LivePlayer();
-      final service = JustAudioService(player: player);
-      addTearDown(service.dispose);
-      var reported = 0;
-      final subscription = service.flightInterruptions.listen(
-        (_) => reported++,
-      );
-      addTearDown(subscription.cancel);
-      await service.playStation(station);
-      await service.pause();
-      await Future<void>.delayed(Duration.zero);
-      expect(reported, 1);
-      await service.land(station);
-      await service.pause();
-      await Future<void>.delayed(Duration.zero);
-      expect(reported, 1);
-    },
-  );
+  test('a system pause is reported and pauses the player', () async {
+    final player = LivePlayer();
+    final service = JustAudioService(player: player);
+    addTearDown(service.dispose);
+    await pumpEventQueue();
+    var reported = 0;
+    final subscription = service.systemPauses.listen((_) => reported++);
+    addTearDown(subscription.cancel);
+    await service.playStation(station);
+    service.handleInterruption(
+      AudioInterruptionEvent(true, AudioInterruptionType.pause),
+    );
+    await pumpEventQueue();
+    expect(reported, 1);
+    expect(player.calls, contains('pause'));
+  });
+
+  test('a pause asked by the app is not a system pause', () async {
+    final player = LivePlayer();
+    final service = JustAudioService(player: player);
+    addTearDown(service.dispose);
+    var reported = 0;
+    final subscription = service.systemPauses.listen((_) => reported++);
+    addTearDown(subscription.cancel);
+    await service.playStation(station);
+    await service.pause();
+    await service.land(station);
+    await service.pause();
+    await pumpEventQueue();
+    expect(reported, 0);
+  });
 
   test('a duck ending during the flight keeps the station silent', () async {
     final player = LivePlayer();

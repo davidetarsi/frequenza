@@ -37,13 +37,15 @@ class RadioController extends _$RadioController {
     final trackSubscription = audio.trackTitleStream.listen((title) {
       if (active) _apply(TrackChanged(title));
     });
-    final interruptionSubscription = audio.flightInterruptions.listen((_) {
+    // A pause from the system ends a flight; on air the player already
+    // paused, and the status reports it.
+    final pauseSubscription = audio.systemPauses.listen((_) {
       if (active && state is Flying) unawaited(stop());
     });
     ref.onDispose(() {
       active = false;
       _stall?.cancel();
-      unawaited(interruptionSubscription.cancel());
+      unawaited(pauseSubscription.cancel());
       _currentTuneToken = null;
       unawaited(statusSubscription.cancel());
       unawaited(trackSubscription.cancel());

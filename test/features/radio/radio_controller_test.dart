@@ -43,7 +43,7 @@ class FakeAudioService implements RadioAudioService {
   final interruptions = StreamController<void>.broadcast();
 
   @override
-  Stream<void> get flightInterruptions => interruptions.stream;
+  Stream<void> get systemPauses => interruptions.stream;
 
   @override
   Stream<String?> get trackTitleStream => trackTitles.stream;
@@ -466,6 +466,19 @@ void main() {
       expect(audioService.played, hasLength(1));
       expect(audioService.landed, isEmpty);
       expect(audioService.tuningSoundActive, isFalse);
+    });
+
+    test('a system pause on air only pauses', () async {
+      repository.stationToReturn = testStation;
+      await controller.tuneRandom();
+      final stops = audioService.stops;
+
+      audioService.interruptions.add(null);
+      audioService.emitStatus(PlaybackStatus.paused);
+      await wait(20);
+
+      expect(read(), isOnAir(OnAirPlayback.paused));
+      expect(audioService.stops, stops);
     });
 
     test('stop during a later flight turns the map off', () async {
