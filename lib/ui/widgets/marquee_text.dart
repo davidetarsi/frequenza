@@ -39,9 +39,14 @@ class MarqueeText extends StatelessWidget {
         return Semantics(
           label: text,
           excludeSemantics: true,
-          child: SizedBox(
-            height: height,
-            child: _Scrolling(text: text, style: style, textWidth: width),
+          // At the top, like a still Text in a slot taller than the line.
+          child: Align(
+            alignment: AlignmentDirectional.topStart,
+            heightFactor: 1,
+            child: SizedBox(
+              height: height,
+              child: _Scrolling(text: text, style: style, textWidth: width),
+            ),
           ),
         );
       },
