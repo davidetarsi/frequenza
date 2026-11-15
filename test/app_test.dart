@@ -252,6 +252,32 @@ void main() {
       findsOneWidget,
     );
   });
+  testWidgets('the last saved favorite comes first', (tester) async {
+    final favorites = MemoryFavorites()
+      ..items = [station, station.copyWith(id: 'newer', name: 'Più recente')];
+    final audio = FakeAudioService();
+    addTearDown(audio.dispose);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          radioRepositoryProvider.overrideWithValue(FakeRadioRepository()),
+          radioAudioServiceProvider.overrideWithValue(audio),
+          favoritesRepositoryProvider.overrideWithValue(favorites),
+        ],
+        child: const StarterApp(locale: Locale('it')),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('favorites-open')));
+    await tester.pumpAndSettle();
+    final newer = tester.getTopLeft(
+      find.byKey(const ValueKey('favorite-play-newer')),
+    );
+    final older = tester.getTopLeft(
+      find.byKey(const ValueKey('favorite-play-id')),
+    );
+    expect(newer.dy, lessThan(older.dy));
+  });
   testWidgets(
     'favorites recover from load failure and can be removed from the sheet',
     (tester) async {
