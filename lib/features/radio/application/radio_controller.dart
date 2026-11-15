@@ -21,6 +21,10 @@ class RadioController extends _$RadioController {
   /// is reconnected instead of leaving the radio stuck.
   Timer? _stall;
 
+  /// Runs while the station on air is paused: a long pause closes the
+  /// stream, and with it the notification.
+  Timer? _pause;
+
   RadioAudioService get _audioService => ref.read(radioAudioServiceProvider);
 
   void _apply(RadioEvent event) => state = next(state, event);
@@ -33,6 +37,7 @@ class RadioController extends _$RadioController {
       if (!active) return;
       _apply(PlaybackChanged(status));
       _watchStall();
+      _watchPause();
     });
     final trackSubscription = audio.trackTitleStream.listen((title) {
       if (active) _apply(TrackChanged(title));
@@ -45,6 +50,7 @@ class RadioController extends _$RadioController {
     ref.onDispose(() {
       active = false;
       _stall?.cancel();
+      _pause?.cancel();
       unawaited(pauseSubscription.cancel());
       _currentTuneToken = null;
       unawaited(statusSubscription.cancel());
@@ -105,6 +111,21 @@ class RadioController extends _$RadioController {
     });
   }
 
+  void _watchPause() {
+    _pause?.cancel();
+    final session = state;
+    if (session is! OnAir || session.playback != OnAirPlayback.paused) return;
+    final station = session.station;
+    _pause = Timer(ref.read(flightTimingProvider).pauseTimeout, () {
+      final now = state;
+      if (now is OnAir &&
+          now.playback == OnAirPlayback.paused &&
+          now.station == station) {
+        unawaited(_audioService.stop());
+      }
+    });
+  }
+
   /// One flight: every attempt lasts at least [FlightTiming.minimum] and
   /// lands only once the station really plays.
   Future<void> _fly(
@@ -116,6 +137,7 @@ class RadioController extends _$RadioController {
     final token = Object();
     _currentTuneToken = token;
     _stall?.cancel();
+    _pause?.cancel();
     bool current() => _currentTuneToken == token;
     final timing = ref.read(flightTimingProvider);
 
@@ -199,8 +221,20 @@ class RadioController extends _$RadioController {
     );
   }
 
+  /// Resumes the station on air; once its stream has closed (a long pause,
+  /// the notification swiped away) it reconnects the station instead.
   Future<void> play() async {
-    if (state is OnAir) await _audioService.play();
+    final session = state;
+    if (session is! OnAir) return;
+    if (session.playback != OnAirPlayback.ended) {
+      return _audioService.play();
+    }
+    final station = session.station;
+    await _fly(
+      () async => station,
+      retries: ref.read(flightTimingProvider).autoRetries,
+      kind: FlightKind.reconnect,
+    );
   }
 
   Future<void> pause() async {
@@ -211,6 +245,7 @@ class RadioController extends _$RadioController {
     final token = Object();
     _currentTuneToken = token;
     _stall?.cancel();
+    _pause?.cancel();
     await _audioService.stopTuningSound();
     if (_currentTuneToken != token) return;
     await _audioService.stop();

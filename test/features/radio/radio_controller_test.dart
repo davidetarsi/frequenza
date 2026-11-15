@@ -115,6 +115,7 @@ const fastFlights = FlightTiming(
   attemptTimeout: Duration(milliseconds: 300),
   signalLostPause: Duration(milliseconds: 10),
   stallTimeout: Duration(milliseconds: 100),
+  pauseTimeout: Duration(milliseconds: 100),
 );
 
 Future<void> wait(int milliseconds) =>
@@ -466,6 +467,87 @@ void main() {
       expect(audioService.played, hasLength(1));
       expect(audioService.landed, isEmpty);
       expect(audioService.tuningSoundActive, isFalse);
+    });
+
+    test('a long pause closes the stream', () async {
+      repository.stationToReturn = testStation;
+      await controller.tuneRandom();
+      final stops = audioService.stops;
+
+      await controller.pause();
+      await wait(250);
+
+      expect(audioService.stops, stops + 1);
+      expect(read(), isOnAir(OnAirPlayback.ended));
+    });
+
+    test('resuming before the timeout keeps the stream', () async {
+      repository.stationToReturn = testStation;
+      await controller.tuneRandom();
+      final stops = audioService.stops;
+
+      await controller.pause();
+      await wait(30);
+      await controller.play();
+      await wait(200);
+
+      expect(audioService.stops, stops);
+      expect(read(), isOnAir(OnAirPlayback.playing));
+    });
+
+    test('a flight cancels the pause timer', () async {
+      const other = RadioStation(
+        id: 'station-2',
+        name: 'Other Radio',
+        streamUrl: 'https://stream.test/other.mp3',
+        country: 'France',
+        countryCode: 'FR',
+      );
+      repository.stationToReturn = testStation;
+      await controller.tuneRandom();
+      await controller.pause();
+      await wait(30);
+      repository.stationToReturn = other;
+      await controller.tuneRandom();
+      final stops = audioService.stops;
+      await wait(200);
+
+      expect(audioService.stops, stops);
+      expect(read(), isOnAir(OnAirPlayback.playing));
+      expect(read().station, other);
+    });
+
+    test('a stop cancels the pause timer', () async {
+      repository.stationToReturn = testStation;
+      await controller.tuneRandom();
+      await controller.pause();
+      await wait(30);
+      await controller.stop();
+      final stops = audioService.stops;
+      await wait(200);
+
+      expect(audioService.stops, stops);
+      expect(read(), isOff);
+    });
+
+    test('play on an ended station reconnects it', () async {
+      repository.stationToReturn = testStation;
+      await controller.tuneRandom();
+      final trips = read().trips;
+
+      audioService.emitStatus(PlaybackStatus.idle);
+      await wait(10);
+      await controller.play();
+
+      expect(audioService.played, [testStation, testStation]);
+      expect(read(), isOnAir(OnAirPlayback.playing));
+      expect(read().trips, trips);
+    });
+
+    test('play with nothing on air does nothing', () async {
+      await controller.play();
+      expect(audioService.played, isEmpty);
+      expect(read(), isOff);
     });
 
     test('a system pause on air only pauses', () async {
