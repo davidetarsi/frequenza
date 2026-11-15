@@ -7,6 +7,7 @@ import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import com.ryanheise.audioservice.AudioServiceActivity
+import com.ryanheise.audioservice.RadioForeground
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 import kotlin.random.Random
@@ -59,6 +60,11 @@ class MainActivity : AudioServiceActivity() {
                 "sdkInt" -> result.success(Build.VERSION.SDK_INT)
                 // Dove copiare il logo di ripiego della notifica.
                 "cacheDir" -> result.success(cacheDir.absolutePath)
+                // La radio si è fermata davvero: il servizio esce dal primo piano.
+                "leaveForeground" -> {
+                    RadioForeground.leave()
+                    result.success(null)
+                }
                 else -> result.notImplemented()
             }
         }

@@ -357,4 +357,57 @@ void main() {
       );
     }
   });
+
+  group('foreground service', () {
+    late List<AudioProcessingState> leftAt;
+
+    setUp(() async {
+      leftAt = [];
+      await handler.dispose();
+      handler = RadioAudioHandler(
+        player,
+        flightTitle: 'Frequenza',
+        flightSubtitle: 'In volo…',
+        saveLabel: 'Salva',
+        removeLabel: 'Togli',
+        leaveForeground: () async =>
+            leftAt.add(handler.playbackState.value.processingState),
+      );
+    });
+
+    test('a pause keeps the service in the foreground', () async {
+      await emit(ProcessingState.ready, playing: true);
+      await emit(ProcessingState.ready, playing: false);
+      expect(leftAt, isEmpty);
+    });
+
+    test('a stop leaves the foreground before the service closes', () async {
+      await emit(ProcessingState.ready, playing: true);
+      await emit(ProcessingState.idle, playing: false);
+      // Still ready when asked: the plugin closes the service on idle.
+      expect(leftAt, [AudioProcessingState.ready]);
+    });
+
+    test('a stream that ends leaves the foreground once', () async {
+      await emit(ProcessingState.ready, playing: true);
+      await emit(ProcessingState.completed, playing: true);
+      await emit(ProcessingState.completed, playing: false);
+      expect(leftAt, hasLength(1));
+    });
+
+    test('a stream error leaves the foreground', () async {
+      await emit(ProcessingState.ready, playing: true);
+      final next = handler.playbackState.skip(1).first;
+      player.events.addError(StateError('Disconnected'));
+      await next;
+      expect(leftAt, hasLength(1));
+    });
+
+    test('a flight never leaves the foreground', () async {
+      await emit(ProcessingState.ready, playing: true);
+      handler.showControls(flying: true, saved: false);
+      await emit(ProcessingState.idle, playing: false);
+      expect(leftAt, isEmpty);
+    });
+  });
 }
