@@ -11,6 +11,7 @@ import 'package:frequenza/features/journey/presentation/route_map.dart';
 import 'package:frequenza/features/radio/application/radio_providers.dart';
 import 'package:frequenza/features/radio/domain/radio_audio_service.dart';
 import 'package:frequenza/features/radio/domain/radio_station.dart';
+import 'package:frequenza/ui/theme/app_spacing.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../favorites/favorites_test.dart';
@@ -157,6 +158,32 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('radio-key-play')));
     await tester.pump();
     expect(audio.currentStatus, PlaybackStatus.paused);
+  });
+
+  testWidgets('the top screw stays at the edge, next to the trip number', (
+    tester,
+  ) async {
+    Rect topScrew() => find
+        .byWidgetPredicate((w) => w.runtimeType.toString() == '_Screw')
+        .evaluate()
+        .map((e) {
+          final box = e.renderObject! as RenderBox;
+          return box.localToGlobal(Offset.zero) & box.size;
+        })
+        .reduce((a, b) => a.top <= b.top ? a : b);
+
+    // Small text, as on a phone: the trip number is shorter than its half
+    // of the row.
+    final audio = await openRadio(tester, fip, textScale: .5);
+    final before = topScrew();
+    await tester.tap(find.byKey(const ValueKey('tune-knob')));
+    await tester.pump(const Duration(milliseconds: 500));
+    await landFlight(tester, audio);
+
+    final after = topScrew();
+    expect(after.right, before.right);
+    final trip = tester.getRect(find.text('Viaggio n. 1'));
+    expect(after.left - trip.right, lessThanOrEqualTo(AppSpacing.small + 1));
   });
 
   testWidgets('a station without a place still lands with its texts', (
