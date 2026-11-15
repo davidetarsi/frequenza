@@ -11,6 +11,7 @@ import '../features/radio/application/radio_notification.dart';
 import '../features/radio/application/radio_providers.dart';
 import '../features/radio/data/native_channel.dart';
 import '../features/radio/data/radio_audio_handler.dart';
+import '../features/welcome/application/welcome_seen.dart';
 
 import '../l10n/app_translations.g.dart';
 import '../l10n/locale_keys.g.dart';
@@ -42,6 +43,8 @@ Future<void> bootstrap({AppConfig config = const AppConfig()}) async {
   final container = ProviderContainer(
     overrides: [radioAudioHandlerProvider.overrideWithValue(handler)],
   );
+  // The first page depends on it: the welcome, or the radio.
+  await container.read(welcomeSeenProvider.future);
   // The notification answers from the start, before any page is built.
   container.read(radioNotificationProvider);
   runApp(
