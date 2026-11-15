@@ -27,7 +27,17 @@ class MainActivity : AudioServiceActivity() {
                 .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
                 .build(),
             AudioManager.AUDIO_SESSION_ID_GENERATE,
-        )?.apply { isLooping = true }
+        )?.apply {
+            isLooping = true
+            // Un player in errore lancia eccezioni a ogni chiamata: meglio
+            // un volo senza fruscio che l'app chiusa.
+            setOnErrorListener { player, _, _ ->
+                fades.removeCallbacksAndMessages(null)
+                player.release()
+                if (tuningPlayer === player) tuningPlayer = null
+                true
+            }
+        }
 
         tuningChannel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "frequenza/tuning_sound")
         tuningChannel?.setMethodCallHandler { call, result ->
@@ -36,8 +46,13 @@ class MainActivity : AudioServiceActivity() {
                     if (inForeground) startTuningSound()
                     result.success(null)
                 }
-                "stop" -> {
+                // All'atterraggio sfuma; pausa, stop e volo fallito tagliano subito.
+                "fadeOut" -> {
                     fadeOutTuningSound()
+                    result.success(null)
+                }
+                "stop" -> {
+                    stopTuningSound()
                     result.success(null)
                 }
                 // Dal 13 Android conferma da sé ogni copia negli appunti.
@@ -53,24 +68,26 @@ class MainActivity : AudioServiceActivity() {
     private fun startTuningSound() {
         val player = tuningPlayer ?: return
         fades.removeCallbacksAndMessages(null)
-        player.setVolume(TUNING_VOLUME, TUNING_VOLUME)
-        if (!player.isPlaying) {
-            player.seekTo(Random.nextInt(maxOf(player.duration, 1)))
-            player.start()
+        safely {
+            player.setVolume(TUNING_VOLUME, TUNING_VOLUME)
+            if (!player.isPlaying) {
+                player.seekTo(Random.nextInt(maxOf(player.duration, 1)))
+                player.start()
+            }
         }
     }
 
     // All'atterraggio il fruscio sfuma mentre la stazione sale.
     private fun fadeOutTuningSound() {
         val player = tuningPlayer ?: return
-        if (!player.isPlaying) return
+        if (safely { player.isPlaying } != true) return
         fades.removeCallbacksAndMessages(null)
         val steps = FADE_MS / FADE_STEP_MS
         for (step in 1..steps) {
             fades.postDelayed({
                 val volume = TUNING_VOLUME * (steps - step) / steps
                 if (step < steps) {
-                    player.setVolume(volume, volume)
+                    safely { player.setVolume(volume, volume) }
                 } else {
                     stopTuningSound()
                 }
@@ -80,8 +97,16 @@ class MainActivity : AudioServiceActivity() {
 
     private fun stopTuningSound() {
         fades.removeCallbacksAndMessages(null)
-        tuningPlayer?.let { if (it.isPlaying) it.pause() }
+        tuningPlayer?.let { player -> safely { if (player.isPlaying) player.pause() } }
     }
+
+    // Il fruscio è un contorno: un errore del player non deve chiudere l'app.
+    private inline fun <T> safely(block: () -> T): T? =
+        try {
+            block()
+        } catch (_: IllegalStateException) {
+            null
+        }
 
     override fun onStart() {
         super.onStart()

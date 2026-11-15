@@ -148,10 +148,10 @@ class JustAudioService implements RadioAudioService {
   }
 
   @override
-  Future<void> stopTuningSound() async {
+  Future<void> stopTuningSound({bool fade = false}) async {
     if (_tuningSoundRequest == null) return;
     _tuningSoundRequest = null;
-    await _sendTuningSoundCommand('stop');
+    await _sendTuningSoundCommand(fade ? 'fadeOut' : 'stop');
   }
 
   Future<void> _sendTuningSoundCommand(String command) async {

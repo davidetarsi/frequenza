@@ -208,7 +208,7 @@ class RadioController extends _$RadioController {
   }
 
   Future<void> _land(RadioStation station, bool Function() current) async {
-    await _audioService.stopTuningSound();
+    await _audioService.stopTuningSound(fade: true);
     if (!current()) return;
     await _audioService.land(station);
     if (!current()) return;

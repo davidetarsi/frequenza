@@ -4,6 +4,7 @@ import 'package:audio_session/audio_session.dart';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frequenza/features/radio/data/just_audio_service.dart';
+import 'package:frequenza/features/radio/data/native_channel.dart';
 import 'package:frequenza/features/radio/data/radio_media_session.dart';
 import 'package:frequenza/features/radio/domain/radio_audio_service.dart';
 import 'package:frequenza/features/radio/domain/radio_station.dart';
@@ -42,6 +43,9 @@ class LivePlayer extends Fake implements AudioPlayer {
 
   @override
   Future<void> pause() async => calls.add('pause');
+
+  @override
+  bool get playing => false;
 
   @override
   Future<void> dispose() async {
@@ -140,6 +144,26 @@ void main() {
     for (final call in player.calls)
       if (call.startsWith('volume ')) double.parse(call.substring(7)),
   ];
+
+  test('only a landing fades the static out', () async {
+    final methods = <String>[];
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(nativeChannel, (call) async {
+          methods.add(call.method);
+          return null;
+        });
+    addTearDown(
+      () => TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(nativeChannel, null),
+    );
+    final service = JustAudioService(player: LivePlayer());
+    addTearDown(service.dispose);
+    await service.startTuningSound();
+    await service.stopTuningSound(fade: true);
+    await service.startTuningSound();
+    await service.stopTuningSound();
+    expect(methods, ['start', 'fadeOut', 'start', 'stop']);
+  });
 
   test('the station fades in', () async {
     final player = LivePlayer();
