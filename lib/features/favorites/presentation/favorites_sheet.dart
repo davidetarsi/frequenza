@@ -1,3 +1,4 @@
+import '../../radio/domain/radio_station.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -70,7 +71,9 @@ class FavoritesSheet extends ConsumerWidget {
               ),
           ],
         ),
-        for (final station in favorites.valueOrNull?.stations ?? [])
+        // Saved in order: the newest one comes first.
+        for (final station
+            in favorites.valueOrNull?.stations.reversed ?? <RadioStation>[])
           Padding(
             padding: const EdgeInsets.only(bottom: AppSpacing.standard),
             child: _StationPreset(

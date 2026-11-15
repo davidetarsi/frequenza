@@ -8,6 +8,7 @@ Future<void> pumpLabel(
   WidgetTester tester,
   String text, {
   required double width,
+  double? height,
   bool animations = true,
 }) async {
   tester.platformDispatcher.accessibilityFeaturesTestValue =
@@ -18,6 +19,7 @@ Future<void> pumpLabel(
       home: Center(
         child: SizedBox(
           width: width,
+          height: height,
           child: MarqueeText(text, style: _style),
         ),
       ),
@@ -85,5 +87,14 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('SINTONIZZAZIONE…'), findsOneWidget);
     expect(tester.getSize(find.byType(MarqueeText)).height, lineHeight(tester));
+  });
+
+  testWidgets('a scrolling label sits as high as a still one', (tester) async {
+    // The radio gives the label a slot taller than the line.
+    await pumpLabel(tester, 'TUNE', width: 60, height: 40);
+    final still = tester.getTopLeft(find.text('TUNE')).dy;
+    await pumpLabel(tester, 'SINTONIZZAZIONE…', width: 60, height: 40);
+    await tester.pump();
+    expect(tester.getTopLeft(find.text('SINTONIZZAZIONE…').first).dy, still);
   });
 }
