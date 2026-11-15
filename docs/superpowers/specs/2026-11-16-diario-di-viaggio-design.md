@@ -81,10 +81,22 @@ Più un indice su `startedAt`.
 
 ### Scrittura
 
-- **Inizio:** quando si entra in «suona», si crea la riga.
-- **Mentre suona:** ogni **30 secondi** si aggiornano i `seconds`. Se Android chiude l'app si perdono al massimo 30 secondi.
+- **Inizio:** quando si entra in «suona» parte il conteggio in memoria. La riga nasce al primo aggiornamento, oppure alla fine se l'ascolto ha superato i 5 secondi.
+- **Mentre suona:** ogni **30 secondi** si scrive il totale dei `seconds`. Se Android chiude l'app si perdono al massimo 30 secondi. Si scrive anche quando l'app va in background.
 - **Fine:** quando si esce da «suona» (pausa, nuova stazione, buffering, fine) si scrive il valore finale e si chiude la riga. Un ritorno a «suona» apre una riga nuova.
 - **Tempo:** si misura con un orologio monotono (`Stopwatch`), non con l'ora di sistema, così un cambio d'ora non sporca i dati.
+
+### Principi del registro **[D]**
+
+Davide teme i registri a eventi: un evento vero spezzato in sotto-eventi, alcuni persi, e aggregazioni da rattoppare. Per questo il registro **non registra eventi, ma fotografie**.
+
+1. **Una riga per ascolto, sempre valida.** Nessuna riga «aperta» in attesa di chiusura: dopo una chiusura brusca resta l'ultimo valore scritto, corretto e solo più corto. Niente da riparare.
+2. **Si scrive il totale, non l'incremento:** `seconds = 120`, mai `seconds += 30`. Ripetere o saltare una scrittura non cambia il risultato.
+3. **Stazione e primo ascolto in una sola transazione:** o entrambi, o nessuno.
+4. **Nessuna tabella di totali, nessun lavoro di aggregazione.** Tutto si calcola alla lettura con una query (`SUM … GROUP BY`): nessun riepilogo può andare fuori sincrono.
+5. **La logica decide in memoria, il database conserva.** Una macchina a stati pura (`ListenTracker`) decide inizio, aggiornamento e fine di un ascolto ed è testata senza database. Al database arrivano solo fotografie complete.
+6. **Niente righe di rumore:** un ascolto si salva solo da **5 secondi** in su, al primo aggiornamento o alla fine. Girare la manopola non riempie il registro.
+7. **Schema versionato dal primo giorno**, con lo schema della versione 1 salvato nel repo per i test di migrazione futuri.
 
 ### Dove vive **[C]**
 
