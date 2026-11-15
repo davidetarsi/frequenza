@@ -19,6 +19,10 @@ class JustAudioService implements RadioAudioService {
   }
 
   static const _tuningChannel = nativeChannel;
+
+  /// The station rises while the static fades out on the native side.
+  static const landingFade = Duration(milliseconds: 400);
+  static const landingSteps = 8;
   final AudioPlayer _player;
   final RadioMediaSession? _mediaSession;
   Object? _tuningSoundRequest;
@@ -28,6 +32,9 @@ class JustAudioService implements RadioAudioService {
   bool _disposed = false;
   PlaybackStatus _currentStatus = PlaybackStatus.idle;
   bool _muted = false, _ducked = false;
+
+  /// The landing fade in progress; a new flight cancels it.
+  Object? _fade;
 
   double get _volume => _muted
       ? 0
@@ -168,6 +175,7 @@ class JustAudioService implements RadioAudioService {
       _mediaSession?.showFlight();
       await _player.stop();
       // Silent until land(): the static plays while the stream loads.
+      _fade = null;
       _muted = true;
       await _player.setVolume(_volume);
       await _player.setAudioSource(audioSource);
@@ -180,10 +188,26 @@ class JustAudioService implements RadioAudioService {
   }
 
   @override
+  /// Reveals the station at once; its volume rises over [landingFade].
   Future<void> land(RadioStation station) async {
     _muted = false;
-    await _player.setVolume(_volume);
+    final fade = Object();
+    _fade = fade;
     _mediaSession?.showStation(station);
+    await _fadeStep(fade, 1);
+    unawaited(_fadeIn(fade));
+  }
+
+  Future<void> _fadeIn(Object fade) async {
+    for (var step = 2; step <= landingSteps; step++) {
+      await Future<void>.delayed(landingFade ~/ landingSteps);
+      await _fadeStep(fade, step);
+    }
+  }
+
+  Future<void> _fadeStep(Object fade, int step) async {
+    if (_fade != fade || _disposed) return;
+    await _player.setVolume(_volume * step / landingSteps);
   }
 
   @override

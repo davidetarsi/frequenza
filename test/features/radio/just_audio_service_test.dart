@@ -131,8 +131,56 @@ void main() {
     addTearDown(service.dispose);
     await service.playStation(station);
     await service.land(station);
-    expect(player.calls.last, 'volume 1.0');
     expect(session.shown?.id, station.id);
+    await Future<void>.delayed(const Duration(milliseconds: 500));
+    expect(player.calls.last, 'volume 1.0');
+  });
+
+  List<double> volumes(LivePlayer player) => [
+    for (final call in player.calls)
+      if (call.startsWith('volume ')) double.parse(call.substring(7)),
+  ];
+
+  test('the station fades in', () async {
+    final player = LivePlayer();
+    final service = JustAudioService(player: player);
+    addTearDown(service.dispose);
+    await service.playStation(station);
+    final before = volumes(player).length;
+    await service.land(station);
+    await Future<void>.delayed(const Duration(milliseconds: 500));
+    final fade = volumes(player).sublist(before);
+    expect(fade.length, greaterThan(2));
+    expect(fade.first, lessThan(0.5));
+    expect(fade.last, 1.0);
+    for (var i = 1; i < fade.length; i++) {
+      expect(fade[i], greaterThan(fade[i - 1]));
+    }
+  });
+
+  test('a new flight during the fade keeps the next station silent', () async {
+    final player = LivePlayer();
+    final service = JustAudioService(player: player);
+    addTearDown(service.dispose);
+    await service.playStation(station);
+    await service.land(station);
+    await Future<void>.delayed(const Duration(milliseconds: 100));
+    await service.playStation(station);
+    await Future<void>.delayed(const Duration(milliseconds: 500));
+    expect(volumes(player).last, 0.0);
+  });
+
+  test('a duck during the fade ends ducked', () async {
+    final player = LivePlayer();
+    final service = JustAudioService(player: player);
+    addTearDown(service.dispose);
+    await service.playStation(station);
+    await service.land(station);
+    service.handleInterruption(
+      AudioInterruptionEvent(true, AudioInterruptionType.duck),
+    );
+    await Future<void>.delayed(const Duration(milliseconds: 500));
+    expect(volumes(player).last, 0.2);
   });
 
   test('a system pause is reported and pauses the player', () async {
@@ -186,6 +234,7 @@ void main() {
       AudioInterruptionEvent(true, AudioInterruptionType.duck),
     );
     await service.land(station);
+    await Future<void>.delayed(const Duration(milliseconds: 500));
     expect(player.calls.last, 'volume 0.2');
   });
 }
