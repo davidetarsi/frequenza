@@ -75,4 +75,5 @@ abstract class LocaleKeys {
   static const welcomeStart = 'welcomeStart';
   static const welcomeDemo = 'welcomeDemo';
   static const welcomeHint = 'welcomeHint';
+  static const sendFeedback = 'sendFeedback';
 }

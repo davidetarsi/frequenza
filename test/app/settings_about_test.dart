@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frequenza/app/app.dart';
+import 'package:frequenza/app/links/app_version.dart';
 import 'package:frequenza/app/links/external_links.dart';
 import 'package:frequenza/features/favorites/application/favorites_providers.dart';
 import 'package:frequenza/features/radio/application/radio_providers.dart';
@@ -34,6 +35,10 @@ void main() {
           radioRepositoryProvider.overrideWithValue(FakeRadioRepository()),
           radioAudioServiceProvider.overrideWithValue(audio),
           favoritesRepositoryProvider.overrideWithValue(MemoryFavorites()),
+          appVersionProvider.overrideWith((ref) async => '0.2.1+2'),
+          deviceInfoProvider.overrideWith(
+            (ref) async => 'Google Pixel 8 · Android 16',
+          ),
           openExternalProvider.overrideWithValue((uri) async {
             opened.add(uri);
             return opens;
@@ -67,5 +72,31 @@ void main() {
     await tester.tap(find.text('Visualizza progetto su GitHub'));
     await tester.pumpAndSettle();
     expect(find.text('Impossibile aprire il link'), findsOneWidget);
+  });
+
+  testWidgets('the feedback form arrives with app version and phone', (
+    tester,
+  ) async {
+    final opened = await openSettings(tester);
+    await tester.dragUntilVisible(
+      find.text('Segnala un problema o un\'idea'),
+      find.byType(Scrollable).last,
+      const Offset(0, -200),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Segnala un problema o un\'idea'));
+    await tester.pumpAndSettle();
+    expect(opened, hasLength(1));
+    expect(
+      opened.single.toString(),
+      startsWith(
+        'https://docs.google.com/forms/d/e/1FAIpQLScfBxq-YDkcOEW5GE0aeJw4X6Ol-Ydb8ycL7HVyXlt4ujJ26Q/viewform',
+      ),
+    );
+    expect(opened.single.queryParameters, {
+      'usp': 'pp_url',
+      'entry.331406160': 'Google Pixel 8 · Android 16',
+      'entry.1664657182': '0.2.1+2',
+    });
   });
 }
