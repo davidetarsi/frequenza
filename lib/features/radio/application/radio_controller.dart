@@ -26,6 +26,10 @@ class RadioController extends _$RadioController {
   /// The last station that landed, even while a new flight hides it.
   RadioStation? _landed;
 
+  /// Runs while the station on air buffers: a stream that stays silent
+  /// is reconnected instead of leaving the radio stuck.
+  Timer? _stall;
+
   RadioAudioService get _audioService => ref.read(radioAudioServiceProvider);
 
   @override
@@ -35,6 +39,7 @@ class RadioController extends _$RadioController {
     final statusSubscription = audio.playbackStatusStream.listen((status) {
       if (active && state.status != PlaybackStatus.tuning) {
         state = state.copyWith(status: status);
+        _watchStall();
       }
     });
     final trackSubscription = audio.trackTitleStream.listen((title) {
@@ -49,6 +54,7 @@ class RadioController extends _$RadioController {
     });
     ref.onDispose(() {
       active = false;
+      _stall?.cancel();
       unawaited(interruptionSubscription.cancel());
       _currentTuneToken = null;
       unawaited(statusSubscription.cancel());
@@ -82,6 +88,24 @@ class RadioController extends _$RadioController {
     final station = _landed;
     if (station == null) return;
     await _fly(() async => station, retries: 0, kind: _Flight.reconnect);
+  }
+
+  void _watchStall() {
+    _stall?.cancel();
+    final station = _landed;
+    if (state.status != PlaybackStatus.buffering || station == null) return;
+    _stall = Timer(ref.read(flightTimingProvider).stallTimeout, () {
+      if (state.status != PlaybackStatus.buffering || _landed != station) {
+        return;
+      }
+      unawaited(
+        _fly(
+          () async => station,
+          retries: ref.read(flightTimingProvider).autoRetries,
+          kind: _Flight.reconnect,
+        ),
+      );
+    });
   }
 
   /// One flight: every attempt lasts at least [FlightTiming.minimum] and

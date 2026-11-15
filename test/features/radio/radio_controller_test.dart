@@ -112,6 +112,7 @@ const fastFlights = FlightTiming(
   minimum: Duration(milliseconds: 50),
   attemptTimeout: Duration(milliseconds: 300),
   signalLostPause: Duration(milliseconds: 10),
+  stallTimeout: Duration(milliseconds: 100),
 );
 
 Future<void> wait(int milliseconds) =>
@@ -157,6 +158,43 @@ void main() {
       );
       expect(container.read(radioControllerProvider).station, isNull);
       expect(container.read(radioControllerProvider).errorMessage, isNull);
+    });
+
+    test('a landed station stuck buffering reconnects by itself', () async {
+      repository.stationToReturn = testStation;
+      await controller.tuneRandom();
+      final trips = container.read(radioControllerProvider).trips;
+
+      audioService.emitStatus(PlaybackStatus.buffering);
+      await wait(400);
+
+      final state = container.read(radioControllerProvider);
+      expect(audioService.played, [testStation, testStation]);
+      expect(state.status, PlaybackStatus.playing);
+      expect(state.station, testStation);
+      expect(state.trips, trips, reason: 'a reconnect is not a new trip');
+    });
+
+    test('a short buffering does not reconnect', () async {
+      repository.stationToReturn = testStation;
+      await controller.tuneRandom();
+
+      audioService.emitStatus(PlaybackStatus.buffering);
+      await wait(30);
+      audioService.emitStatus(PlaybackStatus.playing);
+      await wait(200);
+
+      expect(audioService.played, [testStation]);
+    });
+
+    test('a paused station is never reconnected', () async {
+      repository.stationToReturn = testStation;
+      await controller.tuneRandom();
+
+      await controller.pause();
+      await wait(200);
+
+      expect(audioService.played, [testStation]);
     });
 
     test('tuneRandom fetches station and starts playback', () async {

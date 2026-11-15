@@ -181,3 +181,12 @@ Design `superpowers/specs/2026-11-14-notifica-design.md`, piano `superpowers/pla
 - Titolo e icone in alto usano tutta la larghezza, meno un margine del 3% dello schermo (12–24 punti).
 - La radio è l'88% della larghezza dello schermo (280–420 punti, mai oltre lo spazio disponibile), arrotondata a punti interi: 343 su un telefono da 390, 281 su uno da 320.
 - Tutti i valori in `TravelRadioLayout`; i pezzi interni della radio restano a misura fissa (la radio tutta in proporzione è rimandata).
+
+## Radio bloccata in «Connessione alla radio» — 15 novembre 2026
+
+Segnalato da Davide: con l'app in background la musica si ferma dopo pochi secondi, la notifica gira a vuoto e, riaperta l'app, manopola e tasti sono spenti.
+
+- Lo stream smette di arrivare (buffering) e niente lo interrompeva: ora, se una stazione atterrata resta in buffering per 10 secondi (`FlightTiming.stallTimeout`), la radio si riconnette da sola con il volo di riconnessione, fino a 3 tentativi; se fallisce mostra l'errore con «Riprova».
+- Durante il buffering di una stazione accesa manopola, pausa e cuore restano attivi: solo il volo li spegne.
+- Una pausa mentre lo stream si riempie vale come pausa (`JustAudioService`), così la riconnessione non riaccende una radio messa in pausa.
+- Ancora da capire: perché lo stream si ferma in background. Ipotesi: Android limita la rete all'app quando il servizio in primo piano cade. Serve un logcat dal telefono per confermarla.

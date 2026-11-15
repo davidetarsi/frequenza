@@ -58,6 +58,9 @@ class RadioPage extends ConsumerWidget {
       PlaybackStatus.error => LocaleKeys.stationError.tr(context: context),
     };
     final tuning = player.status == PlaybackStatus.tuning;
+    // Only a flight takes the controls: a station refilling its stream is
+    // still on, and can be paused or left.
+    final on = player.isPlaying || player.status == PlaybackStatus.buffering;
     final flying = tuning && player.flight == FlightPhase.flying;
     final title = flying
         ? LocaleKeys.flyingTo.tr(context: context)
@@ -71,7 +74,7 @@ class RadioPage extends ConsumerWidget {
     final countryDetail = tuning || distance == null
         ? null
         : '${distance.approximate ? '≈ ' : ''}${LocaleKeys.distanceKm.tr(context: context, args: [NumberFormat.decimalPattern(context.locale.toLanguageTag()).format(distance.km)])}';
-    final label = busy
+    final label = tuning
         ? LocaleKeys.tuning.tr(context: context)
         : player.status == PlaybackStatus.error
         ? LocaleKeys.retry.tr(context: context)
@@ -170,20 +173,19 @@ class RadioPage extends ConsumerWidget {
                     ),
               knobLabel: label.toUpperCase(),
               tuneLabel: LocaleKeys.tuneAccessibility.tr(context: context),
-              onTune: busy ? null : () => controller.tuneRandom(),
+              onTune: tuning ? null : () => controller.tuneRandom(),
               playKey: RadioKey(
                 key: const ValueKey('radio-key-play'),
                 toggles: false,
-                icon: player.isPlaying ? Icons.pause : Icons.play_arrow,
-                label: player.isPlaying
+                icon: on ? Icons.pause : Icons.play_arrow,
+                label: on
                     ? LocaleKeys.pause.tr(context: context)
                     : LocaleKeys.resume.tr(context: context),
                 down: player.status == PlaybackStatus.paused,
-                onPressed: idle || busy || player.status == PlaybackStatus.error
+                onPressed:
+                    idle || tuning || player.status == PlaybackStatus.error
                     ? null
-                    : () => player.isPlaying
-                          ? controller.pause()
-                          : controller.play(),
+                    : () => on ? controller.pause() : controller.play(),
               ),
               saveKey: RadioKey(
                 key: const ValueKey('radio-key-save'),
@@ -195,7 +197,7 @@ class RadioPage extends ConsumerWidget {
                 down: saved,
                 onPressed:
                     idle ||
-                        busy ||
+                        tuning ||
                         favorites == null ||
                         favoritesState.isLoading
                     ? null
