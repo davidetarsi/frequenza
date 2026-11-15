@@ -15,8 +15,9 @@ class CodegenLoader extends AssetLoader {
   }
 
   static const Map<String, dynamic> _en = {
-    "welcomeTitle": "A fresh start",
-    "welcomeBody": "A small foundation, ready for your next idea.",
+    "welcomeTitle": "Turn the dial.\nLand somewhere in the world.",
+    "welcomeBody":
+        "Every turn is a live station somewhere in the world. Keep the ones you love with the heart.",
     "loading": "Loading",
     "errorTitle": "Something went wrong",
     "errorBody": "The content could not be loaded. You can try again.",
@@ -86,10 +87,15 @@ class CodegenLoader extends AssetLoader {
     "localTimeLabel": "local time",
     "tripNumber": "Trip no. {}",
     "titleCopied": "Title copied",
+    "welcomeStart": "Turn on the radio",
+    "welcomeDemo":
+        "Animation: the dial turns and the radio lands on a station far away",
+    "welcomeHint": "Tap the dial to turn it on",
   };
   static const Map<String, dynamic> _it = {
-    "welcomeTitle": "Una nuova partenza",
-    "welcomeBody": "Una piccola base, pronta per la tua prossima idea.",
+    "welcomeTitle": "Gira la manopola.\nAtterra da qualche parte nel mondo.",
+    "welcomeBody":
+        "Ogni giro è una radio in diretta da qualche parte nel mondo. Quelle che ami le tieni con il cuore.",
     "loading": "Caricamento",
     "errorTitle": "Qualcosa non ha funzionato",
     "errorBody": "Non è stato possibile caricare i contenuti. Puoi riprovare.",
@@ -159,6 +165,10 @@ class CodegenLoader extends AssetLoader {
     "localTimeLabel": "ora locale",
     "tripNumber": "Viaggio n. {}",
     "titleCopied": "Titolo copiato",
+    "welcomeStart": "Accendi la radio",
+    "welcomeDemo":
+        "Animazione: la manopola gira e la radio atterra su una stazione lontana",
+    "welcomeHint": "Tocca la manopola per accendere",
   };
   static const Map<String, Map<String, dynamic>> mapLocales = {
     "en": _en,

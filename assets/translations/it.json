@@ -1,6 +1,6 @@
 {
-  "welcomeTitle": "Una nuova partenza",
-  "welcomeBody": "Una piccola base, pronta per la tua prossima idea.",
+  "welcomeTitle": "Gira la manopola.\nAtterra da qualche parte nel mondo.",
+  "welcomeBody": "Ogni giro è una radio in diretta da qualche parte nel mondo. Quelle che ami le tieni con il cuore.",
   "loading": "Caricamento",
   "errorTitle": "Qualcosa non ha funzionato",
   "errorBody": "Non è stato possibile caricare i contenuti. Puoi riprovare.",
@@ -67,5 +67,8 @@
   "localTime": "{} ora locale",
   "localTimeLabel": "ora locale",
   "tripNumber": "Viaggio n. {}",
-  "titleCopied": "Titolo copiato"
+  "titleCopied": "Titolo copiato",
+  "welcomeStart": "Accendi la radio",
+  "welcomeDemo": "Animazione: la manopola gira e la radio atterra su una stazione lontana",
+  "welcomeHint": "Tocca la manopola per accendere"
 }

@@ -44,6 +44,12 @@ class _RouteMapState extends State<RouteMap> with TickerProviderStateMixin {
   );
   late final _pulse = AnimationController(vsync: this);
 
+  /// Made once: the welcome demo rebuilds the map on every frame.
+  late final _landingCurve = CurvedAnimation(
+    parent: _landing,
+    curve: Curves.easeOutCubic,
+  );
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -83,6 +89,7 @@ class _RouteMapState extends State<RouteMap> with TickerProviderStateMixin {
 
   @override
   void dispose() {
+    _landingCurve.dispose();
     _landing.dispose();
     _pulse.dispose();
     super.dispose();
@@ -101,10 +108,7 @@ class _RouteMapState extends State<RouteMap> with TickerProviderStateMixin {
           leg: widget.leg,
           history: widget.history,
           trips: widget.trips,
-          landing: CurvedAnimation(
-            parent: _landing,
-            curve: Curves.easeOutCubic,
-          ),
+          landing: _landingCurve,
           pulse: _pulse,
         ),
       ),

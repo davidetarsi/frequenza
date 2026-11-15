@@ -10,6 +10,34 @@ import '../../../ui/widgets/marquee_text.dart';
 import '../../journey/presentation/journey_texts.dart';
 import 'radio_keys.dart';
 
+/// The radio as it travels from the welcome page to its own: the shuttle
+/// scales the arriving radio instead of laying it out at every size.
+class RadioCabinetHero extends StatelessWidget {
+  const RadioCabinetHero({super.key, required this.child});
+
+  static const tag = 'radio-cabinet';
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => Hero(
+    tag: tag,
+    flightShuttleBuilder: (_, _, _, _, toContext) {
+      final arriving = toContext.widget as Hero;
+      final size = (toContext.findRenderObject()! as RenderBox).size;
+      // In flight the radio sits in the overlay, outside its page: the
+      // Material gives its texts back their style.
+      return Material(
+        type: MaterialType.transparency,
+        child: FittedBox(
+          child: SizedBox.fromSize(size: size, child: arriving.child),
+        ),
+      );
+    },
+    child: child,
+  );
+}
+
 class RadioCabinet extends StatelessWidget {
   const RadioCabinet({
     super.key,
@@ -33,8 +61,18 @@ class RadioCabinet extends StatelessWidget {
     this.playKey,
     this.saveKey,
     this.onDetailLongPress,
+    this.dialTurns = 0,
+    this.dialGlow = 0,
   });
   final String country, station, detail, status, knobLabel, tuneLabel;
+
+  /// How far the dial is turned, in full turns: only the welcome demo
+  /// turns it.
+  final double dialTurns;
+
+  /// A halo around the dial, from 0 to 1: the welcome page breathes it to
+  /// invite a tap.
+  final double dialGlow;
 
   /// Shown after [country] and never cut: the country shrinks instead.
   final String? countryDetail;
@@ -279,6 +317,8 @@ class RadioCabinet extends StatelessWidget {
                 label: tuneLabel,
                 onTap: onTune,
                 diameter: diameter,
+                turns: dialTurns,
+                glow: dialGlow,
               ),
               SizedBox(height: metrics.dialLabelGap),
               SizedBox(
@@ -624,11 +664,15 @@ class _TuningDial extends StatelessWidget {
     required this.label,
     required this.onTap,
     required this.diameter,
+    required this.turns,
+    required this.glow,
   });
   final TravelRadioPalette palette;
   final String label;
   final VoidCallback? onTap;
   final double diameter;
+  final double turns;
+  final double glow;
   @override
   Widget build(BuildContext context) {
     final face = Ink(
@@ -682,31 +726,49 @@ class _TuningDial extends StatelessWidget {
       enabled: onTap != null,
       onTap: onTap,
       child: ExcludeSemantics(
-        child: SizedBox.square(
-          dimension: diameter,
-          child: CustomPaint(
-            key: const ValueKey('radio-dial-face'),
-            painter: _DialTicks(palette.trim),
-            child: Padding(
-              padding: const EdgeInsets.all(RadioCabinetDesign.dialTickInset),
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: palette.ink.withValues(
-                        alpha: RadioCabinetDesign.dialShadowOpacity,
-                      ),
-                      blurRadius: RadioCabinetDesign.dialShadowBlur,
-                      offset: RadioCabinetDesign.dialShadowOffset,
-                    ),
-                  ],
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            boxShadow: [
+              if (glow > 0)
+                BoxShadow(
+                  color: TravelRadioPalette.accent.withValues(
+                    alpha: RadioCabinetDesign.dialGlowOpacity * glow,
+                  ),
+                  blurRadius: RadioCabinetDesign.dialGlowBlur,
+                  spreadRadius: RadioCabinetDesign.dialGlowSpread * glow,
                 ),
-                child: Material(
-                  color: TravelRadioPalette.hardware,
-                  shape: const CircleBorder(),
-                  clipBehavior: Clip.antiAlias,
-                  child: face,
+            ],
+          ),
+          child: SizedBox.square(
+            dimension: diameter,
+            child: CustomPaint(
+              key: const ValueKey('radio-dial-face'),
+              painter: _DialTicks(palette.trim),
+              child: Padding(
+                padding: const EdgeInsets.all(RadioCabinetDesign.dialTickInset),
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: palette.ink.withValues(
+                          alpha: RadioCabinetDesign.dialShadowOpacity,
+                        ),
+                        blurRadius: RadioCabinetDesign.dialShadowBlur,
+                        offset: RadioCabinetDesign.dialShadowOffset,
+                      ),
+                    ],
+                  ),
+                  child: Material(
+                    color: TravelRadioPalette.hardware,
+                    shape: const CircleBorder(),
+                    clipBehavior: Clip.antiAlias,
+                    child: Transform.rotate(
+                      angle: turns * 2 * math.pi,
+                      child: face,
+                    ),
+                  ),
                 ),
               ),
             ),
