@@ -53,6 +53,9 @@ abstract class LocaleKeys {
   static const language = 'language';
   static const italian = 'italian';
   static const english = 'english';
+  static const about = 'about';
+  static const viewOnGitHub = 'viewOnGitHub';
+  static const linkError = 'linkError';
   static const themeSaveError = 'themeSaveError';
   static const pageNotFound = 'pageNotFound';
   static const backHome = 'backHome';

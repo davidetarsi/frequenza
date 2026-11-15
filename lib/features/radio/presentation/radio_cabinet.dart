@@ -373,10 +373,13 @@ class RadioCabinet extends StatelessWidget {
                         ),
                         if (tripLabel case final tripLabel?) ...[
                           const SizedBox(width: AppSpacing.small),
-                          Flexible(
+                          // Right-aligned in its half: the screw stays at
+                          // the edge, next to the number.
+                          Expanded(
                             child: Text(
                               tripLabel,
                               maxLines: 1,
+                              textAlign: TextAlign.end,
                               overflow: TextOverflow.ellipsis,
                               style: RadioCabinetDesign.brandText.copyWith(
                                 color: p.ink,
