@@ -26,6 +26,14 @@ const fip = RadioStation(
   longitude: 2.35,
 );
 
+const blank = RadioStation(
+  id: 'blank',
+  name: 'Radio Blank',
+  streamUrl: 'https://example.com/blank',
+  country: '',
+  countryCode: 'JP',
+);
+
 const nowhere = RadioStation(
   id: 'nowhere',
   name: 'Radio Nowhere',
@@ -141,6 +149,17 @@ void main() {
     expect(find.text('Radio Nowhere'), findsOneWidget);
     expect(find.text('MONDO'), findsOneWidget);
     expect(find.bySemanticsLabel(RegExp('ora locale')), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('a station without a country says so in the language', (
+    tester,
+  ) async {
+    final audio = await openRadio(tester, blank);
+    await tester.tap(find.byKey(const ValueKey('tune-knob')));
+    await tester.pump();
+    await landFlight(tester, audio);
+    expect(find.text('PAESE SCONOSCIUTO'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 

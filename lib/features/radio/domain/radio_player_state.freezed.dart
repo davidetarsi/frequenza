@@ -19,7 +19,6 @@ final _privateConstructorUsedError = UnsupportedError(
 mixin _$RadioPlayerState {
   PlaybackStatus get status => throw _privateConstructorUsedError;
   RadioStation? get station => throw _privateConstructorUsedError;
-  String? get errorMessage => throw _privateConstructorUsedError;
   String? get trackTitle => throw _privateConstructorUsedError;
   FlightPhase get flight => throw _privateConstructorUsedError;
 
@@ -54,7 +53,6 @@ abstract class $RadioPlayerStateCopyWith<$Res> {
   $Res call({
     PlaybackStatus status,
     RadioStation? station,
-    String? errorMessage,
     String? trackTitle,
     FlightPhase flight,
     StationPlace departure,
@@ -65,6 +63,8 @@ abstract class $RadioPlayerStateCopyWith<$Res> {
   });
 
   $RadioStationCopyWith<$Res>? get station;
+  $StationPlaceCopyWith<$Res> get departure;
+  $TravelLegCopyWith<$Res>? get leg;
 }
 
 /// @nodoc
@@ -84,7 +84,6 @@ class _$RadioPlayerStateCopyWithImpl<$Res, $Val extends RadioPlayerState>
   $Res call({
     Object? status = null,
     Object? station = freezed,
-    Object? errorMessage = freezed,
     Object? trackTitle = freezed,
     Object? flight = null,
     Object? departure = null,
@@ -103,10 +102,6 @@ class _$RadioPlayerStateCopyWithImpl<$Res, $Val extends RadioPlayerState>
                 ? _value.station
                 : station // ignore: cast_nullable_to_non_nullable
                       as RadioStation?,
-            errorMessage: freezed == errorMessage
-                ? _value.errorMessage
-                : errorMessage // ignore: cast_nullable_to_non_nullable
-                      as String?,
             trackTitle: freezed == trackTitle
                 ? _value.trackTitle
                 : trackTitle // ignore: cast_nullable_to_non_nullable
@@ -153,6 +148,30 @@ class _$RadioPlayerStateCopyWithImpl<$Res, $Val extends RadioPlayerState>
       return _then(_value.copyWith(station: value) as $Val);
     });
   }
+
+  /// Create a copy of RadioPlayerState
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $StationPlaceCopyWith<$Res> get departure {
+    return $StationPlaceCopyWith<$Res>(_value.departure, (value) {
+      return _then(_value.copyWith(departure: value) as $Val);
+    });
+  }
+
+  /// Create a copy of RadioPlayerState
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $TravelLegCopyWith<$Res>? get leg {
+    if (_value.leg == null) {
+      return null;
+    }
+
+    return $TravelLegCopyWith<$Res>(_value.leg!, (value) {
+      return _then(_value.copyWith(leg: value) as $Val);
+    });
+  }
 }
 
 /// @nodoc
@@ -167,7 +186,6 @@ abstract class _$$RadioPlayerStateImplCopyWith<$Res>
   $Res call({
     PlaybackStatus status,
     RadioStation? station,
-    String? errorMessage,
     String? trackTitle,
     FlightPhase flight,
     StationPlace departure,
@@ -179,6 +197,10 @@ abstract class _$$RadioPlayerStateImplCopyWith<$Res>
 
   @override
   $RadioStationCopyWith<$Res>? get station;
+  @override
+  $StationPlaceCopyWith<$Res> get departure;
+  @override
+  $TravelLegCopyWith<$Res>? get leg;
 }
 
 /// @nodoc
@@ -197,7 +219,6 @@ class __$$RadioPlayerStateImplCopyWithImpl<$Res>
   $Res call({
     Object? status = null,
     Object? station = freezed,
-    Object? errorMessage = freezed,
     Object? trackTitle = freezed,
     Object? flight = null,
     Object? departure = null,
@@ -216,10 +237,6 @@ class __$$RadioPlayerStateImplCopyWithImpl<$Res>
             ? _value.station
             : station // ignore: cast_nullable_to_non_nullable
                   as RadioStation?,
-        errorMessage: freezed == errorMessage
-            ? _value.errorMessage
-            : errorMessage // ignore: cast_nullable_to_non_nullable
-                  as String?,
         trackTitle: freezed == trackTitle
             ? _value.trackTitle
             : trackTitle // ignore: cast_nullable_to_non_nullable
@@ -259,7 +276,6 @@ class _$RadioPlayerStateImpl extends _RadioPlayerState {
   const _$RadioPlayerStateImpl({
     this.status = PlaybackStatus.idle,
     this.station,
-    this.errorMessage,
     this.trackTitle,
     this.flight = FlightPhase.grounded,
     this.departure = homePlace,
@@ -276,8 +292,6 @@ class _$RadioPlayerStateImpl extends _RadioPlayerState {
   final PlaybackStatus status;
   @override
   final RadioStation? station;
-  @override
-  final String? errorMessage;
   @override
   final String? trackTitle;
   @override
@@ -325,7 +339,7 @@ class _$RadioPlayerStateImpl extends _RadioPlayerState {
 
   @override
   String toString() {
-    return 'RadioPlayerState(status: $status, station: $station, errorMessage: $errorMessage, trackTitle: $trackTitle, flight: $flight, departure: $departure, leg: $leg, history: $history, trips: $trips, previous: $previous)';
+    return 'RadioPlayerState(status: $status, station: $station, trackTitle: $trackTitle, flight: $flight, departure: $departure, leg: $leg, history: $history, trips: $trips, previous: $previous)';
   }
 
   @override
@@ -335,8 +349,6 @@ class _$RadioPlayerStateImpl extends _RadioPlayerState {
             other is _$RadioPlayerStateImpl &&
             (identical(other.status, status) || other.status == status) &&
             (identical(other.station, station) || other.station == station) &&
-            (identical(other.errorMessage, errorMessage) ||
-                other.errorMessage == errorMessage) &&
             (identical(other.trackTitle, trackTitle) ||
                 other.trackTitle == trackTitle) &&
             (identical(other.flight, flight) || other.flight == flight) &&
@@ -353,7 +365,6 @@ class _$RadioPlayerStateImpl extends _RadioPlayerState {
     runtimeType,
     status,
     station,
-    errorMessage,
     trackTitle,
     flight,
     departure,
@@ -379,7 +390,6 @@ abstract class _RadioPlayerState extends RadioPlayerState {
   const factory _RadioPlayerState({
     final PlaybackStatus status,
     final RadioStation? station,
-    final String? errorMessage,
     final String? trackTitle,
     final FlightPhase flight,
     final StationPlace departure,
@@ -394,8 +404,6 @@ abstract class _RadioPlayerState extends RadioPlayerState {
   PlaybackStatus get status;
   @override
   RadioStation? get station;
-  @override
-  String? get errorMessage;
   @override
   String? get trackTitle;
   @override

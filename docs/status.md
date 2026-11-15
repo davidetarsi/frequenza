@@ -182,6 +182,17 @@ Design `superpowers/specs/2026-11-14-notifica-design.md`, piano `superpowers/pla
 - La radio è l'88% della larghezza dello schermo (280–420 punti, mai oltre lo spazio disponibile), arrotondata a punti interi: 343 su un telefono da 390, 281 su uno da 320.
 - Tutti i valori in `TravelRadioLayout`; i pezzi interni della radio restano a misura fissa (la radio tutta in proporzione è rimandata).
 
+## Allineamento alle convenzioni dello starter — 15 novembre 2026
+
+- Controllo contro le convenzioni ereditate da PackLog. Allineati: code generation, Riverpod annotato, Easy Localization, tema chiaro e scuro, UI in `lib/ui`, feature first, pipeline GitHub. Supabase e Drift non servono.
+- Corretti tre scostamenti:
+  - `GeoPoint`, `StationPlace` e `TravelLeg` ora sono Freezed;
+  - tolte dal codice tre stringhe in italiano (errore dello stream, «Sconosciuto», «Mondo»). Il paese mancante ora resta vuoto e l'interfaccia mostra «Paese sconosciuto» tradotto;
+  - colore trasparente scritto a mano sostituito con `Colors.transparent`.
+- Rimosso `RadioPlayerState.errorMessage`, che non veniva mai mostrato. Rimosso anche `tool/check_player_state.dart`: il suo caso è coperto dai test del controller.
+- I preferiti salvati prima con paese «Mondo» lo conservano: è un dato già scritto in memoria.
+- Da fare quando lo starter sarà su GitHub: confronto completo file per file.
+
 ## Etichetta della manopola su una riga — 15 novembre 2026
 
 - La scritta sotto la manopola non va mai a capo. Se non ci sta, scorre verso sinistra (`MarqueeText` in `lib/ui/widgets`): pausa di 1,2 secondi con l'inizio in vista, poi 3 giri e si ferma sull'inizio. Con le animazioni disattivate è tagliata con «…». TalkBack la legge una volta sola.
