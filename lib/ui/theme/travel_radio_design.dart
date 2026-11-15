@@ -150,6 +150,11 @@ abstract final class RadioCabinetDesign {
   static const dialShadowOpacity = .25;
   static const dialShadowBlur = 8.0;
   static const dialShadowOffset = Offset(0, 5);
+
+  /// The welcome page's invitation: a soft accent halo that breathes.
+  static const dialGlowOpacity = 0.45;
+  static const dialGlowBlur = 22.0;
+  static const dialGlowSpread = 6.0;
 }
 
 abstract final class RadioKeyDesign {

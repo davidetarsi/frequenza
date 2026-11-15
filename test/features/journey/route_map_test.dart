@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:leak_tracker_flutter_testing/leak_tracker_flutter_testing.dart';
 import 'package:frequenza/features/journey/domain/geo_point.dart';
 import 'package:frequenza/features/journey/domain/station_place.dart';
 import 'package:frequenza/features/journey/domain/travel_leg.dart';
@@ -18,6 +19,8 @@ Widget host(RouteMap map, {bool reduceMotion = false}) => MediaQuery(
 );
 
 void main() {
+  LeakTesting.enable();
+  LeakTesting.settings = LeakTesting.settings.withIgnoredAll();
   testWidgets('reduced motion keeps the flight still', (tester) async {
     await tester.pumpWidget(
       host(
@@ -85,4 +88,27 @@ void main() {
     await tester.pump(const Duration(seconds: 1));
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets(
+    'rebuilding the map leaves nothing behind',
+    experimentalLeakTesting: LeakTesting.settings.withTrackedAll(),
+    (tester) async {
+      // The welcome demo rebuilds the map on every frame.
+      for (var i = 0; i < 3; i++) {
+        await tester.pumpWidget(
+          host(
+            RouteMap(
+              flight: FlightPhase.grounded,
+              playing: false,
+              departure: homePlace,
+              leg: const TravelLeg(from: homePlace, to: paris),
+              history: const [],
+              trips: 1 + i % 2,
+            ),
+          ),
+        );
+      }
+      await tester.pumpAndSettle();
+    },
+  );
 }

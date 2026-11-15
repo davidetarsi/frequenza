@@ -1,10 +1,19 @@
-Frequenza is a travel radio. Turn the dial and tune in to a live station somewhere in the world.
+Frequenza is a travel radio. Turn the dial and tune in to a live station somewhere in the world: a crackle of static, and you have landed in another country.
 
-Every station is a stop on your trip:
-• the map draws the route from where you started to the new station;
+A TRIP WITH EVERY TURN
+• the map draws the route from your last stop to the new station;
 • you see how many kilometres you travelled and what time it is there;
+• you read the title of the song on air, when the station sends it;
 • your latest stops stay on the map, and your trips are counted.
 
-Save the stations you love to your favourites. The music keeps playing with the screen off, with controls in the notification.
+THE STATIONS YOU LOVE
+One tap on the heart saves a station to your favourites, newest first. Go back to the places you liked whenever you want.
 
-No account, no ads. Stations come from the free Radio Browser directory.
+LISTEN YOUR WAY
+• the music keeps playing with the screen off;
+• controls in the notification, on the lock screen and from your headphones;
+• go back to the previous station or fly on to the next one;
+• light or dark theme, in English or Italian.
+
+SIMPLE AND FREE
+No account, no ads, no data collected. Stations come from the free Radio Browser directory, and the app's code is open on GitHub.

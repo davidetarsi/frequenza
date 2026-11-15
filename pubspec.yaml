@@ -1,7 +1,7 @@
 name: frequenza
 description: "Ascolto e scoperta di web radio nel mondo."
 publish_to: 'none'
-version: 0.2.0+1
+version: 0.2.1+2
 
 environment:
   sdk: ^3.10.4
@@ -28,6 +28,10 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  # Version pinned by flutter_test: catches animations never disposed.
+  leak_tracker_flutter_testing: any
+  # Version pinned by shared_preferences: a store that fails, in tests.
+  shared_preferences_platform_interface: any
   flutter_lints: ^6.0.0
   riverpod_generator: ^2.6.4
   freezed: ^2.5.8

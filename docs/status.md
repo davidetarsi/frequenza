@@ -230,7 +230,7 @@ Piano `superpowers/plans/2026-11-15-macchine-a-stati.md`, branch `refactor/macch
 
 Design `superpowers/specs/2026-11-15-notifica-in-pausa-design.md`, piano `superpowers/plans/2026-11-15-notifica-in-pausa.md`, branch `feat/notifica-in-pausa`, sopra `refactor/macchine-a-stati`.
 
-- Mentre suona o vola la notifica resta fissa; in pausa si può scorrere via, e scorrendola si ferma il servizio (`radioServiceConfig` in `bootstrap.dart`, senza `androidNotificationOngoing`).
+- Mentre suona o vola la notifica resta fissa. In pausa all'inizio si poteva scorrere via; dal fix del servizio in primo piano (sotto) resta fissa anche in pausa.
 - Dopo 10 minuti di pausa (`FlightTiming.pauseTimeout`) lo stream si chiude e con lui la notifica; l'app mostra ancora la stazione, «Pronta a partire».
 - App tolta dalle recenti: in pausa chiude servizio e notifica; mentre suona o vola continua (`RadioAudioHandler.onTaskRemoved`).
 - Play su uno stream chiuso (app, cuffie, Bluetooth) rifà il volo di riconnessione verso la stessa stazione (`RadioMediaCommand.resume` → `RadioController.play`).
@@ -253,3 +253,31 @@ Branch `feat/informazioni-e-vite`, sopra `feat/suono-sintonia`.
 - La vite in alto a destra restava sul bordo solo prima del primo viaggio: la scritta «Viaggio n.» ora è allineata a destra nella sua metà, e la vite resta ferma accanto al numero (test con testo piccolo, come sul telefono).
 - Impostazioni: nuova sezione «Informazioni» («About») con la voce «Visualizza progetto su GitHub» («View project on GitHub») e l'icona ↗; apre `https://github.com/davidetarsi/frequenza` (repository pubblico) con `url_launcher`, nuova dipendenza ufficiale di Flutter. Se il link non si apre compare «Impossibile aprire il link». L'indirizzo sta in `AppLinks` (`lib/app/links/external_links.dart`).
 - Verificato: `tool/check.sh --apk` verde, 182 test. Da provare sul telefono: il link apre il browser o l'app di GitHub; la vite non si sposta dopo il primo viaggio.
+
+## Servizio in primo piano anche in pausa — 15 novembre 2026
+
+- **Il bug:** la radio in background si fermava dopo pochi secondi, con la notifica in caricamento. Il logcat di Davide mostra la radio in riproduzione senza servizio in primo piano: Android silenzia l'audio (`AudioHardening`) e congela il processo; quando l'app prova a tornare in primo piano dal background, `startForegroundService()` viene vietato.
+- **La causa:** con `androidStopForegroundOnPause: true`, audio_service toglie il servizio dal primo piano a ogni pausa (anche di sistema: cuffie, chiamate, audio di un'altra app) e lo riprende solo quando la riproduzione riparte. Se riparte dal background, per esempio dal tasto delle cuffie, Android lo vieta.
+- **Il fix:** `androidStopForegroundOnPause: false`, scelto da Davide. Il servizio resta in primo piano anche in pausa, quindi la notifica in pausa non si scorre via. Si chiude da sola dopo 10 minuti di pausa, oppure togliendo l'app dalle recenti.
+- **La chiusura:** audio_service chiude il servizio sul passaggio a `idle`, ma non lo toglie dal primo piano, e la notifica di un servizio in primo piano non si cancella. Per questo, quando la radio si ferma davvero (stop, fine dello stream, errore), `RadioAudioHandler` chiede ad Android, prima di mostrare il nuovo stato, di togliere il servizio dal primo piano: metodo `leaveForeground` di `MainActivity`, che chiama `RadioForeground` (nel package del plugin) e la routine del plugin `exitForegroundState`, tenuta da R8 in `android/app/proguard-rules.pro`. Così si rilascia anche il wake lock. Rilievo della revisione indipendente.
+- **Da provare sul telefono:** «Spegni» con l'app aperta, la notifica deve sparire; pausa, poi altra app, poi play dal tasto delle cuffie Bluetooth; la radio in background per qualche minuto mentre si usano altre app; la pausa lunga (si chiude dopo 10 minuti); togliere l'app dalle recenti in pausa.
+
+## Pagina di benvenuto — 15 novembre 2026
+
+- **Quando:** solo alla prima apertura (`WelcomeSeen`, chiave `app.welcomeSeen`); `bootstrap` la legge prima del primo frame e il router rimanda `/` a `/welcome`.
+- **Cosa mostra:**
+  - in alto le targhette EN · IT, che cambiano subito la lingua di tutta l'app;
+  - al centro la radio vera (`RadioCabinet`) guidata da un copione di 6 secondi in loop: spenta, la manopola gira e la radio vola, poi atterra su «Radio Paraíso» (Brasile) con la rotta sulla mappa. È muta; con la riduzione del movimento resta ferma sulla stazione atterrata;
+  - sopra la radio titolo e frase; con poco spazio e testo grande scorrono, così la radio resta visibile;
+  - niente pulsante: intorno alla manopola un alone pulsa piano, e sotto c'è «Tocca la manopola per accendere». Toccando la radio, la pagina diventa vista, parte il primo volo e la radio si allarga fino a quella vera (`RadioCabinetHero`, uno shuttle che scala la radio di arrivo dentro un `Material` trasparente). Per i lettori di schermo la radio è il pulsante «Accendi la radio».
+- **Lingua preselezionata:** quella con cui l'app si apre già, cioè l'italiano su un telefono italiano e l'inglese altrove. Scelta di Claude, nel design.
+- **Da provare sul telefono:** prima apertura (per rivederla: cancellare i dati dell'app); il passaggio dalla radio piccola a quella vera, con il fruscio del primo volo; cambio di lingua dal benvenuto, che deve restare anche nella radio e alle aperture successive; tema chiaro e scuro; schermo piccolo; riduzione del movimento.
+
+## Modulo per idee e segnalazioni — 15 novembre 2026
+
+- **Dove:** Impostazioni, poi Informazioni, poi «Segnala un problema o un'idea», sotto «Visualizza progetto su GitHub».
+- **Il link:** apre il modulo Google di Davide (`AppLinks.feedback`) con due campi già scritti: «Telefono» (`entry.331406160`, per esempio «Google Pixel 8 · Android 16», metodo nativo `deviceInfo`) e «Versione dell'app» (`entry.1664657182`).
+- **La versione:** la legge `MainActivity` (metodo `appVersion`, `versionName+versionCode`) tramite `appVersionProvider`. Se non riesce, il campo resta vuoto.
+- **Se il link non si apre:** compare «Impossibile aprire il link», come per GitHub.
+- **Da provare sul telefono:** la voce apre il modulo con telefono e versione già compilati.
+

@@ -11,6 +11,7 @@ import '../features/radio/application/radio_notification.dart';
 import '../features/radio/application/radio_providers.dart';
 import '../features/radio/data/native_channel.dart';
 import '../features/radio/data/radio_audio_handler.dart';
+import '../features/welcome/application/welcome_seen.dart';
 
 import '../l10n/app_translations.g.dart';
 import '../l10n/locale_keys.g.dart';
@@ -42,6 +43,8 @@ Future<void> bootstrap({AppConfig config = const AppConfig()}) async {
   final container = ProviderContainer(
     overrides: [radioAudioHandlerProvider.overrideWithValue(handler)],
   );
+  // The first page depends on it: the welcome, or the radio.
+  await container.read(welcomeSeenProvider.future);
   // The notification answers from the start, before any page is built.
   container.read(radioNotificationProvider);
   runApp(
@@ -52,14 +55,16 @@ Future<void> bootstrap({AppConfig config = const AppConfig()}) async {
   );
 }
 
-/// The notification stays while the radio plays or flies (a foreground
-/// service); paused, it can be swiped away, which stops the service.
+/// The service stays in the foreground, paused too: Android forbids
+/// going back to it from the background, so a play from the headphones
+/// would leave the radio muted and then frozen. A paused radio closes
+/// after ten minutes, or when the app is swiped away from the recents.
 AudioServiceConfig radioServiceConfig({required String channelName}) =>
     AudioServiceConfig(
       androidNotificationChannelId: 'it.davidetarsi.frequenza.channel.audio',
       androidNotificationChannelName: channelName,
       androidNotificationIcon: 'drawable/ic_stat_frequenza',
-      androidStopForegroundOnPause: true,
+      androidStopForegroundOnPause: false,
     );
 
 /// Frequenza's logo as a file in the app cache: the notification shows it

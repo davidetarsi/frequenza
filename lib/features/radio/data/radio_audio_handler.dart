@@ -4,6 +4,7 @@ import 'package:audio_service/audio_service.dart';
 import 'package:just_audio/just_audio.dart';
 
 import '../domain/radio_station.dart';
+import 'native_channel.dart';
 import 'radio_media_session.dart';
 
 class RadioAudioHandler extends BaseAudioHandler implements RadioMediaSession {
@@ -14,11 +15,12 @@ class RadioAudioHandler extends BaseAudioHandler implements RadioMediaSession {
     required this.saveLabel,
     required this.removeLabel,
     this.fallbackArt,
-  }) {
+    Future<void> Function()? leaveForeground,
+  }) : _leaveForeground = leaveForeground ?? _nativeLeaveForeground {
     _events = player.playbackEventStream.listen(
       _publish,
       onError: (Object error) {
-        playbackState.add(
+        _show(
           playbackState.value.copyWith(
             processingState: AudioProcessingState.error,
             playing: false,
@@ -37,6 +39,36 @@ class RadioAudioHandler extends BaseAudioHandler implements RadioMediaSession {
   final _commands = StreamController<RadioMediaCommand>.broadcast();
   PlaybackEvent? _event;
   bool _flying = false, _saved = false;
+
+  /// The service stays in the foreground while paused, so the radio can
+  /// resume from the background; once it has really stopped (stopped,
+  /// ended, broken) it leaves, which also lets the notification close.
+  final Future<void> Function() _leaveForeground;
+  bool _stopped = true;
+
+  static const _stoppedStates = {
+    AudioProcessingState.idle,
+    AudioProcessingState.completed,
+    AudioProcessingState.error,
+  };
+
+  static Future<void> _nativeLeaveForeground() async {
+    try {
+      await nativeChannel.invokeMethod<void>('leaveForeground');
+    } catch (_) {
+      // Without the native side the service simply stays as it is.
+    }
+  }
+
+  /// Asked before the state is shown: on idle the plugin closes the
+  /// service, and a service still in the foreground keeps its notification.
+  void _show(PlaybackState state) {
+    final stopped =
+        !state.playing && _stoppedStates.contains(state.processingState);
+    if (stopped && !_stopped) unawaited(_leaveForeground());
+    _stopped = stopped;
+    playbackState.add(state);
+  }
 
   static const favoriteAction = 'favorite';
 
@@ -64,7 +96,7 @@ class RadioAudioHandler extends BaseAudioHandler implements RadioMediaSession {
         player.playing &&
             processing != ProcessingState.idle &&
             processing != ProcessingState.completed;
-    playbackState.add(
+    _show(
       PlaybackState(
         controls: [
           MediaControl.skipToPrevious,

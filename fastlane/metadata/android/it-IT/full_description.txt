@@ -1,10 +1,19 @@
-Frequenza è una radio da viaggio. Giri la manopola e ti sintonizzi su una stazione in diretta, da qualche parte nel mondo.
+Frequenza è una radio da viaggio. Giri la manopola e ti sintonizzi su una stazione in diretta, da qualche parte nel mondo: un fruscio, e sei atterrato in un altro paese.
 
-Ogni stazione è una tappa:
-• la mappa disegna la rotta dal punto di partenza alla nuova radio;
+UN VIAGGIO A OGNI GIRO
+• la mappa disegna la rotta dalla tappa precedente alla nuova radio;
 • vedi quanti chilometri hai percorso e che ore sono là;
+• leggi il titolo del brano in onda, quando la stazione lo trasmette;
 • le ultime tappe restano sulla mappa, e i viaggi si contano.
 
-Le stazioni che ti piacciono le salvi tra i preferiti. La musica continua anche a schermo spento, con i comandi nella notifica.
+LE RADIO CHE AMI
+Un tocco sul cuore e la stazione finisce tra i preferiti, con l'ultima in cima. Così torni quando vuoi nei posti che ti sono piaciuti.
 
-Niente account, niente pubblicità. Le stazioni arrivano dall'archivio libero di Radio Browser.
+ASCOLTA COME VUOI
+• la musica continua anche a schermo spento;
+• comandi nella notifica, nella schermata di blocco e dalle cuffie;
+• torni alla stazione di prima o voli verso la prossima;
+• tema chiaro o scuro, in italiano o in inglese.
+
+SEMPLICE E LIBERA
+Niente account, niente pubblicità, nessun dato raccolto. Le stazioni arrivano dall'archivio libero di Radio Browser, e il codice dell'app è aperto su GitHub.
