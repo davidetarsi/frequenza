@@ -230,7 +230,7 @@ Piano `superpowers/plans/2026-11-15-macchine-a-stati.md`, branch `refactor/macch
 
 Design `superpowers/specs/2026-11-15-notifica-in-pausa-design.md`, piano `superpowers/plans/2026-11-15-notifica-in-pausa.md`, branch `feat/notifica-in-pausa`, sopra `refactor/macchine-a-stati`.
 
-- Mentre suona o vola la notifica resta fissa; in pausa si può scorrere via, e scorrendola si ferma il servizio (`radioServiceConfig` in `bootstrap.dart`, senza `androidNotificationOngoing`).
+- Mentre suona o vola la notifica resta fissa. In pausa all'inizio si poteva scorrere via; dal fix del servizio in primo piano (sotto) resta fissa anche in pausa.
 - Dopo 10 minuti di pausa (`FlightTiming.pauseTimeout`) lo stream si chiude e con lui la notifica; l'app mostra ancora la stazione, «Pronta a partire».
 - App tolta dalle recenti: in pausa chiude servizio e notifica; mentre suona o vola continua (`RadioAudioHandler.onTaskRemoved`).
 - Play su uno stream chiuso (app, cuffie, Bluetooth) rifà il volo di riconnessione verso la stessa stazione (`RadioMediaCommand.resume` → `RadioController.play`).
@@ -253,3 +253,12 @@ Branch `feat/informazioni-e-vite`, sopra `feat/suono-sintonia`.
 - La vite in alto a destra restava sul bordo solo prima del primo viaggio: la scritta «Viaggio n.» ora è allineata a destra nella sua metà, e la vite resta ferma accanto al numero (test con testo piccolo, come sul telefono).
 - Impostazioni: nuova sezione «Informazioni» («About») con la voce «Visualizza progetto su GitHub» («View project on GitHub») e l'icona ↗; apre `https://github.com/davidetarsi/frequenza` (repository pubblico) con `url_launcher`, nuova dipendenza ufficiale di Flutter. Se il link non si apre compare «Impossibile aprire il link». L'indirizzo sta in `AppLinks` (`lib/app/links/external_links.dart`).
 - Verificato: `tool/check.sh --apk` verde, 182 test. Da provare sul telefono: il link apre il browser o l'app di GitHub; la vite non si sposta dopo il primo viaggio.
+
+## Servizio in primo piano anche in pausa — 15 novembre 2026
+
+- **Il bug:** la radio in background si fermava dopo pochi secondi, con la notifica in caricamento. Il logcat di Davide mostra la radio in riproduzione senza servizio in primo piano: Android silenzia l'audio (`AudioHardening`) e congela il processo; quando l'app prova a tornare in primo piano dal background, `startForegroundService()` viene vietato.
+- **La causa:** con `androidStopForegroundOnPause: true`, audio_service toglie il servizio dal primo piano a ogni pausa (anche di sistema: cuffie, chiamate, audio di un'altra app) e lo riprende solo quando la riproduzione riparte. Se riparte dal background, per esempio dal tasto delle cuffie, Android lo vieta.
+- **Il fix:** `androidStopForegroundOnPause: false`, scelto da Davide. Il servizio resta in primo piano anche in pausa, quindi la notifica in pausa non si scorre via. Si chiude da sola dopo 10 minuti di pausa, oppure togliendo l'app dalle recenti.
+- **La chiusura:** audio_service chiude il servizio sul passaggio a `idle`, ma non lo toglie dal primo piano, e la notifica di un servizio in primo piano non si cancella. Per questo, quando la radio si ferma davvero (stop, fine dello stream, errore), `RadioAudioHandler` chiede ad Android, prima di mostrare il nuovo stato, di togliere il servizio dal primo piano: metodo `leaveForeground` di `MainActivity`, che chiama `RadioForeground` (nel package del plugin) e la routine del plugin `exitForegroundState`, tenuta da R8 in `android/app/proguard-rules.pro`. Così si rilascia anche il wake lock. Rilievo della revisione indipendente.
+- **Da provare sul telefono:** «Spegni» con l'app aperta, la notifica deve sparire; pausa, poi altra app, poi play dal tasto delle cuffie Bluetooth; la radio in background per qualche minuto mentre si usano altre app; la pausa lunga (si chiude dopo 10 minuti); togliere l'app dalle recenti in pausa.
+
