@@ -105,7 +105,7 @@ class RadioAudioHandler extends BaseAudioHandler implements RadioMediaSession {
       MediaItem(
         id: station.id,
         title: station.name,
-        artist: station.country,
+        artist: station.country.isEmpty ? null : station.country,
         artUri:
             (station.faviconUrl == null
                 ? null

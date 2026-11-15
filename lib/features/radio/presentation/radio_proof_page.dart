@@ -64,7 +64,7 @@ class _RadioProofPageState extends ConsumerState<RadioProofPage> {
           );
         });
       }
-      if (next.status == PlaybackStatus.error && next.errorMessage != null) {
+      if (next.status == PlaybackStatus.error) {
         setState(() {
           _historyLogs.insert(
             0,
@@ -179,7 +179,7 @@ class _RadioProofPageState extends ConsumerState<RadioProofPage> {
                             overflow: TextOverflow.ellipsis,
                           ),
                         ],
-                        if (playerState.errorMessage != null) ...[
+                        if (playerState.status == PlaybackStatus.error) ...[
                           const SizedBox(height: AppSpacing.medium),
                           Text(
                             LocaleKeys.stationError.tr(context: context),

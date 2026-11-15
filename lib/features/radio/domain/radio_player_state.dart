@@ -18,7 +18,6 @@ class RadioPlayerState with _$RadioPlayerState {
   const factory RadioPlayerState({
     @Default(PlaybackStatus.idle) PlaybackStatus status,
     RadioStation? station,
-    String? errorMessage,
     String? trackTitle,
     @Default(FlightPhase.grounded) FlightPhase flight,
 
