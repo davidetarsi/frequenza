@@ -2,29 +2,20 @@ import 'dart:async';
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import '../../journey/domain/station_place.dart';
-import '../../journey/domain/travel_leg.dart';
-import '../domain/radio_player_state.dart';
+import '../domain/journey.dart';
 import '../domain/radio_audio_service.dart';
+import '../domain/radio_session.dart';
 import '../domain/radio_station.dart';
 import 'flight_timing.dart';
 import 'radio_providers.dart';
 
 part 'radio_controller.g.dart';
 
-const _historyLength = 5;
-const _backStackLength = 10;
-
-/// Forward flights stack the station left; back ones pop it; a reconnect
-/// replays the station on air without moving the journey.
-enum _Flight { forward, back, reconnect }
-
+/// Runs the radio's effects (static, stream, timers); every change of
+/// state is decided by [next].
 @Riverpod(keepAlive: true)
 class RadioController extends _$RadioController {
   Object? _currentTuneToken;
-
-  /// The last station that landed, even while a new flight hides it.
-  RadioStation? _landed;
 
   /// Runs while the station on air buffers: a stream that stays silent
   /// is reconnected instead of leaving the radio stuck.
@@ -32,25 +23,22 @@ class RadioController extends _$RadioController {
 
   RadioAudioService get _audioService => ref.read(radioAudioServiceProvider);
 
+  void _apply(RadioEvent event) => state = next(state, event);
+
   @override
-  RadioPlayerState build() {
+  RadioSession build() {
     final audio = ref.watch(radioAudioServiceProvider);
     var active = true;
     final statusSubscription = audio.playbackStatusStream.listen((status) {
-      if (active && state.status != PlaybackStatus.tuning) {
-        state = state.copyWith(status: status);
-        _watchStall();
-      }
+      if (!active) return;
+      _apply(PlaybackChanged(status));
+      _watchStall();
     });
     final trackSubscription = audio.trackTitleStream.listen((title) {
-      if (active &&
-          state.station != null &&
-          state.status != PlaybackStatus.tuning) {
-        state = state.copyWith(trackTitle: title);
-      }
+      if (active) _apply(TrackChanged(title));
     });
     final interruptionSubscription = audio.flightInterruptions.listen((_) {
-      if (active && state.flight == FlightPhase.flying) unawaited(stop());
+      if (active && state is Flying) unawaited(stop());
     });
     ref.onDispose(() {
       active = false;
@@ -61,7 +49,7 @@ class RadioController extends _$RadioController {
       unawaited(trackSubscription.cancel());
       unawaited(audio.stopTuningSound());
     });
-    return const RadioPlayerState();
+    return const RadioSession.off(Journey());
   }
 
   /// Flies to a random station, retrying after a lost signal.
@@ -79,30 +67,37 @@ class RadioController extends _$RadioController {
 
   /// Flies back to the last station left behind; it leaves the stack only
   /// once landed, so a failed or cancelled return keeps it. With nothing
-  /// left behind it reconnects the station on air.
+  /// left behind it reconnects the last station that landed.
   Future<void> tuneBack() async {
-    if (state.canGoBack) {
-      final station = state.previous.last;
-      return _fly(() async => station, retries: 0, kind: _Flight.back);
+    final journey = state.journey;
+    if (journey.canGoBack) {
+      final station = journey.previous.last;
+      return _fly(() async => station, retries: 0, kind: FlightKind.back);
     }
-    final station = _landed;
+    final station = journey.landed;
     if (station == null) return;
-    await _fly(() async => station, retries: 0, kind: _Flight.reconnect);
+    await _fly(() async => station, retries: 0, kind: FlightKind.reconnect);
   }
 
   void _watchStall() {
     _stall?.cancel();
-    final station = _landed;
-    if (state.status != PlaybackStatus.buffering || station == null) return;
+    final session = state;
+    if (session is! OnAir || session.playback != OnAirPlayback.buffering) {
+      return;
+    }
+    final station = session.station;
     _stall = Timer(ref.read(flightTimingProvider).stallTimeout, () {
-      if (state.status != PlaybackStatus.buffering || _landed != station) {
+      final now = state;
+      if (now is! OnAir ||
+          now.playback != OnAirPlayback.buffering ||
+          now.station != station) {
         return;
       }
       unawaited(
         _fly(
           () async => station,
           retries: ref.read(flightTimingProvider).autoRetries,
-          kind: _Flight.reconnect,
+          kind: FlightKind.reconnect,
         ),
       );
     });
@@ -113,31 +108,20 @@ class RadioController extends _$RadioController {
   Future<void> _fly(
     Future<RadioStation?> Function() pick, {
     required int retries,
-    _Flight kind = _Flight.forward,
+    FlightKind kind = FlightKind.forward,
     RadioStation? target,
   }) async {
     final token = Object();
     _currentTuneToken = token;
-    // The station on air is left as soon as a forward flight starts: back
-    // returns to it even if this flight fails or is stopped.
-    final left = _landed;
-    if (kind == _Flight.forward && left != null && left.id != target?.id) {
-      state = state.copyWith(previous: _stacked(left));
-      _landed = null;
-    }
+    _stall?.cancel();
     bool current() => _currentTuneToken == token;
     final timing = ref.read(flightTimingProvider);
 
-    state = state.copyWith(
-      status: PlaybackStatus.tuning,
-      station: null,
-      trackTitle: null,
-      flight: FlightPhase.flying,
-    );
+    _apply(FlightStarted(kind, target: target));
     await _audioService.startTuningSound();
 
     for (var attempt = 0; current(); attempt++) {
-      if (attempt > 0) state = state.copyWith(flight: FlightPhase.flying);
+      if (attempt > 0) _apply(const RetryStarted());
       RadioStation? station;
       try {
         station = await _attempt(pick, timing, current);
@@ -145,18 +129,17 @@ class RadioController extends _$RadioController {
         station = null;
       }
       if (!current()) return;
-      if (station != null) return _land(station, current, kind: kind);
+      if (station != null) return _land(station, current);
 
       await _audioService.stop();
       if (!current()) return;
-      state = state.copyWith(flight: FlightPhase.signalLost);
-      if (attempt >= retries) {
+      final retrying = attempt < retries;
+      if (!retrying) {
         await _audioService.stopTuningSound();
-        if (current()) {
-          state = state.copyWith(status: PlaybackStatus.error);
-        }
+        if (current()) _apply(const AttemptFailed(retrying: false));
         return;
       }
+      _apply(const AttemptFailed(retrying: true));
       await Future<void>.delayed(timing.signalLostPause);
     }
   }
@@ -200,59 +183,22 @@ class RadioController extends _$RadioController {
     if (status == PlaybackStatus.error) throw StateError('Stream failed');
   }
 
-  Future<void> _land(
-    RadioStation station,
-    bool Function() current, {
-    required _Flight kind,
-  }) async {
+  Future<void> _land(RadioStation station, bool Function() current) async {
     await _audioService.stopTuningSound();
     if (!current()) return;
     await _audioService.land(station);
     if (!current()) return;
-    final status = _audioService.currentStatus == PlaybackStatus.paused
-        ? PlaybackStatus.paused
-        : PlaybackStatus.playing;
-    if (kind == _Flight.reconnect) {
-      state = state.copyWith(
-        status: status,
-        station: station,
-        flight: FlightPhase.grounded,
-      );
-      _landed = station;
-      return;
-    }
-    final to = placeOf(station);
-    final leg = TravelLeg(from: state.departure, to: to);
-    final history = [...state.history, if (to != null) leg];
-    state = state.copyWith(
-      // A pause may have arrived while the status listener ignored events.
-      status: status,
-      station: station,
-      flight: FlightPhase.grounded,
-      leg: leg,
-      departure: to ?? state.departure,
-      history: history.length > _historyLength
-          ? history.sublist(history.length - _historyLength)
-          : history,
-      trips: state.trips + 1,
-      previous: kind == _Flight.back && state.previous.isNotEmpty
-          ? state.previous.sublist(0, state.previous.length - 1)
-          : state.previous,
+    // A pause may have arrived while the flight ignored audio events.
+    _apply(
+      Landed(
+        station,
+        paused: _audioService.currentStatus == PlaybackStatus.paused,
+      ),
     );
-    _landed = station;
-  }
-
-  List<RadioStation> _stacked(RadioStation leftBehind) {
-    final stack = [...state.previous, leftBehind];
-    return stack.length > _backStackLength
-        ? stack.sublist(stack.length - _backStackLength)
-        : stack;
   }
 
   Future<void> play() async {
-    if (state.station != null) {
-      await _audioService.play();
-    }
+    if (state is OnAir) await _audioService.play();
   }
 
   Future<void> pause() async {
@@ -262,16 +208,10 @@ class RadioController extends _$RadioController {
   Future<void> stop() async {
     final token = Object();
     _currentTuneToken = token;
+    _stall?.cancel();
     await _audioService.stopTuningSound();
     if (_currentTuneToken != token) return;
     await _audioService.stop();
-    if (_currentTuneToken == token) {
-      state = state.copyWith(
-        status: PlaybackStatus.idle,
-        trackTitle: null,
-        flight: FlightPhase.grounded,
-        leg: null,
-      );
-    }
+    if (_currentTuneToken == token) _apply(const SwitchedOff());
   }
 }

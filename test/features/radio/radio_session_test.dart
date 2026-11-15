@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frequenza/features/radio/domain/journey.dart';
-import 'package:frequenza/features/radio/domain/radio_player_state.dart';
+import 'package:frequenza/features/radio/domain/radio_audio_service.dart';
 import 'package:frequenza/features/radio/domain/radio_session.dart';
 
 import 'journey_test.dart' show station;

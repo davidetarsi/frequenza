@@ -5,7 +5,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../favorites/application/favorites_controller.dart';
 import '../data/radio_media_session.dart';
-import '../domain/radio_player_state.dart';
+import '../domain/radio_session.dart';
 import 'radio_controller.dart';
 import 'radio_providers.dart';
 
@@ -20,11 +20,10 @@ void radioNotification(Ref ref) {
 
   void publish() {
     final radio = ref.read(radioControllerProvider);
-    final station = radio.station;
     final favorites = ref.read(favoritesProvider).valueOrNull;
     session.showControls(
-      flying: radio.status == PlaybackStatus.tuning,
-      saved: station != null && favorites?.contains(station.id) == true,
+      flying: radio is Flying,
+      saved: radio is OnAir && favorites?.contains(radio.station.id) == true,
     );
   }
 
@@ -40,10 +39,10 @@ void radioNotification(Ref ref) {
       case RadioMediaCommand.previous:
         unawaited(radio.tuneBack());
       case RadioMediaCommand.toggleFavorite:
-        final station = ref.read(radioControllerProvider).station;
+        final radio = ref.read(radioControllerProvider);
         final favorites = ref.read(favoritesProvider);
-        if (station != null && favorites.hasValue && !favorites.isLoading) {
-          unawaited(ref.read(favoritesProvider.notifier).toggle(station));
+        if (radio is OnAir && favorites.hasValue && !favorites.isLoading) {
+          unawaited(ref.read(favoritesProvider.notifier).toggle(radio.station));
         }
     }
   });

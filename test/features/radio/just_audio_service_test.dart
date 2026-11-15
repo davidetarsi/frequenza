@@ -5,7 +5,7 @@ import 'package:audio_session/audio_session.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frequenza/features/radio/data/just_audio_service.dart';
 import 'package:frequenza/features/radio/data/radio_media_session.dart';
-import 'package:frequenza/features/radio/domain/radio_player_state.dart';
+import 'package:frequenza/features/radio/domain/radio_audio_service.dart';
 import 'package:frequenza/features/radio/domain/radio_station.dart';
 import 'package:just_audio/just_audio.dart';
 

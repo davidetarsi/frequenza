@@ -6,7 +6,7 @@ part of 'radio_notification.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$radioNotificationHash() => r'1a1f07663643bac48fbdcdbc91e943395d9e73fe';
+String _$radioNotificationHash() => r'1bc9c1d7ef8096affa104234a5e940b798ffc1a9';
 
 /// Joins the notification to the app: its keys drive the radio and the
 /// favorites, and its heart follows what the app shows.

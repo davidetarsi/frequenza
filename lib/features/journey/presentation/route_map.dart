@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import '../../../ui/theme/app_motion.dart';
 import '../../../ui/theme/travel_radio_design.dart';
 import '../../../ui/theme/travel_radio_palette.dart';
-import '../../radio/domain/radio_player_state.dart';
+import '../../radio/presentation/radio_display.dart';
 import '../data/world_atlas.g.dart';
 import '../domain/geo_point.dart';
 import '../domain/station_place.dart';

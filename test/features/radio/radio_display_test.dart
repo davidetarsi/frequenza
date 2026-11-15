@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frequenza/features/radio/domain/journey.dart';
-import 'package:frequenza/features/radio/domain/radio_player_state.dart';
 import 'package:frequenza/features/radio/domain/radio_session.dart';
 import 'package:frequenza/features/radio/presentation/radio_display.dart';
 import 'package:frequenza/l10n/locale_keys.g.dart';

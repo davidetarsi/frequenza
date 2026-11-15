@@ -1,7 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 import 'journey.dart';
-import 'radio_player_state.dart';
+import 'radio_audio_service.dart';
 import 'radio_station.dart';
 
 part 'radio_session.freezed.dart';
@@ -123,8 +123,6 @@ RadioSession next(RadioSession session, RadioEvent event) =>
           PlaybackStatus.buffering => OnAirPlayback.buffering,
           PlaybackStatus.idle => OnAirPlayback.ended,
           PlaybackStatus.error => OnAirPlayback.broken,
-          // Never reported by an audio engine; leaves the station as it is.
-          PlaybackStatus.tuning => onAir.playback,
         },
       ),
       (final OnAir onAir, TrackChanged(:final title)) => onAir.copyWith(

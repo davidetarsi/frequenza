@@ -12,6 +12,7 @@ import '../../../ui/widgets/app_loading.dart';
 import '../../../ui/widgets/travel_sheet.dart';
 import '../../../ui/theme/travel_radio_palette.dart';
 import '../../radio/application/radio_controller.dart';
+import '../../radio/domain/radio_session.dart';
 import '../application/favorites_controller.dart';
 
 Future<void> showFavorites(BuildContext context) =>
@@ -22,7 +23,11 @@ class FavoritesSheet extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final favorites = ref.watch(favoritesProvider);
-    final player = ref.watch(radioControllerProvider);
+    // The station that plays now, to mark its preset.
+    final playing = switch (ref.watch(radioControllerProvider)) {
+      OnAir(:final station, playback: OnAirPlayback.playing) => station.id,
+      _ => null,
+    };
     final p = TravelRadioPalette.of(context);
     return TravelSheet(
       title: LocaleKeys.favoritesTitle.tr(context: context),
@@ -77,12 +82,12 @@ class FavoritesSheet extends ConsumerWidget {
                   LocaleKeys.unknownCountry.tr(context: context)
                 else
                   station.country,
-                if (player.station?.id == station.id && player.isPlaying)
+                if (playing == station.id)
                   LocaleKeys.playing.tr(context: context)
                 else
                   LocaleKeys.tapToListen.tr(context: context),
               ].where((s) => s.isNotEmpty).join(' · '),
-              active: player.station?.id == station.id && player.isPlaying,
+              active: playing == station.id,
               removeLabel: LocaleKeys.removeFavorite.tr(context: context),
               onPlay: () {
                 final controller = ref.read(radioControllerProvider.notifier);

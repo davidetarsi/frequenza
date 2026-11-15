@@ -1,8 +1,10 @@
 import '../../journey/domain/travel_leg.dart';
 import '../../../l10n/locale_keys.g.dart';
-import '../domain/radio_player_state.dart';
 import '../domain/radio_session.dart';
 import '../domain/radio_station.dart';
+
+/// The journey on the map: the flight hides the destination until landing.
+enum FlightPhase { grounded, flying, signalLost }
 
 /// A text on the radio: a translation key, or words that come with the
 /// station.

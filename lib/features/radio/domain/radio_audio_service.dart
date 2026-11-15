@@ -1,5 +1,7 @@
-import 'radio_player_state.dart';
 import 'radio_station.dart';
+
+/// What the audio engine reports about the stream.
+enum PlaybackStatus { idle, buffering, playing, paused, error }
 
 abstract interface class RadioAudioService {
   Stream<PlaybackStatus> get playbackStatusStream;

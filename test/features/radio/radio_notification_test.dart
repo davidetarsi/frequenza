@@ -14,6 +14,7 @@ import 'package:frequenza/features/radio/domain/radio_station.dart';
 import '../favorites/favorites_test.dart';
 import 'radio_audio_handler_test.dart';
 import 'radio_controller_test.dart';
+import 'radio_session_matchers.dart';
 
 RadioStation numbered(int n) => RadioStation(
   id: 'station-$n',

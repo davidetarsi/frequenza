@@ -4,7 +4,7 @@ import 'package:frequenza/features/journey/domain/geo_point.dart';
 import 'package:frequenza/features/journey/domain/station_place.dart';
 import 'package:frequenza/features/journey/domain/travel_leg.dart';
 import 'package:frequenza/features/journey/presentation/route_map.dart';
-import 'package:frequenza/features/radio/domain/radio_player_state.dart';
+import 'package:frequenza/features/radio/presentation/radio_display.dart';
 
 const paris = StationPlace(
   point: GeoPoint(48.86, 2.35),
