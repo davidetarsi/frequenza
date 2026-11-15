@@ -6,6 +6,7 @@ import '../../../ui/theme/app_spacing.dart';
 import '../../../ui/theme/travel_radio_design.dart';
 import '../../../ui/theme/travel_radio_palette.dart';
 import '../../../ui/theme/app_motion.dart';
+import '../../../ui/widgets/marquee_text.dart';
 import '../../journey/presentation/journey_texts.dart';
 import 'radio_keys.dart';
 
@@ -284,10 +285,8 @@ class RadioCabinet extends StatelessWidget {
                 height:
                     scaler.scale(metrics.dialLabelSize) *
                     metrics.dialLabelHeightFactor,
-                child: Text(
+                child: MarqueeText(
                   knobLabel,
-                  maxLines: metrics.textLines,
-                  overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.center,
                   style: RadioCabinetDesign.dialLabelText.copyWith(
                     color: p.ink,

@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frequenza/app/app.dart';
@@ -118,6 +119,25 @@ void main() {
     expect(find.text('Viaggio n. 1'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  for (final scale in [1.0, 2.0]) {
+    testWidgets('the knob label stays on one line at text x$scale', (
+      tester,
+    ) async {
+      final audio = await openRadio(tester, fip, textScale: scale);
+      await tester.tap(find.byKey(const ValueKey('tune-knob')));
+      await tester.pump(const Duration(milliseconds: 500));
+      final label = find.text('SINTONIZZAZIONE…');
+      expect(label, findsOneWidget);
+      final paragraph = tester.renderObject<RenderParagraph>(label);
+      final boxes = paragraph.getBoxesForSelection(
+        const TextSelection(baseOffset: 0, extentOffset: 16),
+      );
+      expect(boxes.map((box) => box.top).toSet(), hasLength(1));
+      expect(tester.takeException(), isNull);
+      await landFlight(tester, audio);
+    });
+  }
 
   testWidgets('a station without a place still lands with its texts', (
     tester,
