@@ -38,6 +38,8 @@ void radioNotification(Ref ref) {
         unawaited(radio.tuneRandom());
       case RadioMediaCommand.previous:
         unawaited(radio.tuneBack());
+      case RadioMediaCommand.resume:
+        unawaited(radio.play());
       case RadioMediaCommand.toggleFavorite:
         final radio = ref.read(radioControllerProvider);
         final favorites = ref.read(favoritesProvider);

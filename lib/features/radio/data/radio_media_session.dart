@@ -1,7 +1,10 @@
 import '../domain/radio_station.dart';
 
 /// What the notification's keys ask of the radio.
-enum RadioMediaCommand { next, previous, toggleFavorite }
+///
+/// [resume] is play once the stream has closed: the radio decides how to
+/// bring the station back.
+enum RadioMediaCommand { next, previous, toggleFavorite, resume }
 
 /// The system media session: notification, lock screen and media buttons.
 abstract interface class RadioMediaSession {

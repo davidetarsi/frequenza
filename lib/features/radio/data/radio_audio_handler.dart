@@ -125,6 +125,9 @@ class RadioAudioHandler extends BaseAudioHandler implements RadioMediaSession {
   @override
   Future<void> play() async {
     if (_flying) return;
+    if (player.processingState == ProcessingState.idle) {
+      return _send(RadioMediaCommand.resume);
+    }
     if (player.processingState == ProcessingState.completed) {
       await player.seek(Duration.zero);
     }
@@ -139,6 +142,13 @@ class RadioAudioHandler extends BaseAudioHandler implements RadioMediaSession {
 
   @override
   Future<void> stop() => player.stop();
+
+  /// The app swiped away from the recent apps: a paused radio closes with
+  /// it, one that plays or flies carries on.
+  @override
+  Future<void> onTaskRemoved() async {
+    if (!_flying && !player.playing) await stop();
+  }
 
   @override
   Future<void> skipToNext() async => _send(RadioMediaCommand.next);

@@ -225,3 +225,13 @@ Piano `superpowers/plans/2026-11-15-macchine-a-stati.md`, branch `refactor/macch
 - Cancellata la pagina di prova non raggiungibile, con il suo test e 24 chiavi di traduzione.
 - Regola sealed/`AsyncValue` in `AGENTS.md`. Da portare nello starter: la regola, `LatestSave`, `CodeBadge`, `MarqueeText` e un esempio di feature con stato sealed.
 - Verificato: `tool/check.sh` verde, 160 test. Da provare sul telefono: voli, indietro, pausa con le cuffie, notifica durante una nuova sintonia.
+
+## Notifica in pausa — 15 novembre 2026
+
+Design `superpowers/specs/2026-11-15-notifica-in-pausa-design.md`, piano `superpowers/plans/2026-11-15-notifica-in-pausa.md`, branch `feat/notifica-in-pausa`, sopra `refactor/macchine-a-stati`.
+
+- Mentre suona o vola la notifica resta fissa; in pausa si può scorrere via, e scorrendola si ferma il servizio (`radioServiceConfig` in `bootstrap.dart`, senza `androidNotificationOngoing`).
+- Dopo 10 minuti di pausa (`FlightTiming.pauseTimeout`) lo stream si chiude e con lui la notifica; l'app mostra ancora la stazione, «Pronta a partire».
+- App tolta dalle recenti: in pausa chiude servizio e notifica; mentre suona o vola continua (`RadioAudioHandler.onTaskRemoved`).
+- Play su uno stream chiuso (app, cuffie, Bluetooth) rifà il volo di riconnessione verso la stessa stazione (`RadioMediaCommand.resume` → `RadioController.play`).
+- Da provare sul telefono: scorrere via la notifica in pausa; togliere l'app dalle recenti mentre suona e in pausa; pausa lunga (per provarla, abbassare `pauseTimeout`); play dalle cuffie dopo la chiusura.

@@ -11,6 +11,7 @@ import 'package:frequenza/features/radio/application/radio_notification.dart';
 import 'package:frequenza/features/radio/application/radio_providers.dart';
 import 'package:frequenza/features/radio/data/just_audio_service.dart';
 import 'package:frequenza/features/radio/data/radio_audio_handler.dart';
+import 'package:frequenza/features/radio/domain/radio_audio_service.dart';
 import 'package:frequenza/features/radio/domain/radio_station.dart';
 import 'package:just_audio/just_audio.dart';
 import '../favorites/favorites_test.dart';
@@ -147,6 +148,17 @@ void main() {
     repository.stationToReturn = numbered(1);
     await handler.skipToNext();
     await settle();
+    expect(container.read(radioControllerProvider).station, numbered(1));
+  });
+
+  test('resume from the notification reconnects the ended station', () async {
+    repository.stationToReturn = numbered(1);
+    await controller().tuneRandom();
+    audio.emitStatus(PlaybackStatus.idle);
+    await Future<void>.delayed(Duration.zero);
+    await handler.play();
+    await settle();
+    expect(audio.played, [numbered(1), numbered(1)]);
     expect(container.read(radioControllerProvider).station, numbered(1));
   });
 
