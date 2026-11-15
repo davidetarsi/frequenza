@@ -222,7 +222,7 @@ class RadioController extends _$RadioController {
   }
 
   /// Resumes the station on air; once its stream has closed (a long pause,
-  /// the notification swiped away) it reconnects the station instead.
+  /// the app swiped away) it reconnects the station instead.
   Future<void> play() async {
     final session = state;
     if (session is! OnAir) return;
