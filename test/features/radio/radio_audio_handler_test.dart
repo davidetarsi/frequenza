@@ -300,6 +300,15 @@ void main() {
     expect(player.stops, 1);
   });
 
+  test(
+    'removing the app after the stream ended on its own closes it',
+    () async {
+      await emit(ProcessingState.completed, playing: true);
+      await handler.onTaskRemoved();
+      expect(player.stops, 1);
+    },
+  );
+
   test('removing the app while playing keeps it', () async {
     await emit(ProcessingState.ready, playing: true);
     await handler.onTaskRemoved();

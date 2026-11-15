@@ -235,3 +235,4 @@ Design `superpowers/specs/2026-11-15-notifica-in-pausa-design.md`, piano `superp
 - App tolta dalle recenti: in pausa chiude servizio e notifica; mentre suona o vola continua (`RadioAudioHandler.onTaskRemoved`).
 - Play su uno stream chiuso (app, cuffie, Bluetooth) rifà il volo di riconnessione verso la stessa stazione (`RadioMediaCommand.resume` → `RadioController.play`).
 - Da provare sul telefono: scorrere via la notifica in pausa; togliere l'app dalle recenti mentre suona e in pausa; pausa lunga (per provarla, abbassare `pauseTimeout`); play dalle cuffie dopo la chiusura.
+- Limite noto: dopo aver tolto l'app dalle recenti in pausa, il servizio e il motore Dart si chiudono; un play dalle cuffie riapre l'app da spenta, senza riconnettere. Da verificare anche che non chiuda l'app per errore (Android 12+ e avvio del servizio da un tasto multimediale).

@@ -143,11 +143,13 @@ class RadioAudioHandler extends BaseAudioHandler implements RadioMediaSession {
   @override
   Future<void> stop() => player.stop();
 
-  /// The app swiped away from the recent apps: a paused radio closes with
-  /// it, one that plays or flies carries on.
+  /// The app swiped away from the recent apps: a radio that is not playing
+  /// (paused, or a stream that ended on its own) closes with it; one that
+  /// plays or flies carries on. Read from what the notification shows,
+  /// which already counts a flight as playing.
   @override
   Future<void> onTaskRemoved() async {
-    if (!_flying && !player.playing) await stop();
+    if (!playbackState.value.playing) await stop();
   }
 
   @override
