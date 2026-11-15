@@ -37,13 +37,7 @@ Future<void> bootstrap({AppConfig config = const AppConfig()}) async {
       removeLabel: text(LocaleKeys.notificationRemove),
       fallbackArt: fallbackArt,
     ),
-    config: AudioServiceConfig(
-      androidNotificationChannelId: 'it.davidetarsi.frequenza.channel.audio',
-      androidNotificationChannelName: text(LocaleKeys.audioChannelName),
-      androidNotificationIcon: 'drawable/ic_stat_frequenza',
-      androidNotificationOngoing: true,
-      androidStopForegroundOnPause: true,
-    ),
+    config: radioServiceConfig(channelName: text(LocaleKeys.audioChannelName)),
   );
   final container = ProviderContainer(
     overrides: [radioAudioHandlerProvider.overrideWithValue(handler)],
@@ -57,6 +51,16 @@ Future<void> bootstrap({AppConfig config = const AppConfig()}) async {
     ),
   );
 }
+
+/// The notification stays while the radio plays or flies (a foreground
+/// service); paused, it can be swiped away, which stops the service.
+AudioServiceConfig radioServiceConfig({required String channelName}) =>
+    AudioServiceConfig(
+      androidNotificationChannelId: 'it.davidetarsi.frequenza.channel.audio',
+      androidNotificationChannelName: channelName,
+      androidNotificationIcon: 'drawable/ic_stat_frequenza',
+      androidStopForegroundOnPause: true,
+    );
 
 /// Frequenza's logo as a file in the app cache: the notification shows it
 /// for stations without a logo. Null when it cannot be written.

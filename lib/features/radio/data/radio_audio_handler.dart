@@ -120,13 +120,14 @@ class RadioAudioHandler extends BaseAudioHandler implements RadioMediaSession {
     mediaItem.add(
       MediaItem(id: 'flight', title: flightTitle, artist: flightSubtitle),
     );
-    _flying = true;
-    _republish();
   }
 
   @override
   Future<void> play() async {
     if (_flying) return;
+    if (player.processingState == ProcessingState.idle) {
+      return _send(RadioMediaCommand.resume);
+    }
     if (player.processingState == ProcessingState.completed) {
       await player.seek(Duration.zero);
     }
@@ -141,6 +142,15 @@ class RadioAudioHandler extends BaseAudioHandler implements RadioMediaSession {
 
   @override
   Future<void> stop() => player.stop();
+
+  /// The app swiped away from the recent apps: a radio that is not playing
+  /// (paused, or a stream that ended on its own) closes with it; one that
+  /// plays or flies carries on. Read from what the notification shows,
+  /// which already counts a flight as playing.
+  @override
+  Future<void> onTaskRemoved() async {
+    if (!playbackState.value.playing) await stop();
+  }
 
   @override
   Future<void> skipToNext() async => _send(RadioMediaCommand.next);

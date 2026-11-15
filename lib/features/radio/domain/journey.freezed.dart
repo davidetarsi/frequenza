@@ -3,7 +3,7 @@
 // ignore_for_file: type=lint
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
-part of 'radio_player_state.dart';
+part of 'journey.dart';
 
 // **************************************************************************
 // FreezedGenerator
@@ -16,16 +16,11 @@ final _privateConstructorUsedError = UnsupportedError(
 );
 
 /// @nodoc
-mixin _$RadioPlayerState {
-  PlaybackStatus get status => throw _privateConstructorUsedError;
-  RadioStation? get station => throw _privateConstructorUsedError;
-  String? get trackTitle => throw _privateConstructorUsedError;
-  FlightPhase get flight => throw _privateConstructorUsedError;
-
+mixin _$Journey {
   /// Where the next flight leaves from: the last placed landing.
   StationPlace get departure => throw _privateConstructorUsedError;
 
-  /// The leg that brought the radio to [station].
+  /// The leg that brought the radio to the station on air.
   TravelLeg? get leg => throw _privateConstructorUsedError;
 
   /// The last placed legs of this session, oldest first.
@@ -36,80 +31,59 @@ mixin _$RadioPlayerState {
   /// notification's back key returns.
   List<RadioStation> get previous => throw _privateConstructorUsedError;
 
-  /// Create a copy of RadioPlayerState
+  /// The last station that landed, kept while a back or reconnect flight
+  /// hides it.
+  RadioStation? get landed => throw _privateConstructorUsedError;
+
+  /// Create a copy of Journey
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  $RadioPlayerStateCopyWith<RadioPlayerState> get copyWith =>
-      throw _privateConstructorUsedError;
+  $JourneyCopyWith<Journey> get copyWith => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract class $RadioPlayerStateCopyWith<$Res> {
-  factory $RadioPlayerStateCopyWith(
-    RadioPlayerState value,
-    $Res Function(RadioPlayerState) then,
-  ) = _$RadioPlayerStateCopyWithImpl<$Res, RadioPlayerState>;
+abstract class $JourneyCopyWith<$Res> {
+  factory $JourneyCopyWith(Journey value, $Res Function(Journey) then) =
+      _$JourneyCopyWithImpl<$Res, Journey>;
   @useResult
   $Res call({
-    PlaybackStatus status,
-    RadioStation? station,
-    String? trackTitle,
-    FlightPhase flight,
     StationPlace departure,
     TravelLeg? leg,
     List<TravelLeg> history,
     int trips,
     List<RadioStation> previous,
+    RadioStation? landed,
   });
 
-  $RadioStationCopyWith<$Res>? get station;
   $StationPlaceCopyWith<$Res> get departure;
   $TravelLegCopyWith<$Res>? get leg;
+  $RadioStationCopyWith<$Res>? get landed;
 }
 
 /// @nodoc
-class _$RadioPlayerStateCopyWithImpl<$Res, $Val extends RadioPlayerState>
-    implements $RadioPlayerStateCopyWith<$Res> {
-  _$RadioPlayerStateCopyWithImpl(this._value, this._then);
+class _$JourneyCopyWithImpl<$Res, $Val extends Journey>
+    implements $JourneyCopyWith<$Res> {
+  _$JourneyCopyWithImpl(this._value, this._then);
 
   // ignore: unused_field
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of RadioPlayerState
+  /// Create a copy of Journey
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? status = null,
-    Object? station = freezed,
-    Object? trackTitle = freezed,
-    Object? flight = null,
     Object? departure = null,
     Object? leg = freezed,
     Object? history = null,
     Object? trips = null,
     Object? previous = null,
+    Object? landed = freezed,
   }) {
     return _then(
       _value.copyWith(
-            status: null == status
-                ? _value.status
-                : status // ignore: cast_nullable_to_non_nullable
-                      as PlaybackStatus,
-            station: freezed == station
-                ? _value.station
-                : station // ignore: cast_nullable_to_non_nullable
-                      as RadioStation?,
-            trackTitle: freezed == trackTitle
-                ? _value.trackTitle
-                : trackTitle // ignore: cast_nullable_to_non_nullable
-                      as String?,
-            flight: null == flight
-                ? _value.flight
-                : flight // ignore: cast_nullable_to_non_nullable
-                      as FlightPhase,
             departure: null == departure
                 ? _value.departure
                 : departure // ignore: cast_nullable_to_non_nullable
@@ -130,26 +104,16 @@ class _$RadioPlayerStateCopyWithImpl<$Res, $Val extends RadioPlayerState>
                 ? _value.previous
                 : previous // ignore: cast_nullable_to_non_nullable
                       as List<RadioStation>,
+            landed: freezed == landed
+                ? _value.landed
+                : landed // ignore: cast_nullable_to_non_nullable
+                      as RadioStation?,
           )
           as $Val,
     );
   }
 
-  /// Create a copy of RadioPlayerState
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @pragma('vm:prefer-inline')
-  $RadioStationCopyWith<$Res>? get station {
-    if (_value.station == null) {
-      return null;
-    }
-
-    return $RadioStationCopyWith<$Res>(_value.station!, (value) {
-      return _then(_value.copyWith(station: value) as $Val);
-    });
-  }
-
-  /// Create a copy of RadioPlayerState
+  /// Create a copy of Journey
   /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
@@ -159,7 +123,7 @@ class _$RadioPlayerStateCopyWithImpl<$Res, $Val extends RadioPlayerState>
     });
   }
 
-  /// Create a copy of RadioPlayerState
+  /// Create a copy of Journey
   /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
@@ -172,79 +136,70 @@ class _$RadioPlayerStateCopyWithImpl<$Res, $Val extends RadioPlayerState>
       return _then(_value.copyWith(leg: value) as $Val);
     });
   }
+
+  /// Create a copy of Journey
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $RadioStationCopyWith<$Res>? get landed {
+    if (_value.landed == null) {
+      return null;
+    }
+
+    return $RadioStationCopyWith<$Res>(_value.landed!, (value) {
+      return _then(_value.copyWith(landed: value) as $Val);
+    });
+  }
 }
 
 /// @nodoc
-abstract class _$$RadioPlayerStateImplCopyWith<$Res>
-    implements $RadioPlayerStateCopyWith<$Res> {
-  factory _$$RadioPlayerStateImplCopyWith(
-    _$RadioPlayerStateImpl value,
-    $Res Function(_$RadioPlayerStateImpl) then,
-  ) = __$$RadioPlayerStateImplCopyWithImpl<$Res>;
+abstract class _$$JourneyImplCopyWith<$Res> implements $JourneyCopyWith<$Res> {
+  factory _$$JourneyImplCopyWith(
+    _$JourneyImpl value,
+    $Res Function(_$JourneyImpl) then,
+  ) = __$$JourneyImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call({
-    PlaybackStatus status,
-    RadioStation? station,
-    String? trackTitle,
-    FlightPhase flight,
     StationPlace departure,
     TravelLeg? leg,
     List<TravelLeg> history,
     int trips,
     List<RadioStation> previous,
+    RadioStation? landed,
   });
 
-  @override
-  $RadioStationCopyWith<$Res>? get station;
   @override
   $StationPlaceCopyWith<$Res> get departure;
   @override
   $TravelLegCopyWith<$Res>? get leg;
+  @override
+  $RadioStationCopyWith<$Res>? get landed;
 }
 
 /// @nodoc
-class __$$RadioPlayerStateImplCopyWithImpl<$Res>
-    extends _$RadioPlayerStateCopyWithImpl<$Res, _$RadioPlayerStateImpl>
-    implements _$$RadioPlayerStateImplCopyWith<$Res> {
-  __$$RadioPlayerStateImplCopyWithImpl(
-    _$RadioPlayerStateImpl _value,
-    $Res Function(_$RadioPlayerStateImpl) _then,
+class __$$JourneyImplCopyWithImpl<$Res>
+    extends _$JourneyCopyWithImpl<$Res, _$JourneyImpl>
+    implements _$$JourneyImplCopyWith<$Res> {
+  __$$JourneyImplCopyWithImpl(
+    _$JourneyImpl _value,
+    $Res Function(_$JourneyImpl) _then,
   ) : super(_value, _then);
 
-  /// Create a copy of RadioPlayerState
+  /// Create a copy of Journey
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? status = null,
-    Object? station = freezed,
-    Object? trackTitle = freezed,
-    Object? flight = null,
     Object? departure = null,
     Object? leg = freezed,
     Object? history = null,
     Object? trips = null,
     Object? previous = null,
+    Object? landed = freezed,
   }) {
     return _then(
-      _$RadioPlayerStateImpl(
-        status: null == status
-            ? _value.status
-            : status // ignore: cast_nullable_to_non_nullable
-                  as PlaybackStatus,
-        station: freezed == station
-            ? _value.station
-            : station // ignore: cast_nullable_to_non_nullable
-                  as RadioStation?,
-        trackTitle: freezed == trackTitle
-            ? _value.trackTitle
-            : trackTitle // ignore: cast_nullable_to_non_nullable
-                  as String?,
-        flight: null == flight
-            ? _value.flight
-            : flight // ignore: cast_nullable_to_non_nullable
-                  as FlightPhase,
+      _$JourneyImpl(
         departure: null == departure
             ? _value.departure
             : departure // ignore: cast_nullable_to_non_nullable
@@ -265,6 +220,10 @@ class __$$RadioPlayerStateImplCopyWithImpl<$Res>
             ? _value._previous
             : previous // ignore: cast_nullable_to_non_nullable
                   as List<RadioStation>,
+        landed: freezed == landed
+            ? _value.landed
+            : landed // ignore: cast_nullable_to_non_nullable
+                  as RadioStation?,
       ),
     );
   }
@@ -272,38 +231,24 @@ class __$$RadioPlayerStateImplCopyWithImpl<$Res>
 
 /// @nodoc
 
-class _$RadioPlayerStateImpl extends _RadioPlayerState {
-  const _$RadioPlayerStateImpl({
-    this.status = PlaybackStatus.idle,
-    this.station,
-    this.trackTitle,
-    this.flight = FlightPhase.grounded,
+class _$JourneyImpl extends _Journey {
+  const _$JourneyImpl({
     this.departure = homePlace,
     this.leg,
     final List<TravelLeg> history = const <TravelLeg>[],
     this.trips = 0,
     final List<RadioStation> previous = const <RadioStation>[],
+    this.landed,
   }) : _history = history,
        _previous = previous,
        super._();
-
-  @override
-  @JsonKey()
-  final PlaybackStatus status;
-  @override
-  final RadioStation? station;
-  @override
-  final String? trackTitle;
-  @override
-  @JsonKey()
-  final FlightPhase flight;
 
   /// Where the next flight leaves from: the last placed landing.
   @override
   @JsonKey()
   final StationPlace departure;
 
-  /// The leg that brought the radio to [station].
+  /// The leg that brought the radio to the station on air.
   @override
   final TravelLeg? leg;
 
@@ -337,83 +282,66 @@ class _$RadioPlayerStateImpl extends _RadioPlayerState {
     return EqualUnmodifiableListView(_previous);
   }
 
+  /// The last station that landed, kept while a back or reconnect flight
+  /// hides it.
+  @override
+  final RadioStation? landed;
+
   @override
   String toString() {
-    return 'RadioPlayerState(status: $status, station: $station, trackTitle: $trackTitle, flight: $flight, departure: $departure, leg: $leg, history: $history, trips: $trips, previous: $previous)';
+    return 'Journey(departure: $departure, leg: $leg, history: $history, trips: $trips, previous: $previous, landed: $landed)';
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$RadioPlayerStateImpl &&
-            (identical(other.status, status) || other.status == status) &&
-            (identical(other.station, station) || other.station == station) &&
-            (identical(other.trackTitle, trackTitle) ||
-                other.trackTitle == trackTitle) &&
-            (identical(other.flight, flight) || other.flight == flight) &&
+            other is _$JourneyImpl &&
             (identical(other.departure, departure) ||
                 other.departure == departure) &&
             (identical(other.leg, leg) || other.leg == leg) &&
             const DeepCollectionEquality().equals(other._history, _history) &&
             (identical(other.trips, trips) || other.trips == trips) &&
-            const DeepCollectionEquality().equals(other._previous, _previous));
+            const DeepCollectionEquality().equals(other._previous, _previous) &&
+            (identical(other.landed, landed) || other.landed == landed));
   }
 
   @override
   int get hashCode => Object.hash(
     runtimeType,
-    status,
-    station,
-    trackTitle,
-    flight,
     departure,
     leg,
     const DeepCollectionEquality().hash(_history),
     trips,
     const DeepCollectionEquality().hash(_previous),
+    landed,
   );
 
-  /// Create a copy of RadioPlayerState
+  /// Create a copy of Journey
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
-  _$$RadioPlayerStateImplCopyWith<_$RadioPlayerStateImpl> get copyWith =>
-      __$$RadioPlayerStateImplCopyWithImpl<_$RadioPlayerStateImpl>(
-        this,
-        _$identity,
-      );
+  _$$JourneyImplCopyWith<_$JourneyImpl> get copyWith =>
+      __$$JourneyImplCopyWithImpl<_$JourneyImpl>(this, _$identity);
 }
 
-abstract class _RadioPlayerState extends RadioPlayerState {
-  const factory _RadioPlayerState({
-    final PlaybackStatus status,
-    final RadioStation? station,
-    final String? trackTitle,
-    final FlightPhase flight,
+abstract class _Journey extends Journey {
+  const factory _Journey({
     final StationPlace departure,
     final TravelLeg? leg,
     final List<TravelLeg> history,
     final int trips,
     final List<RadioStation> previous,
-  }) = _$RadioPlayerStateImpl;
-  const _RadioPlayerState._() : super._();
-
-  @override
-  PlaybackStatus get status;
-  @override
-  RadioStation? get station;
-  @override
-  String? get trackTitle;
-  @override
-  FlightPhase get flight;
+    final RadioStation? landed,
+  }) = _$JourneyImpl;
+  const _Journey._() : super._();
 
   /// Where the next flight leaves from: the last placed landing.
   @override
   StationPlace get departure;
 
-  /// The leg that brought the radio to [station].
+  /// The leg that brought the radio to the station on air.
   @override
   TravelLeg? get leg;
 
@@ -428,10 +356,15 @@ abstract class _RadioPlayerState extends RadioPlayerState {
   @override
   List<RadioStation> get previous;
 
-  /// Create a copy of RadioPlayerState
+  /// The last station that landed, kept while a back or reconnect flight
+  /// hides it.
+  @override
+  RadioStation? get landed;
+
+  /// Create a copy of Journey
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$RadioPlayerStateImplCopyWith<_$RadioPlayerStateImpl> get copyWith =>
+  _$$JourneyImplCopyWith<_$JourneyImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

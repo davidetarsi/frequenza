@@ -6,12 +6,15 @@ part of 'radio_controller.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$radioControllerHash() => r'05d65df93234b8392b43501185f0d91eeccadaa7';
+String _$radioControllerHash() => r'3a2cf554b1e6ff0ac3aa0b1aad05e02e95bc04cc';
 
-/// See also [RadioController].
+/// Runs the radio's effects (static, stream, timers); every change of
+/// state is decided by [next].
+///
+/// Copied from [RadioController].
 @ProviderFor(RadioController)
 final radioControllerProvider =
-    NotifierProvider<RadioController, RadioPlayerState>.internal(
+    NotifierProvider<RadioController, RadioSession>.internal(
       RadioController.new,
       name: r'radioControllerProvider',
       debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
@@ -21,6 +24,6 @@ final radioControllerProvider =
       allTransitiveDependencies: null,
     );
 
-typedef _$RadioController = Notifier<RadioPlayerState>;
+typedef _$RadioController = Notifier<RadioSession>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

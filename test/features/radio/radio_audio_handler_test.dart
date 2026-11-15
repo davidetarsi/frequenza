@@ -94,6 +94,7 @@ void main() {
   });
 
   test('play returns without waiting for live playback', () async {
+    player.processingState = ProcessingState.ready;
     await handler.play().timeout(const Duration(seconds: 1));
     expect(player.plays, 1);
   });
@@ -200,11 +201,15 @@ void main() {
     expect(heart().androidIcon, 'drawable/ic_favorite_border');
   });
 
-  test('showFlight alone already keeps the notification up', () async {
-    handler.showFlight();
-    final state = await emit(ProcessingState.idle, playing: false);
-    expect(state.processingState, AudioProcessingState.loading);
-  });
+  test(
+    'showFlight only names the flight: the flag comes from showControls',
+    () async {
+      handler.showFlight();
+      final state = await emit(ProcessingState.idle, playing: false);
+      expect(state.processingState, AudioProcessingState.idle);
+      expect(handler.mediaItem.value?.id, 'flight');
+    },
+  );
 
   test('keys do nothing during the flight', () async {
     handler.showControls(flying: true, saved: false);
@@ -287,6 +292,53 @@ void main() {
       RadioMediaCommand.previous,
       RadioMediaCommand.toggleFavorite,
     ]);
+  });
+
+  test('removing the app while paused closes the service', () async {
+    await emit(ProcessingState.ready, playing: false);
+    await handler.onTaskRemoved();
+    expect(player.stops, 1);
+  });
+
+  test(
+    'removing the app after the stream ended on its own closes it',
+    () async {
+      await emit(ProcessingState.completed, playing: true);
+      await handler.onTaskRemoved();
+      expect(player.stops, 1);
+    },
+  );
+
+  test('removing the app while playing keeps it', () async {
+    await emit(ProcessingState.ready, playing: true);
+    await handler.onTaskRemoved();
+    expect(player.stops, 0);
+  });
+
+  test('removing the app during a flight keeps it', () async {
+    handler.showControls(flying: true, saved: false);
+    await emit(ProcessingState.idle, playing: false);
+    await handler.onTaskRemoved();
+    expect(player.stops, 0);
+  });
+
+  test('play on a closed stream asks the radio', () async {
+    final commands = handler.commands.take(1).toList();
+    player.processingState = ProcessingState.idle;
+    await handler.play();
+    expect(await commands, [RadioMediaCommand.resume]);
+    expect(player.plays, 0);
+  });
+
+  test('play on a paused stream resumes it', () async {
+    final commands = <RadioMediaCommand>[];
+    final listening = handler.commands.listen(commands.add);
+    await emit(ProcessingState.ready, playing: false);
+    await handler.play();
+    await Future<void>.delayed(Duration.zero);
+    await listening.cancel();
+    expect(player.plays, 1);
+    expect(commands, isEmpty);
   });
 
   test('stop is never offered', () async {

@@ -9,7 +9,7 @@ import 'package:frequenza/features/journey/domain/station_place.dart';
 import 'package:frequenza/features/journey/domain/travel_leg.dart';
 import 'package:frequenza/features/journey/presentation/route_map.dart';
 import 'package:frequenza/features/radio/application/radio_providers.dart';
-import 'package:frequenza/features/radio/domain/radio_player_state.dart';
+import 'package:frequenza/features/radio/domain/radio_audio_service.dart';
 import 'package:frequenza/features/radio/domain/radio_station.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 

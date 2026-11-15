@@ -1,5 +1,6 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../../app/state/latest_save.dart';
 import '../../radio/domain/radio_station.dart';
 import '../domain/favorites_state.dart';
 import 'favorites_providers.dart';
@@ -8,13 +9,12 @@ part 'favorites_controller.g.dart';
 
 @Riverpod(keepAlive: true)
 class Favorites extends _$Favorites {
-  Object? _generation;
+  final _save = LatestSave();
 
   @override
   Future<FavoritesState> build() {
     final repository = ref.watch(favoritesRepositoryProvider);
-    _generation = Object();
-    ref.onDispose(() => _generation = null);
+    _save.start(ref);
     return repository.load().then(FavoritesState.new);
   }
 
@@ -38,11 +38,6 @@ class Favorites extends _$Favorites {
     });
   }
 
-  Future<void> _update(Future<FavoritesState> Function() action) async {
-    final generation = _generation;
-    final previous = state;
-    state = const AsyncLoading<FavoritesState>().copyWithPrevious(previous);
-    final result = await AsyncValue.guard(action);
-    if (_generation == generation) state = result.copyWithPrevious(previous);
-  }
+  Future<void> _update(Future<FavoritesState> Function() action) =>
+      _save.run(shown: state, emit: (value) => state = value, action: action);
 }
