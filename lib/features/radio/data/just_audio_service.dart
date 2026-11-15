@@ -1,27 +1,46 @@
 import 'dart:async';
 
 import 'package:audio_session/audio_session.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:just_audio/just_audio.dart';
-import 'package:just_audio_background/just_audio_background.dart';
 
 import '../domain/radio_audio_service.dart';
-import '../domain/radio_player_state.dart';
 import '../domain/radio_station.dart';
+import 'native_channel.dart';
+import 'radio_media_session.dart';
 
 class JustAudioService implements RadioAudioService {
-  JustAudioService({AudioPlayer? player}) : _player = player ?? AudioPlayer() {
+  JustAudioService({AudioPlayer? player, RadioMediaSession? mediaSession})
+    : _player = player ?? AudioPlayer(),
+      _mediaSession = mediaSession {
     _initAudioSession();
     _subscribeToPlayerState();
   }
 
-  static const _tuningChannel = MethodChannel('frequenza/tuning_sound');
+  static const _tuningChannel = nativeChannel;
+
+  /// The station rises while the static fades out on the native side.
+  static const landingFade = Duration(milliseconds: 400);
+  static const landingSteps = 8;
   final AudioPlayer _player;
+  final RadioMediaSession? _mediaSession;
   Object? _tuningSoundRequest;
   final _statusController = StreamController<PlaybackStatus>.broadcast();
+  final _systemPauses = StreamController<void>.broadcast();
   final List<StreamSubscription<dynamic>> _subscriptions = [];
   bool _disposed = false;
   PlaybackStatus _currentStatus = PlaybackStatus.idle;
+  bool _muted = false, _ducked = false;
+
+  /// The landing fade in progress; a new flight cancels it.
+  Object? _fade;
+
+  double get _volume => _muted
+      ? 0
+      : _ducked
+      ? 0.2
+      : 1;
 
   @override
   Stream<PlaybackStatus> get playbackStatusStream => _statusController.stream;
@@ -36,6 +55,9 @@ class JustAudioService implements RadioAudioService {
   @override
   PlaybackStatus get currentStatus => _currentStatus;
 
+  @override
+  Stream<void> get systemPauses => _systemPauses.stream;
+
   Future<void> _initAudioSession() async {
     try {
       final session = await AudioSession.instance;
@@ -43,38 +65,32 @@ class JustAudioService implements RadioAudioService {
       if (_disposed) return;
 
       _subscriptions.add(
-        session.becomingNoisyEventStream.listen((_) {
-          unawaited(pause());
-        }),
+        session.becomingNoisyEventStream.listen((_) => _systemPause()),
       );
 
       _subscriptions.add(
-        session.interruptionEventStream.listen((event) {
-          if (event.begin) {
-            switch (event.type) {
-              case AudioInterruptionType.duck:
-                _player.setVolume(0.2);
-                break;
-              case AudioInterruptionType.pause:
-              case AudioInterruptionType.unknown:
-                pause();
-                break;
-            }
-          } else {
-            switch (event.type) {
-              case AudioInterruptionType.duck:
-                _player.setVolume(1.0);
-                break;
-              case AudioInterruptionType.pause:
-              case AudioInterruptionType.unknown:
-                break;
-            }
-          }
-        }),
+        session.interruptionEventStream.listen(handleInterruption),
       );
     } catch (_) {
       // AudioSession may not be available on some platforms/tests
     }
+  }
+
+  @visibleForTesting
+  void handleInterruption(AudioInterruptionEvent event) {
+    switch (event.type) {
+      case AudioInterruptionType.duck:
+        _ducked = event.begin;
+        unawaited(_player.setVolume(_volume));
+      case AudioInterruptionType.pause:
+      case AudioInterruptionType.unknown:
+        if (event.begin) _systemPause();
+    }
+  }
+
+  void _systemPause() {
+    if (!_disposed) _systemPauses.add(null);
+    unawaited(pause());
   }
 
   void _subscribeToPlayerState() {
@@ -96,8 +112,10 @@ class JustAudioService implements RadioAudioService {
       case ProcessingState.idle:
         return PlaybackStatus.idle;
       case ProcessingState.loading:
-      case ProcessingState.buffering:
         return PlaybackStatus.buffering;
+      // A pause while the stream refills is a pause, not a stuck stream.
+      case ProcessingState.buffering:
+        return state.playing ? PlaybackStatus.buffering : PlaybackStatus.paused;
       case ProcessingState.ready:
         return state.playing ? PlaybackStatus.playing : PlaybackStatus.paused;
       case ProcessingState.completed:
@@ -130,10 +148,10 @@ class JustAudioService implements RadioAudioService {
   }
 
   @override
-  Future<void> stopTuningSound() async {
+  Future<void> stopTuningSound({bool fade = false}) async {
     if (_tuningSoundRequest == null) return;
     _tuningSoundRequest = null;
-    await _sendTuningSoundCommand('stop');
+    await _sendTuningSoundCommand(fade ? 'fadeOut' : 'stop');
   }
 
   Future<void> _sendTuningSoundCommand(String command) async {
@@ -151,19 +169,15 @@ class JustAudioService implements RadioAudioService {
     try {
       _updateStatus(PlaybackStatus.buffering);
 
-      final audioSource = AudioSource.uri(
-        Uri.parse(station.streamUrl),
-        tag: MediaItem(
-          id: station.id,
-          title: station.name,
-          artist: station.country,
-          artUri: station.faviconUrl != null
-              ? Uri.tryParse(station.faviconUrl!)
-              : null,
-        ),
-      );
+      final audioSource = AudioSource.uri(Uri.parse(station.streamUrl));
 
+      // The flight first: the stop below must not close the notification.
+      _mediaSession?.showFlight();
       await _player.stop();
+      // Silent until land(): the static plays while the stream loads.
+      _fade = null;
+      _muted = true;
+      await _player.setVolume(_volume);
       await _player.setAudioSource(audioSource);
       // play() completes when live playback stops, not when it starts.
       _startPlayback();
@@ -171,6 +185,29 @@ class JustAudioService implements RadioAudioService {
       _updateStatus(PlaybackStatus.error);
       rethrow;
     }
+  }
+
+  @override
+  /// Reveals the station at once; its volume rises over [landingFade].
+  Future<void> land(RadioStation station) async {
+    _muted = false;
+    final fade = Object();
+    _fade = fade;
+    _mediaSession?.showStation(station);
+    await _fadeStep(fade, 1);
+    unawaited(_fadeIn(fade));
+  }
+
+  Future<void> _fadeIn(Object fade) async {
+    for (var step = 2; step <= landingSteps; step++) {
+      await Future<void>.delayed(landingFade ~/ landingSteps);
+      await _fadeStep(fade, step);
+    }
+  }
+
+  Future<void> _fadeStep(Object fade, int step) async {
+    if (_fade != fade || _disposed) return;
+    await _player.setVolume(_volume * step / landingSteps);
   }
 
   @override
@@ -222,5 +259,6 @@ class JustAudioService implements RadioAudioService {
     _subscriptions.clear();
     await _player.dispose();
     await _statusController.close();
+    await _systemPauses.close();
   }
 }

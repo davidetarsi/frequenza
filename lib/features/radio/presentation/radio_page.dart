@@ -4,13 +4,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../l10n/locale_keys.g.dart';
 import '../../../ui/theme/app_spacing.dart';
 import '../../../ui/theme/travel_radio_design.dart';
-import '../../../ui/widgets/app_button.dart';
 import '../../../ui/widgets/app_icon_button.dart';
 import '../../favorites/application/favorites_controller.dart';
 import '../../favorites/presentation/favorites_sheet.dart';
+import '../../journey/presentation/journey_texts.dart';
+import '../../journey/presentation/route_map.dart';
 import '../application/radio_controller.dart';
-import '../domain/radio_player_state.dart';
+import 'radio_display.dart';
+import 'copy_track_title.dart';
 import 'radio_cabinet.dart';
+import 'radio_keys.dart';
 
 class RadioPage extends ConsumerWidget {
   const RadioPage({
@@ -22,14 +25,16 @@ class RadioPage extends ConsumerWidget {
   final Widget settingsAction;
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final player = ref.watch(radioControllerProvider);
+    final session = ref.watch(radioControllerProvider);
+    final display = RadioDisplay.of(session);
+    final journey = session.journey;
     final favoritesState = ref.watch(favoritesProvider);
     final favorites = favoritesState.valueOrNull;
     final favoritesCount = favorites?.stations.length ?? 0;
     final controller = ref.read(radioControllerProvider.notifier);
-    final station = player.station;
-    final busy = player.isLoading;
-    final idle = station == null;
+    final station = display.station;
+    final song = display.song;
+    final saved = station != null && favorites?.contains(station.id) == true;
     final theme = Theme.of(context);
     ref.listen(favoritesProvider, (before, after) {
       if (after.hasError && before?.hasError != true) {
@@ -40,31 +45,19 @@ class RadioPage extends ConsumerWidget {
         );
       }
     });
-    final status = switch (player.status) {
-      PlaybackStatus.idle => LocaleKeys.ready.tr(context: context),
-      PlaybackStatus.tuning => LocaleKeys.searching.tr(context: context),
-      PlaybackStatus.buffering => LocaleKeys.connecting.tr(context: context),
-      PlaybackStatus.playing => LocaleKeys.playing.tr(context: context),
-      PlaybackStatus.paused => LocaleKeys.paused.tr(context: context),
-      PlaybackStatus.error => LocaleKeys.stationError.tr(context: context),
+    String text(DisplayText text) => switch (text) {
+      Translated(:final key) => key.tr(context: context),
+      Verbatim(:final text) => text,
     };
-    final title = player.status == PlaybackStatus.tuning
-        ? LocaleKeys.exploring.tr(context: context)
-        : station?.name ?? LocaleKeys.whereTo.tr(context: context);
-    final country = player.status == PlaybackStatus.tuning
-        ? LocaleKeys.findingPlace.tr(context: context)
-        : station?.country ?? LocaleKeys.worldAwaits.tr(context: context);
-    final label = busy
-        ? LocaleKeys.tuning.tr(context: context)
-        : player.status == PlaybackStatus.error
-        ? LocaleKeys.retry.tr(context: context)
-        : idle
-        ? LocaleKeys.powerOn.tr(context: context)
-        : LocaleKeys.tune.tr(context: context);
+    final distance = display.leg?.distance;
+    final countryDetail = distance == null
+        ? null
+        : '${distance.approximate ? '≈ ' : ''}${LocaleKeys.distanceKm.tr(context: context, args: [NumberFormat.decimalPattern(context.locale.toLanguageTag()).format(distance.km)])}';
+    final screenWidth = MediaQuery.sizeOf(context).width;
     return Scaffold(
       body: SafeArea(
-        minimum: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.standard,
+        minimum: EdgeInsets.symmetric(
+          horizontal: TravelRadioLayout.gutter(screenWidth),
           vertical: AppSpacing.small,
         ),
         child: LayoutBuilder(
@@ -98,70 +91,102 @@ class RadioPage extends ConsumerWidget {
             );
             final favoritesLabel =
                 '${LocaleKeys.favorites.tr(context: context)} · $favoritesCount';
-            final favoritesButton = compact
-                ? AppIconButton(
-                    variant: AppIconButtonVariant.outlined,
-                    key: const ValueKey('favorites-open'),
-                    tooltip: favoritesLabel,
-                    onPressed: () => showFavorites(context),
-                    icon: Badge.count(
-                      count: favoritesCount,
-                      isLabelVisible: favoritesCount > 0,
-                      child: const Icon(Icons.favorite_border),
-                    ),
-                  )
-                : AppButton(
-                    variant: AppButtonVariant.outlined,
-                    key: const ValueKey('favorites-open'),
-                    onPressed: () => showFavorites(context),
-                    icon: const Icon(
-                      Icons.favorite_border,
-                      size: TravelRadioLayout.headerIconSize,
-                    ),
-                    label: favoritesLabel,
-                  );
+            final favoritesButton = AppIconButton(
+              variant: AppIconButtonVariant.outlined,
+              key: const ValueKey('favorites-open'),
+              tooltip: favoritesLabel,
+              foregroundColor: theme.colorScheme.primary,
+              onPressed: () => showFavorites(context),
+              icon: Badge.count(
+                count: favoritesCount,
+                isLabelVisible: favoritesCount > 0,
+                backgroundColor: theme.colorScheme.primary,
+                textColor: theme.colorScheme.onPrimary,
+                child: const Icon(Icons.favorite_border),
+              ),
+            );
             final cabinet = RadioCabinet(
               compact: compact,
               horizontal: wide,
-              country: country,
-              station: title,
-              detail: busy
+              country: text(display.country),
+              countryDetail: countryDetail,
+              station: text(display.title),
+              detail: display.busy
                   ? ''
-                  : (player.isPlaying || player.status == PlaybackStatus.paused
-                            ? player.trackTitle
-                            : null) ??
+                  : song ??
                         station?.tags.take(2).join(' · ') ??
                         LocaleKeys.firstTrip.tr(context: context),
-              status: status,
-              knobLabel: label.toUpperCase(),
+              onDetailLongPress: song == null
+                  ? null
+                  : () => copyTrackTitle(context, song),
+              status: display.statusKey.tr(context: context),
+              flying: display.flying,
+              landings: journey.trips,
+              map: RouteMap(
+                flight: display.phase,
+                playing: display.playing,
+                departure: journey.departure,
+                leg: journey.leg,
+                history: journey.history,
+                trips: journey.trips,
+              ),
+              localTime: station == null || display.busy
+                  ? null
+                  : LocalTimeText(
+                      station: station,
+                      stacked: !compact,
+                      style: RadioCabinetDesign.statusText,
+                    ),
+              tripLabel: journey.trips == 0
+                  ? null
+                  : LocaleKeys.tripNumber.tr(
+                      context: context,
+                      args: ['${journey.trips}'],
+                    ),
+              knobLabel: display.knobKey.tr(context: context).toUpperCase(),
               tuneLabel: LocaleKeys.tuneAccessibility.tr(context: context),
-              onTune: busy ? null : () => controller.tuneRandom(),
-              isBusy: busy,
-              isPlaying: player.isPlaying,
-            );
-            final pause = AppButton(
-              variant: AppButtonVariant.outlined,
-              onPressed: idle || busy || player.status == PlaybackStatus.error
-                  ? null
-                  : () => player.isPlaying
-                        ? controller.pause()
-                        : controller.play(),
-              label: player.isPlaying
-                  ? LocaleKeys.pause.tr(context: context)
-                  : LocaleKeys.resume.tr(context: context),
-            );
-            final save = AppButton(
-              variant: AppButtonVariant.outlined,
-              onPressed:
-                  idle || busy || favorites == null || favoritesState.isLoading
-                  ? null
-                  : () => ref.read(favoritesProvider.notifier).toggle(station),
-              label: station != null && favorites?.contains(station.id) == true
-                  ? LocaleKeys.saved.tr(context: context)
-                  : LocaleKeys.save.tr(context: context),
+              onTune: display.knobEnabled
+                  ? () => controller.tuneRandom()
+                  : null,
+              playKey: RadioKey(
+                key: const ValueKey('radio-key-play'),
+                toggles: false,
+                icon: display.playKeyOn ? Icons.pause : Icons.play_arrow,
+                label: display.playKeyOn
+                    ? LocaleKeys.pause.tr(context: context)
+                    : LocaleKeys.resume.tr(context: context),
+                down: display.playKeyDown,
+                onPressed: !display.playKeyEnabled
+                    ? null
+                    : () => display.playKeyOn
+                          ? controller.pause()
+                          : controller.play(),
+              ),
+              saveKey: RadioKey(
+                key: const ValueKey('radio-key-save'),
+                icon: saved ? Icons.favorite : Icons.favorite_border,
+                iconColor: saved ? theme.colorScheme.primary : null,
+                label: saved
+                    ? LocaleKeys.saved.tr(context: context)
+                    : LocaleKeys.save.tr(context: context),
+                down: saved,
+                onPressed:
+                    station == null ||
+                        !display.saveEnabled ||
+                        favorites == null ||
+                        favoritesState.isLoading
+                    ? null
+                    : () =>
+                          ref.read(favoritesProvider.notifier).toggle(station),
+              ),
+              isBusy: display.busy,
+              isPlaying: display.playing,
             );
             final nextStop = Text(
-              LocaleKeys.nextStop.tr(context: context),
+              (display.nextStopPending
+                      ? LocaleKeys.nextStopPending
+                      : LocaleKeys.nextStop)
+                  .tr(context: context),
               textAlign: TextAlign.center,
               style: theme.textTheme.bodySmall?.copyWith(
                 height: TravelRadioLayout.captionLineHeight,
@@ -202,8 +227,6 @@ class RadioPage extends ConsumerWidget {
                                       settingsAction,
                                     ],
                                   ),
-                                  pause,
-                                  save,
                                 ],
                               ),
                             ),
@@ -218,33 +241,27 @@ class RadioPage extends ConsumerWidget {
                 ),
               );
             }
-            return Center(
-              child: SizedBox(
-                width: TravelRadioLayout.cabinetWidth,
-                height: double.infinity,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            // The header spans the screen; the radio takes its share of it.
+            return Column(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Row(
                   children: [
-                    Row(
-                      children: [
-                        Expanded(child: heading),
-                        favoritesButton,
-                        settingsAction,
-                      ],
-                    ),
-                    nextStop,
-                    cabinet,
-                    Row(
-                      children: [
-                        Expanded(child: pause),
-                        const SizedBox(width: AppSpacing.standard),
-                        Expanded(child: save),
-                      ],
-                    ),
-                    credits,
+                    Expanded(child: heading),
+                    favoritesButton,
+                    settingsAction,
                   ],
                 ),
-              ),
+                nextStop,
+                SizedBox(
+                  width: TravelRadioLayout.cabinetWidth(
+                    screenWidth,
+                    constraints.maxWidth,
+                  ),
+                  child: cabinet,
+                ),
+                credits,
+              ],
             );
           },
         ),

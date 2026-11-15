@@ -1,0 +1,74 @@
+name: Bump Android Version
+
+on:
+  pull_request_target:
+    branches: [main]
+    types: [opened, reopened, synchronize, labeled, unlabeled]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  bump-version:
+    name: Bump pubspec from PR label
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+
+    steps:
+      # pull_request_target runs this workflow from main. Never check out or
+      # execute PR code here: the checkout below is main, for version.cjs.
+      - name: ⬇️ Checkout main
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Update version on the PR branch
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          github-token: ${{ secrets.PAT_TOKEN }}
+          script: |
+            const { LABELS, parseVersion, selectedLabel, nextVersion, formatVersion } =
+              require(`${process.env.GITHUB_WORKSPACE}/.github/scripts/version.cjs`);
+            const pr = context.payload.pull_request;
+            const label = selectedLabel(pr.labels.map((l) => l.name));
+            if (!label) {
+              core.info(`Waiting for exactly one version label: ${LABELS.join(', ')}`);
+              return;
+            }
+
+            async function readPubspec(ref) {
+              const response = await github.rest.repos.getContent({
+                owner: context.repo.owner, repo: context.repo.repo, path: 'pubspec.yaml', ref,
+              });
+              if (Array.isArray(response.data) || !response.data.content) {
+                throw new Error('pubspec.yaml is missing');
+              }
+              return {
+                sha: response.data.sha,
+                text: Buffer.from(response.data.content, 'base64').toString('utf8'),
+              };
+            }
+
+            const base = await readPubspec(pr.base.sha);
+            const head = await readPubspec(pr.head.sha);
+            parseVersion(head.text, { allowMissingBuild: true });
+            const version = formatVersion(
+              nextVersion(parseVersion(base.text, { allowMissingBuild: true }), label));
+            const updated = head.text.replace(
+              /^version: \d+\.\d+\.\d+(?:\+\d+)?[ \t]*$/m, `version: ${version}`);
+            if (updated === head.text) {
+              core.info(`pubspec.yaml already contains ${version}`);
+              return;
+            }
+
+            await github.rest.repos.createOrUpdateFileContents({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              path: 'pubspec.yaml',
+              branch: pr.head.ref,
+              sha: head.sha,
+              message: `chore(release): bump Android version to ${version}`,
+              content: Buffer.from(updated).toString('base64'),
+            });
+            core.info(`Updated pubspec.yaml to ${version}`);

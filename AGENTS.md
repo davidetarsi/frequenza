@@ -15,6 +15,7 @@ Obiettivo: contenere token, tempo e lavoro duplicato senza sacrificare correttez
 
 - Feature-first; contratti Dart indipendenti da Flutter e Riverpod, wiring in application.
 - Modelli e stati strutturati con Freezed, serializzazione generata per i dati JSON e provider Riverpod annotati. Rigenerare e versionare i sorgenti prodotti da build_runner.
+- Stati a strati: un flusso con stati che hanno un nome nel prodotto e cambiano per eventi è un tipo sealed Freezed nel dominio, con transizioni pure (`next(stato, evento)`) e la tabella delle transizioni accanto; il controller esegue solo gli effetti. Un valore letto o salvato in modo asincrono usa `AsyncValue` nel livello application. Esempio: `features/radio/domain/radio_session.dart`.
 - Usare e mantenere i componenti e i token comuni in lib/ui. Tenere i controlli specifici del prodotto nelle feature.
 - Leggere docs/status.md per il punto di ripresa, poi solo il piano attivo.
 - Non aggiungere integrazioni esterne senza necessità concreta.

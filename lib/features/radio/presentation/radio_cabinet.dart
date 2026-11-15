@@ -6,11 +6,15 @@ import '../../../ui/theme/app_spacing.dart';
 import '../../../ui/theme/travel_radio_design.dart';
 import '../../../ui/theme/travel_radio_palette.dart';
 import '../../../ui/theme/app_motion.dart';
+import '../../../ui/widgets/marquee_text.dart';
+import '../../journey/presentation/journey_texts.dart';
+import 'radio_keys.dart';
 
 class RadioCabinet extends StatelessWidget {
   const RadioCabinet({
     super.key,
     required this.country,
+    this.countryDetail,
     required this.station,
     required this.detail,
     required this.status,
@@ -21,10 +25,38 @@ class RadioCabinet extends StatelessWidget {
     required this.isPlaying,
     required this.compact,
     required this.horizontal,
+    this.flying = false,
+    this.landings = 0,
+    this.map,
+    this.localTime,
+    this.tripLabel,
+    this.playKey,
+    this.saveKey,
+    this.onDetailLongPress,
   });
   final String country, station, detail, status, knobLabel, tuneLabel;
+
+  /// Shown after [country] and never cut: the country shrinks instead.
+  final String? countryDetail;
   final VoidCallback? onTune;
   final bool isBusy, isPlaying, compact, horizontal;
+
+  /// Shows [station] as a searching label instead of a name.
+  final bool flying;
+
+  /// Changes at each landing to bring the station name into focus.
+  final int landings;
+
+  /// Replaces the equalizer in the regular layout.
+  final Widget? map;
+  final Widget? localTime;
+  final String? tripLabel;
+
+  /// Pause/resume and save, as piano keys inside the cabinet.
+  final RadioKey? playKey, saveKey;
+
+  /// Set only while [detail] is the song on air: a long press copies it.
+  final VoidCallback? onDetailLongPress;
 
   Widget _equalizer({required double height}) => SizedBox(
     height: height,
@@ -86,11 +118,27 @@ class RadioCabinet extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                country.toUpperCase(),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: RadioCabinetDesign.countryText,
+              _BoundedRow(
+                share: 1,
+                children: (bound) => [
+                  Flexible(
+                    child: Text(
+                      country.toUpperCase(),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: RadioCabinetDesign.countryText,
+                    ),
+                  ),
+                  if (countryDetail case final detail?)
+                    bound(
+                      Text(
+                        ' · ${detail.toUpperCase()}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: RadioCabinetDesign.countryText,
+                      ),
+                    ),
+                ],
               ),
               SizedBox(height: metrics.countryGap),
               Semantics(
@@ -100,14 +148,25 @@ class RadioCabinet extends StatelessWidget {
                       scaler.scale(stationFont) *
                       stationLines *
                       RadioCabinetDesign.stationHeightFactor,
-                  child: Text(
-                    station,
-                    maxLines: stationLines,
-                    overflow: TextOverflow.ellipsis,
-                    style: RadioCabinetDesign.stationText.copyWith(
-                      fontSize: stationFont,
-                    ),
-                  ),
+                  child: flying
+                      ? FlightDots(
+                          label: station,
+                          maxLines: stationLines,
+                          style: RadioCabinetDesign.stationText.copyWith(
+                            fontSize: stationFont,
+                          ),
+                        )
+                      : LandingFocus(
+                          key: ValueKey(landings),
+                          child: Text(
+                            station,
+                            maxLines: stationLines,
+                            overflow: TextOverflow.ellipsis,
+                            style: RadioCabinetDesign.stationText.copyWith(
+                              fontSize: stationFont,
+                            ),
+                          ),
+                        ),
                 ),
               ),
               SizedBox(height: metrics.detailGap),
@@ -115,16 +174,28 @@ class RadioCabinet extends StatelessWidget {
                 height:
                     scaler.scale(RadioCabinetDesign.detailText.fontSize!) *
                     metrics.detailHeightFactor,
-                child: Text(
-                  detail,
-                  maxLines: metrics.textLines,
-                  overflow: TextOverflow.ellipsis,
-                  style: RadioCabinetDesign.detailText,
+                child: GestureDetector(
+                  key: const ValueKey('radio-detail'),
+                  behavior: HitTestBehavior.opaque,
+                  onLongPress: onDetailLongPress,
+                  child: Text(
+                    detail,
+                    maxLines: metrics.textLines,
+                    overflow: TextOverflow.ellipsis,
+                    style: RadioCabinetDesign.detailText,
+                  ),
                 ),
               ),
               if (!compact) ...[
                 const SizedBox(height: RadioCabinetDesign.screenItemGap),
-                _equalizer(height: RadioEqualizerDesign.height),
+                if (map case final map?)
+                  SizedBox(
+                    height: RouteMapDesign.height,
+                    width: double.infinity,
+                    child: map,
+                  )
+                else
+                  _equalizer(height: RadioEqualizerDesign.height),
               ],
               SizedBox(height: metrics.statusGap),
               Container(
@@ -138,9 +209,9 @@ class RadioCabinet extends StatelessWidget {
                 height:
                     scaler.scale(RadioCabinetDesign.statusText.fontSize!) *
                     metrics.statusHeightFactor,
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
+                child: _BoundedRow(
+                  share: .5,
+                  children: (bound) => [
                     Container(
                       width: RadioCabinetDesign.indicatorSize,
                       height: RadioCabinetDesign.indicatorSize,
@@ -170,7 +241,10 @@ class RadioCabinet extends StatelessWidget {
                         style: RadioCabinetDesign.statusText,
                       ),
                     ),
-                    if (compact) ...[
+                    if (localTime case final localTime?) ...[
+                      const SizedBox(width: AppSpacing.small),
+                      bound(localTime),
+                    ] else if (compact) ...[
                       const SizedBox(width: AppSpacing.small),
                       SizedBox(
                         width: RadioEqualizerDesign.compactWidth,
@@ -211,10 +285,8 @@ class RadioCabinet extends StatelessWidget {
                 height:
                     scaler.scale(metrics.dialLabelSize) *
                     metrics.dialLabelHeightFactor,
-                child: Text(
+                child: MarqueeText(
                   knobLabel,
-                  maxLines: metrics.textLines,
-                  overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.center,
                   style: RadioCabinetDesign.dialLabelText.copyWith(
                     color: p.ink,
@@ -230,6 +302,9 @@ class RadioCabinet extends StatelessWidget {
         ),
       ],
     );
+    final keys = playKey == null || saveKey == null
+        ? null
+        : RadioKeys(play: playKey!, save: saveKey!, height: metrics.keyHeight);
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -296,6 +371,22 @@ class RadioCabinet extends StatelessWidget {
                             ),
                           ),
                         ),
+                        if (tripLabel case final tripLabel?) ...[
+                          const SizedBox(width: AppSpacing.small),
+                          // Right-aligned in its half: the screw stays at
+                          // the edge, next to the number.
+                          Expanded(
+                            child: Text(
+                              tripLabel,
+                              maxLines: 1,
+                              textAlign: TextAlign.end,
+                              overflow: TextOverflow.ellipsis,
+                              style: RadioCabinetDesign.brandText.copyWith(
+                                color: p.ink,
+                              ),
+                            ),
+                          ),
+                        ],
                         const SizedBox(width: AppSpacing.small),
                         _Screw(color: p.trim),
                       ],
@@ -309,7 +400,16 @@ class RadioCabinet extends StatelessWidget {
                         const SizedBox(width: AppSpacing.standard),
                         SizedBox(
                           width: diameter * 2 + AppSpacing.small,
-                          child: controls,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              controls,
+                              if (keys != null) ...[
+                                SizedBox(height: metrics.keysGap),
+                                keys,
+                              ],
+                            ],
+                          ),
                         ),
                       ],
                     )
@@ -317,8 +417,12 @@ class RadioCabinet extends StatelessWidget {
                     display,
                     SizedBox(height: metrics.controlsGap),
                     controls,
+                    if (keys != null) ...[
+                      SizedBox(height: metrics.keysGap),
+                      keys,
+                    ],
                   ],
-                  if (!compact) ...[
+                  if (!compact && keys == null) ...[
                     const SizedBox(height: RadioCabinetDesign.trimGap),
                     Row(
                       children: [
@@ -346,6 +450,25 @@ class RadioCabinet extends StatelessWidget {
       ],
     );
   }
+}
+
+/// A row whose `bound` children keep their natural width up to [share] of
+/// the row, so they are cut only when nothing else can give way.
+class _BoundedRow extends StatelessWidget {
+  const _BoundedRow({required this.share, required this.children});
+  final double share;
+  final List<Widget> Function(Widget Function(Widget) bound) children;
+  @override
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, constraints) => Row(
+      children: children(
+        (child) => ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: constraints.maxWidth * share),
+          child: child,
+        ),
+      ),
+    ),
+  );
 }
 
 class _Screw extends StatelessWidget {

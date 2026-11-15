@@ -1,0 +1,80 @@
+name: 🏁 Promuovi in produzione
+
+# Solo a mano (Actions → Promuovi in produzione → Run workflow): sposta una
+# versione già nel test chiuso alla produzione. Finché l'account non ha
+# superato i 14 giorni con 12 tester, Google rifiuta: il job fallisce con il
+# suo messaggio, ed è atteso.
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_code:
+        description: 'Numero di build da promuovere (il numero dopo il +, es. 1 per 0.2.0+1)'
+        type: number
+        required: true
+      rollout:
+        description: 'Percentuale di utenti (1-100)'
+        type: string
+        default: '100'
+
+concurrency:
+  group: promote-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  promote:
+    name: Promote to production
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🔢 Check rollout
+        env:
+          ROLLOUT: ${{ inputs.rollout }}
+        run: |
+          set -euo pipefail
+          if ! [[ "$ROLLOUT" =~ ^[0-9]+$ ]] || (( ROLLOUT < 1 || ROLLOUT > 100 )); then
+            echo "La percentuale deve essere un intero da 1 a 100, non '$ROLLOUT'" >&2
+            exit 1
+          fi
+
+      - name: 💎 Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
+
+      - name: 📦 Install fastlane
+        run: gem install fastlane -v 2.225.0 --no-document
+
+      - name: 🏁 Promote
+        env:
+          GOOGLE_PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+          TRACK: ${{ vars.PLAY_TRACK || 'alpha' }}
+          VERSION_CODE: ${{ inputs.version_code }}
+          ROLLOUT: ${{ inputs.rollout }}
+        run: |
+          set -euo pipefail
+          if [[ -z "$GOOGLE_PLAY_SERVICE_ACCOUNT_JSON" ]]; then
+            echo 'Manca il secret GOOGLE_PLAY_SERVICE_ACCOUNT_JSON' >&2
+            exit 1
+          fi
+          if (( ROLLOUT == 100 )); then
+            STAGED=(--track_promote_release_status completed)
+          else
+            STAGED=(--track_promote_release_status inProgress
+                    --rollout "$(awk "BEGIN { print $ROLLOUT / 100 }")")
+          fi
+          fastlane supply \
+            --package_name it.davidetarsi.frequenza \
+            --json_key_data "$GOOGLE_PLAY_SERVICE_ACCOUNT_JSON" \
+            --track "$TRACK" \
+            --track_promote_to production \
+            --version_code "$VERSION_CODE" \
+            "${STAGED[@]}" \
+            --skip_upload_apk true \
+            --skip_upload_aab true \
+            --skip_upload_metadata true \
+            --skip_upload_changelogs true \
+            --skip_upload_images true \
+            --skip_upload_screenshots true

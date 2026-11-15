@@ -1,3 +1,6 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("kotlin-android")
@@ -5,8 +8,17 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+// Chiave di firma: le pipeline scrivono android/key.properties (ignorato da
+// git). Senza il file, le build release si firmano con la chiave di debug,
+// così `flutter run --release` funziona anche senza chiavi.
+val keystoreProperties = Properties()
+val keystorePropertiesFile = rootProject.file("key.properties")
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+}
+
 android {
-    namespace = "dev.davidetarsi.frequenza"
+    namespace = "it.davidetarsi.frequenza"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -20,21 +32,48 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "dev.davidetarsi.frequenza"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://flutter.dev/to/review-gradle-config.
+        // Immutabile dopo il primo caricamento sul Play Store: il flavor dev
+        // vi aggiunge ".dev", così le due versioni stanno sullo stesso telefono.
+        applicationId = "it.davidetarsi.frequenza"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
 
+    flavorDimensions += "app_environment"
+
+    productFlavors {
+        create("dev") {
+            dimension = "app_environment"
+            applicationIdSuffix = ".dev"
+            resValue("string", "app_name", "Frequenza Dev")
+        }
+        create("prod") {
+            dimension = "app_environment"
+            resValue("string", "app_name", "Frequenza")
+        }
+    }
+
+    signingConfigs {
+        create("release") {
+            if (keystorePropertiesFile.exists()) {
+                keyAlias = keystoreProperties.getProperty("keyAlias")
+                keyPassword = keystoreProperties.getProperty("keyPassword")
+                storeFile = file(keystoreProperties.getProperty("storeFile") as String)
+                storePassword = keystoreProperties.getProperty("storePassword")
+                storeType = keystoreProperties.getProperty("storeType") ?: "JKS"
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = if (keystorePropertiesFile.exists()) {
+                signingConfigs.getByName("release")
+            } else {
+                signingConfigs.getByName("debug")
+            }
         }
     }
 }
