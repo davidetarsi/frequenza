@@ -60,6 +60,16 @@ class MainActivity : AudioServiceActivity() {
                 "sdkInt" -> result.success(Build.VERSION.SDK_INT)
                 // Dove copiare il logo di ripiego della notifica.
                 "cacheDir" -> result.success(cacheDir.absolutePath)
+                // Per il modulo delle segnalazioni: 0.2.1+2.
+                "appVersion" -> {
+                    val info = packageManager.getPackageInfo(packageName, 0)
+                    val code = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                        info.longVersionCode
+                    } else {
+                        @Suppress("DEPRECATION") info.versionCode.toLong()
+                    }
+                    result.success("${info.versionName}+$code")
+                }
                 // La radio si è fermata davvero: il servizio esce dal primo piano.
                 "leaveForeground" -> {
                     RadioForeground.leave()

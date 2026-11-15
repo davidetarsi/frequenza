@@ -273,3 +273,11 @@ Branch `feat/informazioni-e-vite`, sopra `feat/suono-sintonia`.
 - **Lingua preselezionata:** quella con cui l'app si apre già, cioè l'italiano su un telefono italiano e l'inglese altrove. Scelta di Claude, nel design.
 - **Da provare sul telefono:** prima apertura (per rivederla: cancellare i dati dell'app); il passaggio dalla radio piccola a quella vera, con il fruscio del primo volo; cambio di lingua dal benvenuto, che deve restare anche nella radio e alle aperture successive; tema chiaro e scuro; schermo piccolo; riduzione del movimento.
 
+## Modulo per idee e segnalazioni — 15 novembre 2026
+
+- **Dove:** Impostazioni, poi Informazioni, poi «Segnala un problema o un'idea», sotto «Visualizza progetto su GitHub».
+- **Il link:** apre il modulo Google di Davide (`AppLinks.feedback`) con la versione dell'app già scritta nel campo «Versione dell'app» (`entry.1664657182`).
+- **La versione:** la legge `MainActivity` (metodo `appVersion`, `versionName+versionCode`) tramite `appVersionProvider`. Se non riesce, il campo resta vuoto.
+- **Se il link non si apre:** compare «Impossibile aprire il link», come per GitHub.
+- **Da provare sul telefono:** la voce apre il modulo e il campo della versione è già compilato.
+

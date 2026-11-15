@@ -8,6 +8,7 @@ import '../../ui/widgets/app_settings_option.dart';
 import '../../ui/widgets/code_badge.dart';
 import '../../ui/widgets/travel_sheet.dart';
 import '../config/app_localization.dart';
+import '../links/app_version.dart';
 import '../links/external_links.dart';
 import '../theme/app_theme_mode.dart';
 
@@ -84,20 +85,31 @@ class AppSettingsSheet extends ConsumerWidget {
           label: LocaleKeys.viewOnGitHub.tr(context: context),
           selected: false,
           trailing: const Icon(Icons.open_in_new),
-          onTap: () async {
-            final opened = await ref.read(openExternalProvider)(
-              AppLinks.project,
-            );
-            if (!opened && context.mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(LocaleKeys.linkError.tr(context: context)),
-                ),
-              );
-            }
-          },
+          onTap: () => _open(context, ref, (_) => AppLinks.project),
+        ),
+        AppSettingsOption(
+          leading: const Icon(Icons.feedback_outlined),
+          label: LocaleKeys.sendFeedback.tr(context: context),
+          selected: false,
+          trailing: const Icon(Icons.open_in_new),
+          onTap: () => _open(context, ref, AppLinks.feedback),
         ),
       ],
     );
+  }
+
+  /// Opens a link built from the app version; says so when nothing opens it.
+  Future<void> _open(
+    BuildContext context,
+    WidgetRef ref,
+    Uri Function(String version) link,
+  ) async {
+    final version = await ref.read(appVersionProvider.future);
+    final opened = await ref.read(openExternalProvider)(link(version));
+    if (!opened && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(LocaleKeys.linkError.tr(context: context))),
+      );
+    }
   }
 }
