@@ -123,8 +123,9 @@ void main() {
       expect(tester.binding.hasScheduledFrame, isFalse);
       await tester.tap(find.byTooltip('Impostazioni'));
       await tester.pumpAndSettle();
-      expect(find.text('Aspetto e lingua della radio.'), findsOneWidget);
       expect(find.byType(DraggableScrollableSheet), findsOneWidget);
+      expect(find.text('Aspetto'), findsOneWidget);
+      expect(find.text('Aspetto e lingua della radio.'), findsNothing);
       await tester.tap(find.text('Scuro'));
       await tester.pumpAndSettle();
       expect(

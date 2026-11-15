@@ -22,7 +22,6 @@ class AppSettingsSheet extends ConsumerWidget {
     final textTheme = Theme.of(context).textTheme;
     return TravelSheet(
       title: LocaleKeys.settings.tr(context: context),
-      subtitle: LocaleKeys.settingsSubtitle.tr(context: context),
       children: [
         Text(
           LocaleKeys.appearance.tr(context: context),
