@@ -213,3 +213,15 @@ Segnalato da Davide: con l'app in background la musica si ferma dopo pochi secon
 - Durante il buffering di una stazione accesa manopola, pausa e cuore restano attivi: solo il volo li spegne.
 - Una pausa mentre lo stream si riempie vale come pausa (`JustAudioService`), così la riconnessione non riaccende una radio messa in pausa.
 - Ancora da capire: perché lo stream si ferma in background. Ipotesi: Android limita la rete all'app quando il servizio in primo piano cade. Serve un logcat dal telefono per confermarla.
+
+## Macchine a stati esplicite — 15 novembre 2026
+
+Piano `superpowers/plans/2026-11-15-macchine-a-stati.md`, branch `refactor/macchine-a-stati`.
+
+- La radio è una `RadioSession` sealed (spenta, in volo, in onda, fallita) con `Journey` sempre presente. Le transizioni stanno in `next()` (`features/radio/domain/radio_session.dart`) con la loro tabella; il controller esegue solo gli effetti.
+- La schermata legge `RadioDisplay.of(session)`: un solo `switch` esaustivo per titolo, paese, stato, manopola e tasti.
+- «In volo» ha una sola fonte: la notifica lo sa solo da `showControls`, il motore audio segnala le pause di sistema (`systemPauses`) e decide la radio.
+- Preferiti e tema salvano con `LatestSave` (`lib/app/state`).
+- Cancellata la pagina di prova non raggiungibile, con il suo test e 24 chiavi di traduzione.
+- Regola sealed/`AsyncValue` in `AGENTS.md`. Da portare nello starter: la regola, `LatestSave`, `CodeBadge`, `MarqueeText` e un esempio di feature con stato sealed.
+- Verificato: `tool/check.sh` verde, 160 test. Da provare sul telefono: voli, indietro, pausa con le cuffie, notifica durante una nuova sintonia.

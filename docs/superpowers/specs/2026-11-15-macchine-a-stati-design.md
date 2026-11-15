@@ -1,6 +1,6 @@
 # Macchine a stati esplicite — analisi e direzione
 
-Data: 15 novembre 2026. Stato: **analisi approvata come riferimento**. Si fa dopo la pubblicazione sul Play Store e prima della ricerca per paese **[D]**. La convenzione entra prima nello starter **[D]**; la spec di dettaglio per Frequenza si scrive quando si fa l'intervento.
+Data: 15 novembre 2026. Stato: **fatto in Frequenza il 15 novembre 2026** (piano `docs/superpowers/plans/2026-11-15-macchine-a-stati.md`); **da portare nello starter**. Davide ha deciso di anticipare l'intervento e di farlo prima in Frequenza. Si fa dopo la pubblicazione sul Play Store e prima della ricerca per paese **[D]**. La convenzione entra prima nello starter **[D]**; la spec di dettaglio per Frequenza si scrive quando si fa l'intervento.
 
 Legenda: **[D]** = deciso da Davide; **[C]** = scelta proposta da Claude.
 
