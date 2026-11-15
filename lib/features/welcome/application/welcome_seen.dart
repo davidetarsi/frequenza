@@ -8,10 +8,16 @@ part 'welcome_seen.g.dart';
 class WelcomeSeen extends _$WelcomeSeen {
   static const _key = 'app.welcomeSeen';
 
+  /// Unreadable preferences count as seen: bootstrap waits for this value,
+  /// and the radio must open whatever happens.
   @override
   Future<bool> build() async {
-    final preferences = await SharedPreferences.getInstance();
-    return preferences.getBool(_key) ?? false;
+    try {
+      final preferences = await SharedPreferences.getInstance();
+      return preferences.getBool(_key) ?? false;
+    } catch (_) {
+      return true;
+    }
   }
 
   /// Seen at once: a failed save only means the welcome comes back on the

@@ -34,7 +34,7 @@ Chi apre l'app per la prima volta deve capire in pochi secondi cosa fa: si gira 
 ## Come **[C]**
 
 - **Feature:** `lib/features/welcome/`.
-  - `WelcomeSeen` è un `@Riverpod(keepAlive: true)` asincrono. Legge e salva in `shared_preferences` la chiave `app.welcomeSeen` con `LatestSave`, come `AppThemeMode`.
+  - `WelcomeSeen` è un `@Riverpod(keepAlive: true)` asincrono. Legge e salva in `shared_preferences` la chiave `app.welcomeSeen`. Senza `LatestSave`: c'è una sola scrittura, sempre uguale. Se le preferenze non si leggono, vale «vista», così la radio si apre comunque.
   - La pagina è `WelcomePage` e l'animazione è `WelcomeDemo`.
 - **Router:** una route `/welcome`. Finché `WelcomeSeen` vale falso, `/` rimanda lì. Il valore si legge in `bootstrap` prima di `runApp`, così la prima schermata è già quella giusta.
 - **La manopola gira:** `RadioCabinet` riceve un `dialTurns` facoltativo, cioè la rotazione della manopola in giri. Vale 0 nell'uso normale.
