@@ -1,6 +1,6 @@
 {
-  "welcomeTitle": "Gira la manopola.\nAtterri da qualche parte nel mondo.",
-  "welcomeBody": "Ogni giro è una radio in diretta da un altro angolo del pianeta. Quelle che ami le tieni con il cuore.",
+  "welcomeTitle": "Gira la manopola.\nAtterra da qualche parte nel mondo.",
+  "welcomeBody": "Ogni giro è una radio in diretta da qualche parte nel mondo. Quelle che ami le tieni con il cuore.",
   "loading": "Caricamento",
   "errorTitle": "Qualcosa non ha funzionato",
   "errorBody": "Non è stato possibile caricare i contenuti. Puoi riprovare.",
@@ -69,5 +69,6 @@
   "tripNumber": "Viaggio n. {}",
   "titleCopied": "Titolo copiato",
   "welcomeStart": "Accendi la radio",
-  "welcomeDemo": "Animazione: la manopola gira e la radio atterra su una stazione lontana"
+  "welcomeDemo": "Animazione: la manopola gira e la radio atterra su una stazione lontana",
+  "welcomeHint": "Tocca la manopola per accendere"
 }

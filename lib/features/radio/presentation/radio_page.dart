@@ -105,82 +105,85 @@ class RadioPage extends ConsumerWidget {
                 child: const Icon(Icons.favorite_border),
               ),
             );
-            final cabinet = RadioCabinet(
-              compact: compact,
-              horizontal: wide,
-              country: text(display.country),
-              countryDetail: countryDetail,
-              station: text(display.title),
-              detail: display.busy
-                  ? ''
-                  : song ??
-                        station?.tags.take(2).join(' · ') ??
-                        LocaleKeys.firstTrip.tr(context: context),
-              onDetailLongPress: song == null
-                  ? null
-                  : () => copyTrackTitle(context, song),
-              status: display.statusKey.tr(context: context),
-              flying: display.flying,
-              landings: journey.trips,
-              map: RouteMap(
-                flight: display.phase,
-                playing: display.playing,
-                departure: journey.departure,
-                leg: journey.leg,
-                history: journey.history,
-                trips: journey.trips,
-              ),
-              localTime: station == null || display.busy
-                  ? null
-                  : LocalTimeText(
-                      station: station,
-                      stacked: !compact,
-                      style: RadioCabinetDesign.statusText,
-                    ),
-              tripLabel: journey.trips == 0
-                  ? null
-                  : LocaleKeys.tripNumber.tr(
-                      context: context,
-                      args: ['${journey.trips}'],
-                    ),
-              knobLabel: display.knobKey.tr(context: context).toUpperCase(),
-              tuneLabel: LocaleKeys.tuneAccessibility.tr(context: context),
-              onTune: display.knobEnabled
-                  ? () => controller.tuneRandom()
-                  : null,
-              playKey: RadioKey(
-                key: const ValueKey('radio-key-play'),
-                toggles: false,
-                icon: display.playKeyOn ? Icons.pause : Icons.play_arrow,
-                label: display.playKeyOn
-                    ? LocaleKeys.pause.tr(context: context)
-                    : LocaleKeys.resume.tr(context: context),
-                down: display.playKeyDown,
-                onPressed: !display.playKeyEnabled
+            final cabinet = RadioCabinetHero(
+              child: RadioCabinet(
+                compact: compact,
+                horizontal: wide,
+                country: text(display.country),
+                countryDetail: countryDetail,
+                station: text(display.title),
+                detail: display.busy
+                    ? ''
+                    : song ??
+                          station?.tags.take(2).join(' · ') ??
+                          LocaleKeys.firstTrip.tr(context: context),
+                onDetailLongPress: song == null
                     ? null
-                    : () => display.playKeyOn
-                          ? controller.pause()
-                          : controller.play(),
-              ),
-              saveKey: RadioKey(
-                key: const ValueKey('radio-key-save'),
-                icon: saved ? Icons.favorite : Icons.favorite_border,
-                iconColor: saved ? theme.colorScheme.primary : null,
-                label: saved
-                    ? LocaleKeys.saved.tr(context: context)
-                    : LocaleKeys.save.tr(context: context),
-                down: saved,
-                onPressed:
-                    station == null ||
-                        !display.saveEnabled ||
-                        favorites == null ||
-                        favoritesState.isLoading
+                    : () => copyTrackTitle(context, song),
+                status: display.statusKey.tr(context: context),
+                flying: display.flying,
+                landings: journey.trips,
+                map: RouteMap(
+                  flight: display.phase,
+                  playing: display.playing,
+                  departure: journey.departure,
+                  leg: journey.leg,
+                  history: journey.history,
+                  trips: journey.trips,
+                ),
+                localTime: station == null || display.busy
                     ? null
-                    : () =>
-                          ref.read(favoritesProvider.notifier).toggle(station),
+                    : LocalTimeText(
+                        station: station,
+                        stacked: !compact,
+                        style: RadioCabinetDesign.statusText,
+                      ),
+                tripLabel: journey.trips == 0
+                    ? null
+                    : LocaleKeys.tripNumber.tr(
+                        context: context,
+                        args: ['${journey.trips}'],
+                      ),
+                knobLabel: display.knobKey.tr(context: context).toUpperCase(),
+                tuneLabel: LocaleKeys.tuneAccessibility.tr(context: context),
+                onTune: display.knobEnabled
+                    ? () => controller.tuneRandom()
+                    : null,
+                playKey: RadioKey(
+                  key: const ValueKey('radio-key-play'),
+                  toggles: false,
+                  icon: display.playKeyOn ? Icons.pause : Icons.play_arrow,
+                  label: display.playKeyOn
+                      ? LocaleKeys.pause.tr(context: context)
+                      : LocaleKeys.resume.tr(context: context),
+                  down: display.playKeyDown,
+                  onPressed: !display.playKeyEnabled
+                      ? null
+                      : () => display.playKeyOn
+                            ? controller.pause()
+                            : controller.play(),
+                ),
+                saveKey: RadioKey(
+                  key: const ValueKey('radio-key-save'),
+                  icon: saved ? Icons.favorite : Icons.favorite_border,
+                  iconColor: saved ? theme.colorScheme.primary : null,
+                  label: saved
+                      ? LocaleKeys.saved.tr(context: context)
+                      : LocaleKeys.save.tr(context: context),
+                  down: saved,
+                  onPressed:
+                      station == null ||
+                          !display.saveEnabled ||
+                          favorites == null ||
+                          favoritesState.isLoading
+                      ? null
+                      : () => ref
+                            .read(favoritesProvider.notifier)
+                            .toggle(station),
+                ),
+                isBusy: display.busy,
+                isPlaying: display.playing,
               ),
-              isBusy: display.busy,
-              isPlaying: display.playing,
             );
             final nextStop = Text(
               (display.nextStopPending

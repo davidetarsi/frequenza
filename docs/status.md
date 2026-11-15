@@ -268,8 +268,8 @@ Branch `feat/informazioni-e-vite`, sopra `feat/suono-sintonia`.
 - **Cosa mostra:**
   - in alto le targhette EN · IT, che cambiano subito la lingua di tutta l'app;
   - al centro la radio vera (`RadioCabinet`) guidata da un copione di 6 secondi in loop: spenta, la manopola gira e la radio vola, poi atterra su «Radio Paraíso» (Brasile) con la rotta sulla mappa. È muta; con la riduzione del movimento resta ferma sulla stazione atterrata;
-  - sotto, titolo e frase; con poco spazio e testo grande scorrono, così la radio resta visibile;
-  - il pulsante «Turn it on» / «Accendi la radio» segna la pagina come vista e porta alla radio.
+  - sopra la radio titolo e frase; con poco spazio e testo grande scorrono, così la radio resta visibile;
+  - niente pulsante: intorno alla manopola un alone pulsa piano, e sotto c'è «Tocca la manopola per accendere». Toccando la radio, la pagina diventa vista, parte il primo volo e la radio si allarga fino a quella vera (`RadioCabinetHero`, uno shuttle che scala la radio di arrivo dentro un `Material` trasparente). Per i lettori di schermo la radio è il pulsante «Accendi la radio».
 - **Lingua preselezionata:** quella con cui l'app si apre già, cioè l'italiano su un telefono italiano e l'inglese altrove. Scelta di Claude, nel design.
-- **Da provare sul telefono:** prima apertura (per rivederla: cancellare i dati dell'app); cambio di lingua dal benvenuto, che deve restare anche nella radio e alle aperture successive; tema chiaro e scuro; schermo piccolo; riduzione del movimento.
+- **Da provare sul telefono:** prima apertura (per rivederla: cancellare i dati dell'app); il passaggio dalla radio piccola a quella vera, con il fruscio del primo volo; cambio di lingua dal benvenuto, che deve restare anche nella radio e alle aperture successive; tema chiaro e scuro; schermo piccolo; riduzione del movimento.
 

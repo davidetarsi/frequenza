@@ -74,4 +74,5 @@ abstract class LocaleKeys {
   static const titleCopied = 'titleCopied';
   static const welcomeStart = 'welcomeStart';
   static const welcomeDemo = 'welcomeDemo';
+  static const welcomeHint = 'welcomeHint';
 }

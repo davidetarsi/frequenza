@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frequenza/app/config/app_localization.dart';
+import 'package:frequenza/features/radio/presentation/radio_cabinet.dart';
 import 'package:frequenza/features/welcome/presentation/welcome_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -60,10 +61,10 @@ void main() {
 
   testWidgets('choosing IT switches the page to Italian', (tester) async {
     await pumpWelcome(tester, animations: false);
-    expect(find.text('Turn it on'), findsOneWidget);
+    expect(find.text('Tap the dial to turn it on'), findsOneWidget);
     await tester.tap(find.text('IT'));
     await tester.pumpAndSettle();
-    expect(find.text('Accendi la radio'), findsOneWidget);
+    expect(find.text('Tocca la manopola per accendere'), findsOneWidget);
   });
 
   testWidgets('with reduced motion the demo rests on the landed station', (
@@ -83,6 +84,22 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
-    expect(find.text('Turn it on'), findsOneWidget);
+    expect(find.text('Tap the dial to turn it on'), findsOneWidget);
+  });
+
+  testWidgets('the dial breathes to invite a tap', (tester) async {
+    await pumpWelcome(tester);
+    double glow() =>
+        tester.widget<RadioCabinet>(find.byType(RadioCabinet)).dialGlow;
+    final first = glow();
+    await tester.pump(const Duration(milliseconds: 700));
+    expect(glow(), isNot(first));
+  });
+
+  testWidgets('screen readers find the radio as a button', (tester) async {
+    final semantics = tester.ensureSemantics();
+    await pumpWelcome(tester, animations: false);
+    expect(find.bySemanticsLabel('Turn on the radio'), findsOneWidget);
+    semantics.dispose();
   });
 }

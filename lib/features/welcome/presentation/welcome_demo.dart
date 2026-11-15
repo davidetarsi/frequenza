@@ -21,6 +21,7 @@ class WelcomeDemo extends StatefulWidget {
   const WelcomeDemo({super.key});
 
   static const loop = Duration(seconds: 6);
+  static const breath = Duration(milliseconds: 1400);
 
   /// Wide enough for the regular layout; the page scales it to fit.
   static const width = 340.0;
@@ -30,10 +31,16 @@ class WelcomeDemo extends StatefulWidget {
 }
 
 class _WelcomeDemoState extends State<WelcomeDemo>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   late final _clock = AnimationController(
     vsync: this,
     duration: WelcomeDemo.loop,
+  );
+
+  /// The halo around the dial, breathing in and out.
+  late final _breath = AnimationController(
+    vsync: this,
+    duration: WelcomeDemo.breath,
   );
 
   static const _station = RadioStation(
@@ -62,20 +69,25 @@ class _WelcomeDemoState extends State<WelcomeDemo>
       _clock
         ..stop()
         ..value = 1;
+      _breath
+        ..stop()
+        ..value = 0;
     } else if (!_clock.isAnimating) {
       _clock.repeat();
+      _breath.repeat(reverse: true);
     }
   }
 
   @override
   void dispose() {
     _clock.dispose();
+    _breath.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) => AnimatedBuilder(
-    animation: _clock,
+    animation: Listenable.merge([_clock, _breath]),
     builder: (context, _) {
       final t = _clock.value;
       if (t < 1 / 6) return _off(context);
@@ -118,6 +130,7 @@ class _WelcomeDemoState extends State<WelcomeDemo>
     flying: flying,
     landings: leg == null ? 0 : 1,
     dialTurns: turns,
+    dialGlow: Curves.easeInOut.transform(_breath.value),
     tripLabel: leg == null
         ? null
         : LocaleKeys.tripNumber.tr(context: context, args: ['1']),

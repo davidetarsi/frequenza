@@ -45,3 +45,13 @@ Chi apre l'app per la prima volta deve capire in pochi secondi cosa fa: si gira 
 - Rivedere la pagina dalle Impostazioni.
 - Il suono.
 - Più pagine.
+
+## Revisione del 15 novembre 2026, dopo le anteprime **[D]**
+
+- **Niente pulsante:** il pulsante pieno in fondo era sconnesso dal resto. Si entra toccando la manopola della demo, o la radio intera **[D]**.
+- **Ordine:** in alto le targhette e i testi, sotto la radio, più piccola di quella vera, con un alone che pulsa piano intorno alla manopola, e in fondo la riga «Tocca la manopola per accendere» / «Tap the dial to turn it on» **[D]**.
+- **Passaggio:** al tocco la radio piccola si allarga fino al posto di quella vera (`Hero`) **[D]**. Arrivata, la radio parte subito con il primo volo: hai appena girato la manopola **[C]**.
+- **Testi:** «Gira la manopola.\nAtterra da qualche parte nel mondo.» e «Ogni giro è una radio in diretta da qualche parte nel mondo. Quelle che ami le tieni con il cuore.» **[D]**. In inglese: «Turn the dial.\nLand somewhere in the world.» e «Every turn is a live station somewhere in the world. Keep the ones you love with the heart.».
+- **Riduzione del movimento:** niente alone e niente passaggio animato **[C]**.
+- **Accessibilità:** per i lettori di schermo la radio è un pulsante «Accendi la radio» / «Turn on the radio» **[C]**.
+

@@ -77,3 +77,24 @@
 - [ ] **Step 3:** implementare `dialTurns`, la demo, la pagina e i testi.
 - [ ] **Step 4:** `bash tool/check.sh --apk`. Expected: verde e APK costruita.
 - [ ] **Step 5:** `docs/status.md`, sezione «Pagina di benvenuto — 15 novembre 2026», con le prove da fare sul telefono. Commit `feat(benvenuto): la radio gira la manopola e atterra, con la scelta della lingua`.
+
+### Task 3: Si entra dalla manopola (revisione della spec)
+
+**Files:**
+- Modify: `welcome_page.dart`, `welcome_demo.dart`, `radio_cabinet.dart` (`dialGlow`), `radio_page.dart` (`Hero`), traduzioni
+- Test: `welcome_page_test.dart`, `welcome_flow_test.dart`
+
+**Interfaces:**
+- `RadioCabinet({double dialGlow = 0})`: un alone da 0 a 1 intorno alla manopola.
+- `radioCabinetHero = 'radio-cabinet'`: il tag `Hero` comune. Durante il volo lo shuttle scala la radio di destinazione, senza ridisporla.
+- `WelcomePage`: la radio è un pulsante (`ValueKey('welcome-radio')`). Il tocco chiama `markSeen()`, poi `tuneRandom()`, poi `go('/')`.
+
+- [ ] **Step 1:** test:
+  - «tapping the radio turns it on» (benvenuto visto, radio in volo, nessuna eccezione durante il passaggio);
+  - «the dial invites a tap» (la riga di invito c'è; con il movimento attivo l'alone cambia nel tempo);
+  - aggiornare i test che cercavano «Turn it on».
+- [ ] **Step 2:** eseguirli. Expected: FAIL.
+- [ ] **Step 3:** implementare.
+- [ ] **Step 4:** `bash tool/check.sh --apk`. Expected: verde.
+- [ ] **Step 5:** commit `feat(benvenuto): si entra toccando la manopola, e la radio si allarga fino alla schermata vera`.
+

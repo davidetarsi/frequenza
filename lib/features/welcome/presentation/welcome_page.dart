@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -6,30 +8,39 @@ import 'package:go_router/go_router.dart';
 import '../../../app/config/app_localization.dart';
 import '../../../app/routing/app_router.dart';
 import '../../../l10n/locale_keys.g.dart';
+import '../../../ui/theme/app_motion.dart';
 import '../../../ui/theme/app_spacing.dart';
 import '../../../ui/theme/travel_radio_palette.dart';
-import '../../../ui/widgets/app_button.dart';
 import '../../../ui/widgets/code_badge.dart';
+import '../../radio/application/radio_controller.dart';
+import '../../radio/presentation/radio_cabinet.dart';
 import '../application/welcome_seen.dart';
 import 'welcome_demo.dart';
 
-/// Shown on the first launch only: the radio at work, the language, and
-/// the way in.
+/// Shown on the first launch only: what the radio does, then the radio
+/// itself, whose dial turns it on.
 class WelcomePage extends ConsumerWidget {
   const WelcomePage({super.key});
 
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return Scaffold(
-      body: SafeArea(
-        minimum: const EdgeInsets.all(AppSpacing.large),
-        child: LayoutBuilder(
-          builder: (context, constraints) =>
-              _content(context, ref, constraints.maxHeight),
-        ),
-      ),
-    );
+  /// Turning the dial turns the radio on: the first flight starts while the
+  /// radio grows into its own page.
+  Future<void> _turnOn(BuildContext context, WidgetRef ref) async {
+    await ref.read(welcomeSeenProvider.notifier).markSeen();
+    if (!context.mounted) return;
+    unawaited(ref.read(radioControllerProvider.notifier).tuneRandom());
+    context.go(AppRoutes.home);
   }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) => Scaffold(
+    body: SafeArea(
+      minimum: const EdgeInsets.all(AppSpacing.large),
+      child: LayoutBuilder(
+        builder: (context, constraints) =>
+            _content(context, ref, constraints.maxHeight),
+      ),
+    ),
+  );
 
   Widget _content(BuildContext context, WidgetRef ref, double height) {
     final theme = Theme.of(context);
@@ -55,40 +66,22 @@ class WelcomePage extends ConsumerWidget {
               ),
           ],
         ),
-        Expanded(
-          child: Semantics(
-            image: true,
-            label: LocaleKeys.welcomeDemo.tr(context: context),
-            child: ExcludeSemantics(
-              child: IgnorePointer(
-                // A picture of the radio: it keeps its proportions
-                // whatever the text size.
-                child: MediaQuery.withNoTextScaling(
-                  child: const FittedBox(
-                    child: SizedBox(
-                      width: WelcomeDemo.width,
-                      child: WelcomeDemo(),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(height: AppSpacing.large),
-        // The words never push the radio off the screen: with little
-        // room and large text, they scroll.
+        // The words come first; with little room and large text they
+        // scroll, so the radio stays in view.
         ConstrainedBox(
-          constraints: BoxConstraints(maxHeight: height * 0.45),
+          constraints: BoxConstraints(maxHeight: height * 0.4),
           child: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Text(
-                  LocaleKeys.welcomeTitle.tr(context: context),
-                  textAlign: TextAlign.center,
-                  style: theme.textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.w600,
+                Semantics(
+                  header: true,
+                  child: Text(
+                    LocaleKeys.welcomeTitle.tr(context: context),
+                    textAlign: TextAlign.center,
+                    style: theme.textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
                 const SizedBox(height: AppSpacing.small),
@@ -104,12 +97,42 @@ class WelcomePage extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: AppSpacing.large),
-        AppButton(
-          label: LocaleKeys.welcomeStart.tr(context: context),
-          onPressed: () async {
-            await ref.read(welcomeSeenProvider.notifier).markSeen();
-            if (context.mounted) context.go(AppRoutes.home);
-          },
+        Expanded(
+          child: Semantics(
+            button: true,
+            label: LocaleKeys.welcomeStart.tr(context: context),
+            onTap: () => _turnOn(context, ref),
+            child: ExcludeSemantics(
+              child: GestureDetector(
+                key: const ValueKey('welcome-radio'),
+                behavior: HitTestBehavior.opaque,
+                onTap: () => _turnOn(context, ref),
+                // A picture of the radio: its own keys do not answer, and it
+                // keeps its proportions whatever the text size.
+                child: IgnorePointer(
+                  child: MediaQuery.withNoTextScaling(
+                    child: FittedBox(
+                      child: HeroMode(
+                        enabled: AppMotion.enabled(context),
+                        child: const RadioCabinetHero(
+                          child: SizedBox(
+                            width: WelcomeDemo.width,
+                            child: WelcomeDemo(),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: AppSpacing.medium),
+        Text(
+          LocaleKeys.welcomeHint.tr(context: context),
+          textAlign: TextAlign.center,
+          style: theme.textTheme.bodySmall?.copyWith(color: palette.muted),
         ),
       ],
     );
