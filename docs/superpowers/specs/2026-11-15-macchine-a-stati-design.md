@@ -1,6 +1,6 @@
 # Macchine a stati esplicite — analisi e direzione
 
-Data: 15 novembre 2026. Stato: **analisi approvata come riferimento**, da fare il prima possibile e comunque prima della ricerca per paese. La spec di dettaglio si scrive dopo aver chiarito i punti aperti con Davide.
+Data: 15 novembre 2026. Stato: **analisi approvata come riferimento**. Si fa dopo la pubblicazione sul Play Store e prima della ricerca per paese **[D]**. La convenzione entra prima nello starter **[D]**; la spec di dettaglio per Frequenza si scrive quando si fa l'intervento.
 
 Legenda: **[D]** = deciso da Davide; **[C]** = scelta proposta da Claude.
 
@@ -111,7 +111,13 @@ RadioSession next(RadioSession session, RadioEvent event); // pura, nel dominio
 - **Sealed Freezed:** un flusso con stati che hanno un significato proprio e transizioni guidate da eventi è un tipo sealed Freezed nel dominio, con transizioni pure. Il controller esegue solo gli effetti.
 - **AsyncValue:** un valore letto o scritto in modo asincrono (caricamento, dati, errore) usa `AsyncValue` di Riverpod nel livello application.
 
-## Punti aperti, da chiarire prima della spec
+## Decisioni del 15 novembre 2026
 
-- Sealed o `AsyncValue` per gli altri stati: in discussione con Davide il 15/11.
-- Il momento dell'intervento: prima della ricerca per paese **[D]**; da capire se prima o dopo la pubblicazione sul Play Store.
+- **Sealed o `AsyncValue`:** a strati **[D]**.
+  - Sealed Freezed nel dominio per i flussi con stati che hanno un nome nel prodotto e cambiano per eventi.
+  - `AsyncValue` in application per i dati asincroni (caricamento, dati, errore).
+  - Si combinano (`AsyncValue<RadioSession>`) se un flusso parte da un caricamento.
+  - `AsyncValue` non sta nel dominio perché è un tipo di Riverpod.
+- **Quando:** dopo la pubblicazione sul Play Store, prima della ricerca per paese **[D]**.
+- **Fin dove:** sessione radio con notifica e schermata, più l'aiuto comune per il salvataggio di preferiti e tema **[D]**.
+- **Starter prima:** la convenzione nasce nello starter, così le app nuove partono già con gli stati divisi bene; Frequenza si allinea con l'intervento **[D]**.
