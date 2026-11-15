@@ -97,4 +97,11 @@ Found a station that never lands, or dreaming of a feature?
 
 ## 📄 License
 
-[TO DECIDE]
+The code is released under the [Mozilla Public License 2.0](LICENSE): you may
+use, study and change it, keeping the copyright notice, and the files you
+modify stay open under the same licence.
+
+The name **Frequenza** and its logo are not covered by the licence: please
+don't use them for your own apps.
+
+© 2026 Davide Tarsi
