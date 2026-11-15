@@ -13,7 +13,10 @@ abstract interface class RadioAudioService {
   Stream<void> get systemPauses;
 
   Future<void> startTuningSound();
-  Future<void> stopTuningSound();
+
+  /// Stops the static: at once, or with [fade] while a landing station
+  /// rises.
+  Future<void> stopTuningSound({bool fade = false});
 
   /// Starts [station] silently, showing only a flight in the media session.
   Future<void> playStation(RadioStation station);

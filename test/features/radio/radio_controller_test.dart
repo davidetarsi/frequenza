@@ -60,7 +60,13 @@ class FakeAudioService implements RadioAudioService {
   Future<void> startTuningSound() async => tuningSoundActive = true;
 
   @override
-  Future<void> stopTuningSound() async => tuningSoundActive = false;
+  Future<void> stopTuningSound({bool fade = false}) async {
+    tuningSoundActive = false;
+    tuningStops.add(fade);
+  }
+
+  /// Whether each stop of the static faded it out.
+  final tuningStops = <bool>[];
 
   @override
   Stream<PlaybackStatus> get playbackStatusStream => _statusController.stream;
@@ -467,6 +473,19 @@ void main() {
       expect(audioService.played, hasLength(1));
       expect(audioService.landed, isEmpty);
       expect(audioService.tuningSoundActive, isFalse);
+    });
+
+    test('landing fades the static out, a stop cuts it', () async {
+      repository.stationToReturn = testStation;
+      await controller.tuneRandom();
+      expect(audioService.tuningStops.last, isTrue);
+
+      audioService.autoPlay = false;
+      final flight = controller.tuneRandom();
+      await wait(20);
+      audioService.interruptions.add(null);
+      await flight;
+      expect(audioService.tuningStops.last, isFalse);
     });
 
     test('a long pause closes the stream', () async {
