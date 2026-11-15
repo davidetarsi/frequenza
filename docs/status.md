@@ -276,8 +276,8 @@ Branch `feat/informazioni-e-vite`, sopra `feat/suono-sintonia`.
 ## Modulo per idee e segnalazioni — 15 novembre 2026
 
 - **Dove:** Impostazioni, poi Informazioni, poi «Segnala un problema o un'idea», sotto «Visualizza progetto su GitHub».
-- **Il link:** apre il modulo Google di Davide (`AppLinks.feedback`) con la versione dell'app già scritta nel campo «Versione dell'app» (`entry.1664657182`).
+- **Il link:** apre il modulo Google di Davide (`AppLinks.feedback`) con due campi già scritti: «Telefono» (`entry.331406160`, per esempio «Google Pixel 8 · Android 16», metodo nativo `deviceInfo`) e «Versione dell'app» (`entry.1664657182`).
 - **La versione:** la legge `MainActivity` (metodo `appVersion`, `versionName+versionCode`) tramite `appVersionProvider`. Se non riesce, il campo resta vuoto.
 - **Se il link non si apre:** compare «Impossibile aprire il link», come per GitHub.
-- **Da provare sul telefono:** la voce apre il modulo e il campo della versione è già compilato.
+- **Da provare sul telefono:** la voce apre il modulo con telefono e versione già compilati.
 

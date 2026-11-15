@@ -85,27 +85,33 @@ class AppSettingsSheet extends ConsumerWidget {
           label: LocaleKeys.viewOnGitHub.tr(context: context),
           selected: false,
           trailing: const Icon(Icons.open_in_new),
-          onTap: () => _open(context, ref, (_) => AppLinks.project),
+          onTap: () => _open(context, ref, () async => AppLinks.project),
         ),
         AppSettingsOption(
           leading: const Icon(Icons.feedback_outlined),
           label: LocaleKeys.sendFeedback.tr(context: context),
           selected: false,
           trailing: const Icon(Icons.open_in_new),
-          onTap: () => _open(context, ref, AppLinks.feedback),
+          onTap: () => _open(
+            context,
+            ref,
+            () async => AppLinks.feedback(
+              version: await ref.read(appVersionProvider.future),
+              phone: await ref.read(deviceInfoProvider.future),
+            ),
+          ),
         ),
       ],
     );
   }
 
-  /// Opens a link built from the app version; says so when nothing opens it.
+  /// Opens [link]; says so when nothing opens it.
   Future<void> _open(
     BuildContext context,
     WidgetRef ref,
-    Uri Function(String version) link,
+    Future<Uri> Function() link,
   ) async {
-    final version = await ref.read(appVersionProvider.future);
-    final opened = await ref.read(openExternalProvider)(link(version));
+    final opened = await ref.read(openExternalProvider)(await link());
     if (!opened && context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(LocaleKeys.linkError.tr(context: context))),

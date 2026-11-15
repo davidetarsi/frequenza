@@ -8,11 +8,15 @@ part 'external_links.g.dart';
 abstract final class AppLinks {
   static final project = Uri.parse('https://github.com/davidetarsi/frequenza');
 
-  /// The Google form for ideas and bugs, with the app [version] filled in.
-  static Uri feedback(String version) => Uri.https(
+  /// The Google form for ideas and bugs, with the [phone] and the app
+  /// [version] filled in.
+  static Uri feedback({
+    required String version,
+    required String phone,
+  }) => Uri.https(
     'docs.google.com',
     '/forms/d/e/1FAIpQLScfBxq-YDkcOEW5GE0aeJw4X6Ol-Ydb8ycL7HVyXlt4ujJ26Q/viewform',
-    {'usp': 'pp_url', 'entry.1664657182': version},
+    {'usp': 'pp_url', 'entry.331406160': phone, 'entry.1664657182': version},
   );
 }
 

@@ -36,6 +36,9 @@ void main() {
           radioAudioServiceProvider.overrideWithValue(audio),
           favoritesRepositoryProvider.overrideWithValue(MemoryFavorites()),
           appVersionProvider.overrideWith((ref) async => '0.2.1+2'),
+          deviceInfoProvider.overrideWith(
+            (ref) async => 'Google Pixel 8 · Android 16',
+          ),
           openExternalProvider.overrideWithValue((uri) async {
             opened.add(uri);
             return opens;
@@ -71,7 +74,7 @@ void main() {
     expect(find.text('Impossibile aprire il link'), findsOneWidget);
   });
 
-  testWidgets('the settings open the feedback form with the app version', (
+  testWidgets('the feedback form arrives with app version and phone', (
     tester,
   ) async {
     final opened = await openSettings(tester);
@@ -92,6 +95,7 @@ void main() {
     );
     expect(opened.single.queryParameters, {
       'usp': 'pp_url',
+      'entry.331406160': 'Google Pixel 8 · Android 16',
       'entry.1664657182': '0.2.1+2',
     });
   });
