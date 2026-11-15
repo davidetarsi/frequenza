@@ -245,3 +245,11 @@ Design `superpowers/specs/2026-11-15-suono-sintonia-design.md`, piano `superpowe
 - Android: `MediaPlayer` al posto di `SoundPool`; ogni volo parte da un punto a caso; volume `TUNING_VOLUME = 0.42f`; all'atterraggio sfuma in 400 ms; uscendo dall'app si ferma subito.
 - La stazione sale di volume in 400 ms (8 passi) mentre il fruscio sfuma; una nuova sintonia interrompe la salita.
 - Verificato: `tool/check.sh --apk` verde. Da provare sul telefono: volo lungo con il passaggio di fine loop; dissolvenza all'atterraggio; due voli di fila non identici; voli ravvicinati (il fruscio deve ripartire, non spegnersi).
+
+## Vite in alto e voce «Informazioni» — 15 novembre 2026
+
+Branch `feat/informazioni-e-vite`, sopra `feat/suono-sintonia`.
+
+- La vite in alto a destra restava sul bordo solo prima del primo viaggio: la scritta «Viaggio n.» ora è allineata a destra nella sua metà, e la vite resta ferma accanto al numero (test con testo piccolo, come sul telefono).
+- Impostazioni: nuova sezione «Informazioni» («About») con la voce «Visualizza progetto su GitHub» («View project on GitHub») e l'icona ↗; apre `https://github.com/davidetarsi/frequenza` (repository pubblico) con `url_launcher`, nuova dipendenza ufficiale di Flutter. Se il link non si apre compare «Impossibile aprire il link». L'indirizzo sta in `AppLinks` (`lib/app/links/external_links.dart`).
+- Verificato: `tool/check.sh --apk` verde, 182 test. Da provare sul telefono: il link apre il browser o l'app di GitHub; la vite non si sposta dopo il primo viaggio.

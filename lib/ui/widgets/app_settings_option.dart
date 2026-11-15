@@ -10,6 +10,7 @@ class AppSettingsOption extends StatelessWidget {
     required this.label,
     required this.selected,
     required this.onTap,
+    this.trailing,
   });
 
   /// An icon, or a [CodeBadge] where a code says more.
@@ -17,6 +18,10 @@ class AppSettingsOption extends StatelessWidget {
   final String label;
   final bool selected;
   final VoidCallback? onTap;
+
+  /// Shown when the option is not selected, e.g. a sign that it leaves
+  /// the app.
+  final Widget? trailing;
 
   @override
   Widget build(BuildContext context) => ListTile(
@@ -26,7 +31,7 @@ class AppSettingsOption extends StatelessWidget {
     leading: leading,
     title: Text(label),
     selected: selected,
-    trailing: selected ? const Icon(Icons.check) : null,
+    trailing: selected ? const Icon(Icons.check) : trailing,
     enabled: onTap != null,
     onTap: onTap,
   );
