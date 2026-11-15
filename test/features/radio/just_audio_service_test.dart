@@ -12,12 +12,13 @@ import 'package:just_audio/just_audio.dart';
 class LivePlayer extends Fake implements AudioPlayer {
   final playback = Completer<void>();
   final calls = <String>[];
+  final states = StreamController<PlayerState>.broadcast();
 
   @override
   Future<void> setVolume(double volume) async => calls.add('volume $volume');
 
   @override
-  Stream<PlayerState> get playerStateStream => const Stream.empty();
+  Stream<PlayerState> get playerStateStream => states.stream;
 
   @override
   Stream<IcyMetadata?> get icyMetadataStream => const Stream.empty();
@@ -71,6 +72,21 @@ void main() {
     country: 'Italy',
     countryCode: 'IT',
   );
+
+  test('a paused stream still buffering reads as paused', () async {
+    final player = LivePlayer();
+    final service = JustAudioService(player: player);
+    addTearDown(service.dispose);
+    final statuses = <PlaybackStatus>[];
+    service.playbackStatusStream.listen(statuses.add);
+
+    player.states
+      ..add(PlayerState(true, ProcessingState.buffering))
+      ..add(PlayerState(false, ProcessingState.buffering));
+    await pumpEventQueue();
+
+    expect(statuses, [PlaybackStatus.buffering, PlaybackStatus.paused]);
+  });
 
   test('starting live radio does not wait for playback to end', () async {
     final player = LivePlayer();

@@ -139,6 +139,26 @@ void main() {
     });
   }
 
+  testWidgets('a station on air that is buffering keeps its controls', (
+    tester,
+  ) async {
+    final audio = await openRadio(tester, fip);
+    await tester.tap(find.byKey(const ValueKey('tune-knob')));
+    await tester.pump(const Duration(milliseconds: 500));
+    await landFlight(tester, audio);
+
+    audio.emitStatus(PlaybackStatus.buffering);
+    await tester.pump();
+    await tester.pump();
+    expect(find.text('Connessione alla radio'), findsOneWidget);
+    expect(find.text('SINTONIZZA'), findsOneWidget);
+    expect(find.byIcon(Icons.pause), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey('radio-key-play')));
+    await tester.pump();
+    expect(audio.currentStatus, PlaybackStatus.paused);
+  });
+
   testWidgets('a station without a place still lands with its texts', (
     tester,
   ) async {

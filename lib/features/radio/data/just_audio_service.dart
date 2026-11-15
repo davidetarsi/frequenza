@@ -103,8 +103,10 @@ class JustAudioService implements RadioAudioService {
       case ProcessingState.idle:
         return PlaybackStatus.idle;
       case ProcessingState.loading:
-      case ProcessingState.buffering:
         return PlaybackStatus.buffering;
+      // A pause while the stream refills is a pause, not a stuck stream.
+      case ProcessingState.buffering:
+        return state.playing ? PlaybackStatus.buffering : PlaybackStatus.paused;
       case ProcessingState.ready:
         return state.playing ? PlaybackStatus.playing : PlaybackStatus.paused;
       case ProcessingState.completed:

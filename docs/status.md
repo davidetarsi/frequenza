@@ -204,3 +204,12 @@ Design `superpowers/specs/2026-11-14-notifica-design.md`, piano `superpowers/pla
 - Nelle impostazioni ogni lingua ha la sua targhetta «IT» / «EN» al posto del globo, nello stile delle sigle dei Preferiti (`CodeBadge` in `lib/ui/widgets`, misure in `CodeBadgeDesign`). Prende il colore dell'icona, quindi anche quello della selezione.
 - Ogni lingua è scritta nel suo nome in entrambe le lingue dell'app: «Italiano», «English».
 - Scelta al posto delle bandiere: una lingua non è un paese, e le bandiere emoji cambiano da telefono a telefono.
+
+## Radio bloccata in «Connessione alla radio» — 15 novembre 2026
+
+Segnalato da Davide: con l'app in background la musica si ferma dopo pochi secondi, la notifica gira a vuoto e, riaperta l'app, manopola e tasti sono spenti.
+
+- Lo stream smette di arrivare (buffering) e niente lo interrompeva: ora, se una stazione atterrata resta in buffering per 10 secondi (`FlightTiming.stallTimeout`), la radio si riconnette da sola con il volo di riconnessione, fino a 3 tentativi; se fallisce mostra l'errore con «Riprova».
+- Durante il buffering di una stazione accesa manopola, pausa e cuore restano attivi: solo il volo li spegne.
+- Una pausa mentre lo stream si riempie vale come pausa (`JustAudioService`), così la riconnessione non riaccende una radio messa in pausa.
+- Ancora da capire: perché lo stream si ferma in background. Ipotesi: Android limita la rete all'app quando il servizio in primo piano cade. Serve un logcat dal telefono per confermarla.
