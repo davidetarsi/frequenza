@@ -165,6 +165,18 @@ void main() {
       );
     });
 
+    test('a landing shows the title heard during the flight', () {
+      expect(
+        next(flying, Landed(berlin, paused: false, trackTitle: 'First song')),
+        RadioSession.onAir(
+          flying.journey.arrive(berlin, FlightKind.forward),
+          berlin,
+          playback: OnAirPlayback.playing,
+          trackTitle: 'First song',
+        ),
+      );
+    });
+
     test('a landing without a flight changes nothing', () {
       expect(next(onAir, Landed(berlin, paused: false)), same(onAir));
     });

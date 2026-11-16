@@ -16,6 +16,7 @@ class JustAudioService implements RadioAudioService {
       _mediaSession = mediaSession {
     _initAudioSession();
     _subscribeToPlayerState();
+    _subscribeToTitles();
   }
 
   static const _tuningChannel = nativeChannel;
@@ -28,6 +29,7 @@ class JustAudioService implements RadioAudioService {
   Object? _tuningSoundRequest;
   final _statusController = StreamController<PlaybackStatus>.broadcast();
   final _systemPauses = StreamController<void>.broadcast();
+  final _trackTitles = StreamController<String?>.broadcast();
   final List<StreamSubscription<dynamic>> _subscriptions = [];
   bool _disposed = false;
   PlaybackStatus _currentStatus = PlaybackStatus.idle;
@@ -46,11 +48,16 @@ class JustAudioService implements RadioAudioService {
   Stream<PlaybackStatus> get playbackStatusStream => _statusController.stream;
 
   @override
-  Stream<String?> get trackTitleStream =>
-      _player.icyMetadataStream.map((metadata) {
+  Stream<String?> get trackTitleStream => _trackTitles.stream.distinct();
+
+  void _subscribeToTitles() {
+    _subscriptions.add(
+      _player.icyMetadataStream.listen((metadata) {
         final title = metadata?.info?.title?.trim();
-        return title == null || title.isEmpty ? null : title;
-      }).distinct();
+        _trackTitles.add(title == null || title.isEmpty ? null : title);
+      }),
+    );
+  }
 
   @override
   PlaybackStatus get currentStatus => _currentStatus;
@@ -174,6 +181,8 @@ class JustAudioService implements RadioAudioService {
       // The flight first: the stop below must not close the notification.
       _mediaSession?.showFlight();
       await _player.stop();
+      // The player keeps the last station's title: forget it here.
+      if (!_disposed) _trackTitles.add(null);
       // Silent until land(): the static plays while the stream loads.
       _fade = null;
       _muted = true;
@@ -260,5 +269,6 @@ class JustAudioService implements RadioAudioService {
     await _player.dispose();
     await _statusController.close();
     await _systemPauses.close();
+    await _trackTitles.close();
   }
 }
