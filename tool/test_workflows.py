@@ -4,6 +4,7 @@ questi test fermano almeno gli errori che il design vieta.
 python3 -m unittest discover -s tool -p 'test_*.py'
 """
 
+import fnmatch
 import os
 import unittest
 from pathlib import Path
@@ -96,8 +97,27 @@ class BuildDevTest(unittest.TestCase):
     def test_triggers(self):
         push = self.workflow['on']['push']
         self.assertEqual(push['branches'], ['develop'])
-        self.assertLessEqual({'docs/**', 'test/**', '**/*.md'}, set(push['paths-ignore']))
+        self.assertNotIn('paths-ignore', push)
         self.assertIn('workflow_dispatch', self.workflow['on'])
+
+    def test_builds_only_when_the_app_changes(self):
+        paths = self.workflow['on']['push']['paths']
+
+        def builds(path):
+            return any(fnmatch.fnmatch(path, pattern) for pattern in paths)
+
+        for path in ['lib/main.dart', 'lib/features/radio/presentation/radio_page.dart',
+                     'assets/translations/it.json', 'android/app/build.gradle.kts',
+                     'pubspec.yaml', 'pubspec.lock']:
+            self.assertTrue(builds(path), path)
+        for path in ['docs/index.html', 'docs/img/screen-1.jpg', 'test/app_test.dart',
+                     '.github/workflows/build_dev.yml', 'fastlane/metadata/android/it-IT/short_description.txt',
+                     'distribution/whatsnew/whatsnew-it-IT', 'tool/check.sh', 'README.md', 'LICENSE']:
+            self.assertFalse(builds(path), path)
+
+    def test_skips_the_version_bump_commit(self):
+        condition = self.workflow['jobs']['build-dev-apk']['if']
+        self.assertIn("!startsWith(github.event.head_commit.message, 'chore(release): bump')", condition)
 
     def test_builds_dev_arm64(self):
         commands = runs(self.workflow)
