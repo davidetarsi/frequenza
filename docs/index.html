@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Frequenza</title>
+<meta name="description" content="Gira la manopola e viaggia per il mondo, una stazione radio alla volta.">
+<!-- Link previews (WhatsApp, Telegram…): the testers are mostly Italian. -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Frequenza">
+<meta property="og:title" content="Frequenza">
+<meta property="og:description" content="Gira la manopola e viaggia per il mondo, una stazione radio alla volta.">
+<meta property="og:url" content="https://davidetarsi.github.io/frequenza/">
+<meta property="og:image" content="https://davidetarsi.github.io/frequenza/img/anteprima.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="it_IT">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="img/icon.png">
+<style>
+  :root {
+    --paper: #FAF7EF;
+    --raised: #F0EBDC;
+    --ink: #213E34;
+    --muted: #5E7060;
+    --accent: #AD4823;
+    --on-accent: #FFFFFF;
+    --screen: #203C33;
+    --screen-ink: #E4EBC5;
+    --screen-border: #52634C;
+    --rule: #DCD7C6;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #242C27;
+      --raised: #303A32;
+      --ink: #ECEEDD;
+      --muted: #BBC7B8;
+      --accent: #E07A4F;
+      --on-accent: #1B211D;
+      --screen: #162F28;
+      --rule: #3A463D;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font: 17px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  main { max-width: 40rem; margin: 0 auto; padding: 1rem 1rem 3rem; }
+  a { color: var(--accent); }
+
+  .langs { display: flex; justify-content: flex-end; gap: .25rem; }
+  .langs button {
+    font: 600 .8rem/1 ui-monospace, "Roboto Mono", monospace;
+    letter-spacing: .08em;
+    padding: .4rem .55rem;
+    border-radius: .35rem;
+    border: 1.5px solid var(--rule);
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+  }
+  .langs button[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+
+  header { text-align: center; margin: 1.5rem 0 2rem; }
+  header img { width: 96px; height: 96px; border-radius: 22px; }
+  h1 { font-size: 2.1rem; margin: .5rem 0 .25rem; letter-spacing: .02em; }
+  .tagline { color: var(--muted); font-size: 1.1rem; margin: 0 auto; max-width: 26rem; }
+
+  .shots { display: flex; gap: .75rem; justify-content: center; margin: 0 0 2.5rem; }
+  .shots img {
+    width: calc(50% - .375rem);
+    max-width: 240px;
+    height: auto;
+    border-radius: 14px;
+    box-shadow: 0 6px 20px rgb(0 0 0 / .15);
+  }
+
+  /* The steps sit on the radio's green screen. */
+  .screen {
+    background: var(--screen);
+    color: var(--screen-ink);
+    border: 3px solid var(--screen-border);
+    border-radius: 16px;
+    padding: 1.25rem 1.25rem 1.5rem;
+  }
+  .screen h2 {
+    font: 600 .85rem/1.2 ui-monospace, "Roboto Mono", monospace;
+    letter-spacing: .14em;
+    margin: 0 0 1rem;
+    opacity: .85;
+  }
+  .screen ol { list-style: none; margin: 0; padding: 0; counter-reset: step; }
+  .screen li { counter-increment: step; display: flex; gap: .85rem; align-items: flex-start; }
+  .screen li + li { margin-top: 1.25rem; }
+  .screen li::before {
+    content: counter(step);
+    flex: none;
+    width: 1.9rem; height: 1.9rem;
+    display: grid; place-items: center;
+    border: 1.5px solid var(--screen-ink);
+    border-radius: 50%;
+    font: 600 .9rem/1 ui-monospace, "Roboto Mono", monospace;
+  }
+  .screen p { margin: .1rem 0 .6rem; }
+  .button {
+    display: inline-block;
+    background: #AD4823;
+    color: #FFFFFF;
+    text-decoration: none;
+    font-weight: 600;
+    padding: .6rem 1.1rem;
+    border-radius: 999px;
+  }
+  .button:focus-visible { outline: 3px solid var(--screen-ink); outline-offset: 2px; }
+  .note { font-size: .9rem; opacity: .8; margin-top: 1.25rem; }
+
+  footer {
+    margin-top: 2.5rem;
+    text-align: center;
+    color: var(--muted);
+    font-size: .95rem;
+  }
+  footer a { color: var(--muted); }
+
+  [data-lang] { display: none; }
+  html[lang="en"] [data-lang="en"], html[lang="it"] [data-lang="it"] { display: revert; }
+</style>
+</head>
+<body>
+<main>
+  <nav class="langs" aria-label="Language">
+    <button type="button" data-set="en" aria-pressed="true">EN</button>
+    <button type="button" data-set="it" aria-pressed="false">IT</button>
+  </nav>
+
+  <header>
+    <img src="img/icon.png" alt="" width="96" height="96">
+    <h1>Frequenza</h1>
+    <p class="tagline">
+      <span data-lang="en">Turn the dial and travel the world, one live radio station at a time.</span>
+      <span data-lang="it">Gira la manopola e viaggia per il mondo, una stazione radio alla volta.</span>
+    </p>
+  </header>
+
+  <div class="shots">
+    <img src="img/screen-1.jpg" width="540" height="960" alt="">
+    <img src="img/screen-2.jpg" width="540" height="960" alt="">
+  </div>
+
+  <section class="screen">
+    <h2>
+      <span data-lang="en">TRY IT BEFORE LAUNCH</span>
+      <span data-lang="it">PROVALA IN ANTEPRIMA</span>
+    </h2>
+    <ol>
+      <li>
+        <div>
+          <p>
+            <span data-lang="en">Accept the invitation.</span>
+            <span data-lang="it">Accetta l'invito.</span>
+          </p>
+          <a class="button" href="https://play.google.com/apps/testing/it.davidetarsi.frequenza">
+            <span data-lang="en">Become a tester</span>
+            <span data-lang="it">Diventa tester</span>
+          </a>
+        </div>
+      </li>
+      <li>
+        <div>
+          <p>
+            <span data-lang="en">Install it from the Play Store.</span>
+            <span data-lang="it">Installala dal Play Store.</span>
+          </p>
+          <a class="button" href="https://play.google.com/store/apps/details?id=it.davidetarsi.frequenza">
+            <span data-lang="en">Open Google Play</span>
+            <span data-lang="it">Apri Google Play</span>
+          </a>
+        </div>
+      </li>
+    </ol>
+    <p class="note">
+      <span data-lang="en">Use the Google account you were invited with. Android only.</span>
+      <span data-lang="it">Usa l'account Google con cui sei stato invitato. Solo Android.</span>
+    </p>
+  </section>
+
+  <footer>
+    <a href="https://docs.google.com/forms/d/e/1FAIpQLScfBxq-YDkcOEW5GE0aeJw4X6Ol-Ydb8ycL7HVyXlt4ujJ26Q/viewform">
+      <span data-lang="en">Report a bug or share an idea</span>
+      <span data-lang="it">Segnala un problema o un'idea</span></a>
+    ·
+    <a href="https://github.com/davidetarsi/frequenza">
+      <span data-lang="en">Source code</span>
+      <span data-lang="it">Codice</span></a>
+    ·
+    <a href="privacy.html">Privacy</a>
+  </footer>
+</main>
+<script>
+  (function () {
+    var root = document.documentElement;
+    var saved = null;
+    try { saved = localStorage.getItem('lang'); } catch (e) {}
+    var lang = saved || ((navigator.language || '').toLowerCase().indexOf('it') === 0 ? 'it' : 'en');
+    function set(next, remember) {
+      root.lang = next;
+      document.querySelectorAll('.langs button').forEach(function (b) {
+        b.setAttribute('aria-pressed', String(b.dataset.set === next));
+      });
+      if (remember) { try { localStorage.setItem('lang', next); } catch (e) {} }
+    }
+    document.querySelectorAll('.langs button').forEach(function (b) {
+      b.addEventListener('click', function () { set(b.dataset.set, true); });
+    });
+    set(lang, false);
+  })();
+</script>
+</body>
+</html>
