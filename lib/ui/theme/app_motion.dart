@@ -11,6 +11,9 @@ abstract final class AppMotion {
   static const marqueePause = Duration(milliseconds: 1200);
   static const marqueeLaps = 3;
 
+  /// The favorites count swelling when a station is saved.
+  static const countPulse = Duration(milliseconds: 400);
+
   static Duration standard(BuildContext context) =>
       enabled(context) ? const Duration(milliseconds: 200) : Duration.zero;
 }
