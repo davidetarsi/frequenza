@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frequenza/features/radio/domain/journey.dart';
 import 'package:frequenza/features/radio/domain/radio_session.dart';
+import 'package:frequenza/features/radio/domain/track_title.dart';
 import 'package:frequenza/features/radio/presentation/radio_display.dart';
 import 'package:frequenza/l10n/locale_keys.g.dart';
 
@@ -142,5 +143,25 @@ void main() {
       ),
     );
     expect(display.country, const Translated(LocaleKeys.unknownCountry));
+  });
+
+  test('the song on air is shown clean', () {
+    RadioDisplay withTitle(String title) => RadioDisplay.of(
+      RadioSession.onAir(
+        journey,
+        paris,
+        playback: OnAirPlayback.playing,
+        trackTitle: title,
+      ),
+    );
+    final clean = withTitle('Now On Air: Ana Moura - Desfado');
+    expect(clean.song, 'Ana Moura — Desfado');
+    expect(
+      clean.track,
+      const TrackTitle(artist: 'Ana Moura', title: 'Desfado'),
+    );
+    final advert = withTitle('Advertisement');
+    expect(advert.song, isNull);
+    expect(advert.track, isNull);
   });
 }
