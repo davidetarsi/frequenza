@@ -1,6 +1,6 @@
 # Cartolina del luogo e canzoni salvate — design breve
 
-Data: 16 novembre 2026. Stato: **da approvare**. Branch `docs/cartolina`, da `develop`.
+Data: 16 novembre 2026. Stato: **da approvare** (scelta A per il salvataggio approvata da Davide). Branch `docs/cartolina`, da `develop`.
 
 Legenda:
 - **[D]** decisione di Davide;
@@ -29,13 +29,27 @@ Ogni paese in cui si atterra lascia una cartolina: sul fronte il luogo, sul retr
 - Toccando la cartolina si apre grande, e la si può girare per vedere il retro **[D]**.
 
 **Le canzoni**
-- Il gesto c'è già: toccando il titolo sullo schermo, oggi si copia. Ora si apre una piccola scheda con tre voci: **Salva**, **Cerca su…** e **Copia** **[C]**. Niente secondo cuore, per non ricreare la confusione appena risolta **[C]**.
-- **Salva** scrive la canzone sul retro della cartolina del paese, con la stazione, la regione e la data.
-- **Cerca su…** apre la ricerca nel browser o nell'app, senza account né collegamenti **[C]**:
+- **Un tocco sul titolo la salva** **[D]**: la canzone si scrive sul retro della cartolina del paese, con la stazione, la regione e la data. Sullo schermo della radio compare per qualche secondo «Scritta sulla cartolina · Annulla». Mentre si ascolta non c'è nessuna scelta da fare.
+- **Scartati:** la scheda dal basso con Salva, Cerca e Copia, perché era troppo un menu e copriva la radio **[D]**; le icone dentro lo schermo, che portavano comunque tre scelte **[D]**; un secondo cuore, che avrebbe ricreato la confusione appena risolta **[C]**.
+- **Una pressione lunga sul titolo** lo copia, come fa oggi il tocco **[C]**.
+- Toccare di nuovo il titolo di una canzone già salvata non la duplica **[C]**.
+
+**Il retro**
+- **Sulla cartolina** piccola, agganciata alla radio, il retro non scorre: mostra le ultime 3 canzoni e «e altre N» **[C]**.
+- **Aperto grande**, il retro diventa un elenco che scorre, dalla più recente, con il conteggio in alto («13 canzoni») **[D]**.
+- **Toccando una canzone** si apre un menu vicino alla riga, non una scheda dal basso. Le voci sono:
+  - Cerca su Spotify, Cerca su YouTube, Cerca su Apple Music;
+  - Copia;
+  - Riaccendi questa radio;
+  - **Togli dalla cartolina**, per ultima e in rosso **[C]**.
+- **Per togliere una canzone ci sono due strade** **[D]**:
+  - trascinarla a sinistra: la riga viene cancellata a penna e sparisce;
+  - la voce «Togli» del menu.
+- In entrambi i casi compare «Tolta dalla cartolina · Annulla». Niente richiesta di conferma **[C]**.
+- **Le ricerche** si aprono nel browser o nell'app, senza account né collegamenti **[C]**:
   - Spotify: `https://open.spotify.com/search/<q>`;
   - YouTube: `https://www.youtube.com/results?search_query=<q>`;
   - Apple Music: `https://music.apple.com/search?term=<q>`.
-- Dal retro di una cartolina, ogni canzone offre di nuovo **Cerca su…** e **Riaccendi questa radio** **[C]**.
 
 ## Dati
 
@@ -46,7 +60,7 @@ Ogni paese in cui si atterra lascia una cartolina: sul fronte il luogo, sul retr
 ## Ordine dei lavori
 
 1. **Pulizia del titolo:** togliere le scritte tipo «Now On Air:» e la pubblicità, e separare artista e titolo dove c'è « - ».
-2. **Scheda del titolo:** Salva, Cerca su…, Copia. Finché il diario non c'è, le canzoni salvate restano in un elenco semplice, che poi passa sulle cartoline.
+2. **Salvare una canzone** con un tocco sul titolo, e l'elenco delle canzoni salvate con menu, trascinamento e «Annulla». Finché le cartoline e il diario non ci sono, l'elenco è una pagina semplice; poi passa sul retro delle cartoline.
 3. **Sagoma del paese e cartolina tipografica** agganciata alla radio.
 4. **Diario:** il registro (parte 1, piano già scritto) e la collezione delle cartoline con il retro.
 5. **Foto da Wikimedia Commons** e informativa aggiornata.
