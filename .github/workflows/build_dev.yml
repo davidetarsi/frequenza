@@ -3,13 +3,15 @@ name: 🛠️ Build DEV
 on:
   push:
     branches: [ "develop" ]
-    # Niente APK se il push cambia solo cose che non entrano nell'app
-    # (documentazione, test): sarebbe identico al precedente.
-    # Basta un file fuori da questi percorsi per avviare la build.
-    paths-ignore:
-      - "docs/**"
-      - "test/**"
-      - "**/*.md"
+    # L'APK si rifà solo se cambia qualcosa che entra nell'app. Documenti,
+    # test, pipeline, sito, scheda dello Store e script la lascerebbero
+    # identica alla precedente. Per rifarla comunque: avvio manuale.
+    paths:
+      - "lib/**"
+      - "assets/**"
+      - "android/**"
+      - "pubspec.yaml"
+      - "pubspec.lock"
   # Avvio manuale dalla tab Actions (es. per rimandare l'ultima build).
   workflow_dispatch:
 
