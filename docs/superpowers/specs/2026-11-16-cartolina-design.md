@@ -1,6 +1,6 @@
 # Cartolina del luogo e canzoni salvate — design breve
 
-Data: 16 novembre 2026. Stato: **da approvare** (scelta A per il salvataggio approvata da Davide). Branch `docs/cartolina`, da `develop`.
+Data: 16 novembre 2026. Stato: **da approvare** (salvataggio, segnalibro e schede approvati da Davide). Branch `docs/cartolina`, da `develop`.
 
 Legenda:
 - **[D]** decisione di Davide;
@@ -29,15 +29,26 @@ Ogni paese in cui si atterra lascia una cartolina: sul fronte il luogo, sul retr
 - Toccando la cartolina si apre grande, e la si può girare per vedere il retro **[D]**.
 
 **Le canzoni**
-- **Un tocco sul titolo la salva** **[D]**: la canzone si scrive sul retro della cartolina del paese, con la stazione, la regione e la data. Sullo schermo della radio compare per qualche secondo «Scritta sulla cartolina · Annulla». Mentre si ascolta non c'è nessuna scelta da fare.
-- **Scartati:** la scheda dal basso con Salva, Cerca e Copia, perché era troppo un menu e copriva la radio **[D]**; le icone dentro lo schermo, che portavano comunque tre scelte **[D]**; un secondo cuore, che avrebbe ricreato la confusione appena risolta **[C]**.
+- **Il segnalibro accanto al titolo la salva** **[D]**. È una piccola icona dentro lo schermo, che compare solo quando c'è un titolo: vuota con il «+» (`bookmark_add_outlined`), piena con la spunta dopo il salvataggio (`bookmark_added`). Anche toccare il titolo salva. La canzone si scrive sul retro della cartolina del paese, con la stazione, la regione e la data.
+- **L'avviso** compare in basso, fuori dalla radio, come la snackbar del sistema: «Salvata sulla cartolina degli Stati Uniti · Annulla» **[D]**.
+- **Cuore e segnalibro non si confondono** **[D]**:
+  - il cuore, tra i tasti della radio, è per la stazione: «preferite», «ci torno»;
+  - il segnalibro, attaccato alla canzone, è per la canzone, che non si chiama mai «preferita»: «salvata sulla cartolina».
+- **Scartati:**
+  - la scheda dal basso con Salva, Cerca e Copia, perché era troppo un menu e copriva la radio **[D]**;
+  - le icone dentro lo schermo, che portavano comunque tre scelte **[D]**;
+  - un secondo cuore **[C]**;
+  - la penna, che si legge come «modifica» **[D]**;
+  - la puntina, che vuol dire «fissa in cima» **[C]**;
+  - il «+» con le righe, troppo simile all'icona dei preferiti **[C]**.
+- **Dove si ritrovano:** l'icona in alto apre un foglio con due schede, «Radio» e «Canzoni» **[D]**. Le canzoni sono raggruppate per paese, dalla più recente. Quando ci saranno le cartoline, ogni gruppo porterà al retro della sua cartolina **[C]**.
 - **Una pressione lunga sul titolo** lo copia, come fa oggi il tocco **[C]**.
 - Toccare di nuovo il titolo di una canzone già salvata non la duplica **[C]**.
 
 **Il retro**
 - **Sulla cartolina** piccola, agganciata alla radio, il retro non scorre: mostra le ultime 3 canzoni e «e altre N» **[C]**.
 - **Aperto grande**, il retro diventa un elenco che scorre, dalla più recente, con il conteggio in alto («13 canzoni») **[D]**.
-- **Toccando una canzone** si apre un menu vicino alla riga, non una scheda dal basso. Le voci sono:
+- **I tre puntini verticali** accanto a ogni canzone aprono un menu vicino alla riga, non una scheda dal basso **[D]**. Le voci sono:
   - Cerca su Spotify, Cerca su YouTube, Cerca su Apple Music;
   - Copia;
   - Riaccendi questa radio;
@@ -46,10 +57,12 @@ Ogni paese in cui si atterra lascia una cartolina: sul fronte il luogo, sul retr
   - trascinarla a sinistra: la riga viene cancellata a penna e sparisce;
   - la voce «Togli» del menu.
 - In entrambi i casi compare «Tolta dalla cartolina · Annulla». Niente richiesta di conferma **[C]**.
-- **Le ricerche** si aprono nel browser o nell'app, senza account né collegamenti **[C]**:
-  - Spotify: `https://open.spotify.com/search/<q>`;
+- **Le ricerche** aprono direttamente l'app, con la ricerca già scritta; senza l'app si apre la stessa ricerca nel browser. Non si passa dalla clipboard **[C]**.
   - YouTube: `https://www.youtube.com/results?search_query=<q>`;
+  - Spotify: `spotify:search:<q>`, oppure `https://open.spotify.com/search/<q>`;
   - Apple Music: `https://music.apple.com/search?term=<q>`.
+- **Prima di costruire**, una prova sul telefono di Davide con una build di sviluppo dice quale link di Spotify funziona meglio e se Apple Music arriva sulla ricerca o solo sulla home **[C]**.
+- **Solo i servizi installati:** il menu mostra solo le app presenti sul telefono, più «Cerca sul web». I tre pacchetti vanno dichiarati in `<queries>` nel manifest **[C]**.
 
 ## Dati
 
@@ -60,7 +73,7 @@ Ogni paese in cui si atterra lascia una cartolina: sul fronte il luogo, sul retr
 ## Ordine dei lavori
 
 1. **Pulizia del titolo:** togliere le scritte tipo «Now On Air:» e la pubblicità, e separare artista e titolo dove c'è « - ».
-2. **Salvare una canzone** con un tocco sul titolo, e l'elenco delle canzoni salvate con menu, trascinamento e «Annulla». Finché le cartoline e il diario non ci sono, l'elenco è una pagina semplice; poi passa sul retro delle cartoline.
+2. **Prova dei link di ricerca** sul telefono. Poi **salvare una canzone** con il segnalibro, e l'elenco delle canzoni salvate con menu, trascinamento e «Annulla». Finché le cartoline e il diario non ci sono, l'elenco sta nella scheda «Canzoni» dei preferiti; poi passa sul retro delle cartoline.
 3. **Sagoma del paese e cartolina tipografica** agganciata alla radio.
 4. **Diario:** il registro (parte 1, piano già scritto) e la collezione delle cartoline con il retro.
 5. **Foto da Wikimedia Commons** e informativa aggiornata.
