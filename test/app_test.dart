@@ -311,7 +311,7 @@ void main() {
     },
   );
   testWidgets(
-    'favorites button is a heart with the count in the primary colour',
+    'favorites button is a list with the count in the primary colour',
     (tester) async {
       tester.view.physicalSize = const Size(390, 844);
       tester.view.devicePixelRatio = 1;
@@ -337,6 +337,21 @@ void main() {
         find.descendant(of: button, matching: find.byType(Badge)),
       );
       final scheme = Theme.of(tester.element(button)).colorScheme;
+      // The heart belongs to the save key alone: the list is where it saves.
+      expect(
+        find.descendant(
+          of: button,
+          matching: find.byIcon(Icons.queue_music_outlined),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(
+          of: button,
+          matching: find.byIcon(Icons.favorite_border),
+        ),
+        findsNothing,
+      );
       expect(badge.backgroundColor, scheme.primary);
       expect(badge.textColor, scheme.onPrimary);
       expect(badge.isLabelVisible, isTrue);
@@ -348,6 +363,42 @@ void main() {
       expect(find.byTooltip('Preferiti · 1'), findsOneWidget);
     },
   );
+  testWidgets('saving a station makes the favorites count pulse', (
+    tester,
+  ) async {
+    final audio = FakeAudioService();
+    addTearDown(audio.dispose);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          radioRepositoryProvider.overrideWithValue(
+            FakeRadioRepository()..stationToReturn = station,
+          ),
+          radioAudioServiceProvider.overrideWithValue(audio),
+          favoritesRepositoryProvider.overrideWithValue(MemoryFavorites()),
+        ],
+        child: const StarterApp(locale: Locale('it')),
+      ),
+    );
+    await tester.pump(const Duration(seconds: 1));
+    final pulse = find.descendant(
+      of: find.byKey(const ValueKey('favorites-open')),
+      matching: find.byType(ScaleTransition),
+    );
+    double scale() => tester.widget<ScaleTransition>(pulse).scale.value;
+    expect(scale(), 1);
+    await tester.tap(find.byKey(const ValueKey('tune-knob')));
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
+    await tester.pump(const Duration(seconds: 3));
+    expect(scale(), 1);
+    await tester.tap(find.byKey(const ValueKey('radio-key-save')));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 150));
+    expect(scale(), greaterThan(1));
+    await tester.pump(const Duration(seconds: 1));
+    expect(scale(), 1);
+  });
   testWidgets('radio keys do nothing before the first station', (tester) async {
     final favorites = MemoryFavorites();
     final audio = FakeAudioService();
