@@ -11,7 +11,7 @@
   "favorites": "Favorites",
   "favoritesTitle": "Your frequencies",
   "favoritesSubtitle": "Places to return to.",
-  "favoritesEmpty": "Press the heart key on the radio to add your first station.",
+  "favoritesEmpty": "No places to return to yet. Press the heart on the radio when you find one.",
   "favoritesError": "Your favorites could not be updated. Try again.",
   "savedOnDevice": "Saved on this device",
   "removeFavorite": "Remove from favorites",

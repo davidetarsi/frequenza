@@ -307,7 +307,12 @@ void main() {
       await tester.tap(find.byTooltip('Rimuovi dai preferiti'));
       await tester.pumpAndSettle();
       expect(find.byKey(const ValueKey('favorite-play-id')), findsNothing);
-      expect(find.textContaining('tasto con il cuore'), findsOneWidget);
+      expect(
+        find.text(
+          'Ancora nessun posto in cui tornare. Premi il cuore sulla radio quando ne trovi uno.',
+        ),
+        findsOneWidget,
+      );
     },
   );
   testWidgets(
