@@ -16,6 +16,9 @@ on:
 jobs:
   build-dev-apk:
     name: Build & Upload DEV APK
+    # Il bump della versione, scritto su develop dalla PR verso main, cambia
+    # solo il numero: l'APK sarebbe identica a quella appena mandata.
+    if: "${{ !startsWith(github.event.head_commit.message, 'chore(release): bump') }}"
     runs-on: ubuntu-latest
 
     steps:

@@ -5,6 +5,7 @@ import '../../../l10n/locale_keys.g.dart';
 import '../../../ui/theme/app_spacing.dart';
 import '../../../ui/theme/travel_radio_design.dart';
 import '../../../ui/widgets/app_icon_button.dart';
+import '../../../ui/widgets/count_pulse.dart';
 import '../../favorites/application/favorites_controller.dart';
 import '../../favorites/presentation/favorites_sheet.dart';
 import '../../journey/presentation/journey_texts.dart';
@@ -97,12 +98,20 @@ class RadioPage extends ConsumerWidget {
               tooltip: favoritesLabel,
               foregroundColor: theme.colorScheme.primary,
               onPressed: () => showFavorites(context),
-              icon: Badge.count(
-                count: favoritesCount,
-                isLabelVisible: favoritesCount > 0,
-                backgroundColor: theme.colorScheme.primary,
-                textColor: theme.colorScheme.onPrimary,
-                child: const Icon(Icons.favorite_border),
+              // The heart is the save key's alone: this is where it saves.
+              icon: CountPulse(
+                count: favorites?.stations.length,
+                child: Badge.count(
+                  count: favoritesCount,
+                  isLabelVisible: favoritesCount > 0,
+                  largeSize: RadioFavoritesDesign.countSize,
+                  offset: RadioFavoritesDesign.countOffset,
+                  padding: RadioFavoritesDesign.countPadding,
+                  textStyle: RadioFavoritesDesign.countText,
+                  backgroundColor: theme.colorScheme.primary,
+                  textColor: theme.colorScheme.onPrimary,
+                  child: const Icon(Icons.queue_music_outlined),
+                ),
               ),
             );
             final cabinet = RadioCabinetHero(

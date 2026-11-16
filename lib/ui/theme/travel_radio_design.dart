@@ -228,6 +228,16 @@ abstract final class RadioFavoritesDesign {
   );
   static const removeIconSize = 19.0;
   static const trailingInset = 4.0;
+
+  /// The count on the button that opens the list: small, on the rim.
+  static const countSize = 14.0;
+  static const countOffset = Offset(11, -11);
+  static const countPadding = EdgeInsets.symmetric(horizontal: 3);
+  static const countText = TextStyle(
+    fontSize: 9,
+    fontWeight: FontWeight.w700,
+    height: 1,
+  );
 }
 
 abstract final class CodeBadgeDesign {
