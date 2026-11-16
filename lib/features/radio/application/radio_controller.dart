@@ -62,12 +62,21 @@ class RadioController extends _$RadioController {
 
   /// Flies to a random station, retrying after a lost signal, away from the
   /// stations just heard. [countries] limits it to the chosen ones.
-  Future<void> tuneRandom({Set<String>? countries}) => _fly(
-    () => ref
-        .read(radioRepositoryProvider)
-        .getRandomStation(countries: countries, avoid: _justHeard()),
-    retries: ref.read(flightTimingProvider).autoRetries,
-  );
+  Future<void> tuneRandom({Set<String>? countries}) {
+    // Landing ends the flight: a station picked before in this flight is
+    // one that did not play.
+    final tried = <String>{};
+    return _fly(() async {
+      final station = await ref
+          .read(radioRepositoryProvider)
+          .getRandomStation(
+            countries: countries,
+            avoid: {..._justHeard(), ...tried},
+          );
+      if (station != null) tried.add(station.id);
+      return station;
+    }, retries: ref.read(flightTimingProvider).autoRetries);
+  }
 
   /// The stations left behind and the last one that landed.
   Set<String> _justHeard() {

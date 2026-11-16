@@ -137,6 +137,9 @@ class RadioBrowserRepository implements RadioRepository {
     final data = await _fetchJsonWithFallback('/json/stations/search', {
       'limit': '$drawSize',
       'hidebroken': 'true',
+      // Filtered by the server: an answer with no HTTPS stream means the
+      // country has none, not that the sample was unlucky.
+      'is_https': 'true',
       'order': 'random',
       'seed': '${_random.nextInt(1 << 32)}',
       'countrycode': ?countryCode,

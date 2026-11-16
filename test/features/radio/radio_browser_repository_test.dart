@@ -233,6 +233,8 @@ void main() {
           expect(uri.queryParameters, containsPair('order', 'random'));
           expect(uri.queryParameters, containsPair('hidebroken', 'true'));
           expect(uri.queryParameters, containsPair('limit', '30'));
+          // An HTTP-only sample must not pass for a country with no stations.
+          expect(uri.queryParameters, containsPair('is_https', 'true'));
         }
         expect(
           searches[0].queryParameters['seed'],
@@ -297,10 +299,7 @@ void main() {
         final asked = browser.searches
             .map((uri) => uri.queryParameters['countrycode'])
             .toList();
-        expect(
-          asked.where((code) => code == 'AA').length,
-          lessThanOrEqualTo(1),
-        );
+        expect(asked.where((code) => code == 'AA').length, equals(1));
       },
     );
 

@@ -30,6 +30,7 @@ class FakeRadioRepository implements RadioRepository {
 
   Set<String>? lastCountries;
   Set<String> lastAvoid = const {};
+  final avoids = <Set<String>>[];
 
   @override
   Future<RadioStation?> getRandomStation({
@@ -39,6 +40,7 @@ class FakeRadioRepository implements RadioRepository {
     randomCalls++;
     lastCountries = countries;
     lastAvoid = avoid;
+    avoids.add(avoid);
     if (errorToThrow != null) throw errorToThrow!;
     if (pendingStation != null) return pendingStation!.future;
     return stationToReturn;
@@ -364,6 +366,18 @@ void main() {
       expect(audioService.tuningSoundActive, isFalse);
       expect(audioService.landed, isEmpty);
       expect(read().departure, homePlace);
+    });
+
+    test('a retry does not pick again a station that failed to play', () async {
+      audioService.autoPlay = false;
+      repository.stationToReturn = testStation;
+
+      await controller.tuneRandom();
+
+      expect(repository.avoids, hasLength(3));
+      expect(repository.avoids.first, isNot(contains('station-1')));
+      expect(repository.avoids[1], contains('station-1'));
+      expect(repository.avoids[2], contains('station-1'));
     });
 
     test('favorite does not retry', () async {
