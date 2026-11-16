@@ -60,14 +60,23 @@ class RadioController extends _$RadioController {
     return const RadioSession.off(Journey());
   }
 
-  /// Flies to a random station, retrying after a lost signal.
-  /// If [countryCode] is specified, restricts search to that country.
-  Future<void> tuneRandom({String? countryCode}) => _fly(
+  /// Flies to a random station, retrying after a lost signal, away from the
+  /// stations just heard. [countries] limits it to the chosen ones.
+  Future<void> tuneRandom({Set<String>? countries}) => _fly(
     () => ref
         .read(radioRepositoryProvider)
-        .getRandomStation(countryCode: countryCode),
+        .getRandomStation(countries: countries, avoid: _justHeard()),
     retries: ref.read(flightTimingProvider).autoRetries,
   );
+
+  /// The stations left behind and the last one that landed.
+  Set<String> _justHeard() {
+    final journey = state.journey;
+    return {
+      for (final station in journey.previous) station.id,
+      ?journey.landed?.id,
+    };
+  }
 
   /// Flies to a chosen station (e.g. a favorite), without retrying.
   Future<void> tuneTo(RadioStation station) async =>

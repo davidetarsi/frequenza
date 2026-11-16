@@ -28,9 +28,17 @@ class FakeRadioRepository implements RadioRepository {
     return stationToReturn != null ? [stationToReturn!] : [];
   }
 
+  Set<String>? lastCountries;
+  Set<String> lastAvoid = const {};
+
   @override
-  Future<RadioStation?> getRandomStation({String? countryCode}) async {
+  Future<RadioStation?> getRandomStation({
+    Set<String>? countries,
+    Set<String> avoid = const {},
+  }) async {
     randomCalls++;
+    lastCountries = countries;
+    lastAvoid = avoid;
     if (errorToThrow != null) throw errorToThrow!;
     if (pendingStation != null) return pendingStation!.future;
     return stationToReturn;
@@ -438,6 +446,24 @@ void main() {
       }
       expect(read().trips, 6);
       expect(read().history, hasLength(5));
+    });
+
+    test('tuning avoids the stations just heard', () async {
+      const paris = RadioStation(
+        id: 'paris',
+        name: 'FIP',
+        streamUrl: 'https://stream.test/fip.mp3',
+        country: 'France',
+        countryCode: 'FR',
+      );
+      await controller.tuneTo(paris);
+      await controller.tuneTo(testStation);
+      repository.stationToReturn = testStation;
+
+      await controller.tuneRandom(countries: {'IT', 'FR'});
+
+      expect(repository.lastAvoid, {'paris', 'station-1'});
+      expect(repository.lastCountries, {'IT', 'FR'});
     });
 
     test('stop during flight grounds the radio', () async {
