@@ -89,10 +89,16 @@ class FakeAudioService implements RadioAudioService {
     _statusController.add(status);
   }
 
+  /// The title each station sends as soon as it connects, by id.
+  final titlesOnConnect = <String, String>{};
+
   @override
   Future<void> playStation(RadioStation station) async {
     lastPlayedStation = station;
     played.add(station);
+    trackTitles.add(null);
+    final title = titlesOnConnect[station.id];
+    if (title != null) trackTitles.add(title);
     emitStatus(PlaybackStatus.buffering);
     if (autoPlay) emitStatus(PlaybackStatus.playing);
   }
@@ -478,6 +484,37 @@ void main() {
 
       expect(repository.lastAvoid, {'paris', 'station-1'});
       expect(repository.lastCountries, {'IT', 'FR'});
+    });
+
+    test('the title sent while flying shows once landed', () async {
+      repository.stationToReturn = testStation;
+      audioService.titlesOnConnect[testStation.id] = 'Artista - Titolo';
+      await controller.tuneRandom();
+
+      expect(
+        container.read(radioControllerProvider),
+        isA<OnAir>().having((s) => s.trackTitle, 'title', 'Artista - Titolo'),
+      );
+    });
+
+    test('a station without titles does not show the previous one', () async {
+      const silent = RadioStation(
+        id: 'station-2',
+        name: 'Radio Muta',
+        streamUrl: 'https://stream.test/muta.mp3',
+        country: 'Italy',
+        countryCode: 'IT',
+      );
+      repository.stationToReturn = testStation;
+      audioService.titlesOnConnect[testStation.id] = 'Artista - Titolo';
+      await controller.tuneRandom();
+      repository.stationToReturn = silent;
+      await controller.tuneRandom();
+
+      expect(
+        container.read(radioControllerProvider),
+        isA<OnAir>().having((s) => s.trackTitle, 'title', isNull),
+      );
     });
 
     test('stop during flight grounds the radio', () async {
