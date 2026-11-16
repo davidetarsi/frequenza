@@ -104,6 +104,10 @@ class RadioPage extends ConsumerWidget {
                 child: Badge.count(
                   count: favoritesCount,
                   isLabelVisible: favoritesCount > 0,
+                  largeSize: RadioFavoritesDesign.countSize,
+                  offset: RadioFavoritesDesign.countOffset,
+                  padding: RadioFavoritesDesign.countPadding,
+                  textStyle: RadioFavoritesDesign.countText,
                   backgroundColor: theme.colorScheme.primary,
                   textColor: theme.colorScheme.onPrimary,
                   child: const Icon(Icons.queue_music_outlined),

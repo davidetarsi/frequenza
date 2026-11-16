@@ -364,6 +364,18 @@ void main() {
         find.descendant(of: button, matching: find.text('1')),
         findsOneWidget,
       );
+      // The count sits on the button's rim, outside the icon, not over it.
+      final icon = tester.getRect(
+        find.descendant(
+          of: button,
+          matching: find.byIcon(Icons.queue_music_outlined),
+        ),
+      );
+      final label = tester.getRect(
+        find.descendant(of: button, matching: find.text('1')),
+      );
+      expect(label.center.dx, greaterThan(icon.right));
+      expect(label.center.dy, lessThan(icon.top));
       expect(find.text('Preferiti · 1'), findsNothing);
       expect(find.byTooltip('Preferiti · 1'), findsOneWidget);
     },
