@@ -12,7 +12,6 @@ import '../application/radio_controller.dart';
 import '../domain/radio_bar_state.dart';
 import '../domain/radio_station.dart';
 import '../domain/track_title.dart';
-import 'radio_display.dart';
 
 /// The player bar under a page opened over the radio. Touching the station
 /// goes back to the radio; the keys do what the radio's keys do. No next
@@ -24,48 +23,54 @@ class RadioBar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final session = ref.watch(radioControllerProvider);
-    final state = radioBarOf(session);
+    final state = radioBarOf(ref.watch(radioControllerProvider));
     if (state is BarHidden) return const SizedBox.shrink();
     final controller = ref.read(radioControllerProvider.notifier);
-    final display = RadioDisplay.of(session);
     String t(String key) => key.tr(context: context);
 
-    final (title, detail) = switch (state) {
-      BarOnAir(:final station, :final track, :final connecting) => (
+    final title = switch (state) {
+      BarPlaying(:final station) ||
+      BarPaused(:final station) ||
+      BarStopped(:final station) =>
         '${station.name} · ${station.country.isEmpty ? t(LocaleKeys.unknownCountry) : station.country}',
-        connecting
-            ? t(LocaleKeys.barConnecting)
-            : track?.display ?? t(display.statusKey),
-      ),
-      BarFlying() => (
-        t(LocaleKeys.barFlying),
-        t(LocaleKeys.barTuning).toUpperCase(),
-      ),
-      BarFailed() => (t(LocaleKeys.barNoSignal), t(LocaleKeys.barFlightFailed)),
-      BarHidden() => ('', ''),
+      BarFlying() => t(LocaleKeys.barFlying),
+      BarFailed() => t(LocaleKeys.barNoSignal),
+      BarHidden() => '',
     };
-
+    final detail = switch (state.note) {
+      BarNote.track => state.track!.display,
+      BarNote.tuning => t(LocaleKeys.barTuning).toUpperCase(),
+      BarNote.connecting => t(LocaleKeys.barConnecting),
+      BarNote.playing => t(LocaleKeys.playing),
+      BarNote.paused => t(LocaleKeys.paused),
+      BarNote.ready => t(LocaleKeys.ready),
+      BarNote.noSignal => t(LocaleKeys.barFlightFailed),
+      null => '',
+    };
     final keys = <Widget>[
-      if (state case BarOnAir(:final station)) _heart(context, ref, station),
-      if (state case BarOnAir(:final station, :final track?))
+      if (state.station case final station?) _heart(context, ref, station),
+      if ((state.station, state.track) case (final station?, final track?))
         _bookmark(context, ref, track, station),
-      switch (state) {
-        BarFailed() => _key(
-          icon: Icons.refresh,
-          tooltip: t(LocaleKeys.retry),
-          onPressed: controller.tuneRandom,
+      if (state.mainKey case final key?)
+        _key(
+          icon: switch (key) {
+            BarKey.pause => Icons.pause,
+            BarKey.play => Icons.play_arrow,
+            BarKey.retry => Icons.refresh,
+          },
+          tooltip: switch (key) {
+            BarKey.pause => t(LocaleKeys.pause),
+            BarKey.play => t(LocaleKeys.resume),
+            BarKey.retry => t(LocaleKeys.retry),
+          },
+          onPressed: !state.mainKeyEnabled
+              ? null
+              : switch (key) {
+                  BarKey.pause => controller.pause,
+                  BarKey.play => controller.play,
+                  BarKey.retry => controller.tuneRandom,
+                },
         ),
-        _ => _key(
-          icon: display.playKeyOn ? Icons.pause : Icons.play_arrow,
-          tooltip: display.playKeyOn
-              ? t(LocaleKeys.pause)
-              : t(LocaleKeys.resume),
-          onPressed: state is BarOnAir && display.playKeyEnabled
-              ? () => display.playKeyOn ? controller.pause() : controller.play()
-              : null,
-        ),
-      },
     ];
 
     return SafeArea(

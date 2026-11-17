@@ -24,36 +24,31 @@ mixin _$RadioBarState {
     required TResult Function(
       RadioStation station,
       TrackTitle? track,
-      bool playing,
       bool connecting,
     )
-    onAir,
+    playing,
+    required TResult Function(RadioStation station, TrackTitle? track) paused,
+    required TResult Function(RadioStation station) stopped,
     required TResult Function() failed,
   }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? hidden,
     TResult? Function()? flying,
-    TResult? Function(
-      RadioStation station,
-      TrackTitle? track,
-      bool playing,
-      bool connecting,
-    )?
-    onAir,
+    TResult? Function(RadioStation station, TrackTitle? track, bool connecting)?
+    playing,
+    TResult? Function(RadioStation station, TrackTitle? track)? paused,
+    TResult? Function(RadioStation station)? stopped,
     TResult? Function()? failed,
   }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? hidden,
     TResult Function()? flying,
-    TResult Function(
-      RadioStation station,
-      TrackTitle? track,
-      bool playing,
-      bool connecting,
-    )?
-    onAir,
+    TResult Function(RadioStation station, TrackTitle? track, bool connecting)?
+    playing,
+    TResult Function(RadioStation station, TrackTitle? track)? paused,
+    TResult Function(RadioStation station)? stopped,
     TResult Function()? failed,
     required TResult orElse(),
   }) => throw _privateConstructorUsedError;
@@ -61,21 +56,27 @@ mixin _$RadioBarState {
   TResult map<TResult extends Object?>({
     required TResult Function(BarHidden value) hidden,
     required TResult Function(BarFlying value) flying,
-    required TResult Function(BarOnAir value) onAir,
+    required TResult Function(BarPlaying value) playing,
+    required TResult Function(BarPaused value) paused,
+    required TResult Function(BarStopped value) stopped,
     required TResult Function(BarFailed value) failed,
   }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(BarHidden value)? hidden,
     TResult? Function(BarFlying value)? flying,
-    TResult? Function(BarOnAir value)? onAir,
+    TResult? Function(BarPlaying value)? playing,
+    TResult? Function(BarPaused value)? paused,
+    TResult? Function(BarStopped value)? stopped,
     TResult? Function(BarFailed value)? failed,
   }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(BarHidden value)? hidden,
     TResult Function(BarFlying value)? flying,
-    TResult Function(BarOnAir value)? onAir,
+    TResult Function(BarPlaying value)? playing,
+    TResult Function(BarPaused value)? paused,
+    TResult Function(BarStopped value)? stopped,
     TResult Function(BarFailed value)? failed,
     required TResult orElse(),
   }) => throw _privateConstructorUsedError;
@@ -126,8 +127,8 @@ class __$$BarHiddenImplCopyWithImpl<$Res>
 
 /// @nodoc
 
-class _$BarHiddenImpl implements BarHidden {
-  const _$BarHiddenImpl();
+class _$BarHiddenImpl extends BarHidden {
+  const _$BarHiddenImpl() : super._();
 
   @override
   String toString() {
@@ -151,10 +152,11 @@ class _$BarHiddenImpl implements BarHidden {
     required TResult Function(
       RadioStation station,
       TrackTitle? track,
-      bool playing,
       bool connecting,
     )
-    onAir,
+    playing,
+    required TResult Function(RadioStation station, TrackTitle? track) paused,
+    required TResult Function(RadioStation station) stopped,
     required TResult Function() failed,
   }) {
     return hidden();
@@ -165,13 +167,10 @@ class _$BarHiddenImpl implements BarHidden {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? hidden,
     TResult? Function()? flying,
-    TResult? Function(
-      RadioStation station,
-      TrackTitle? track,
-      bool playing,
-      bool connecting,
-    )?
-    onAir,
+    TResult? Function(RadioStation station, TrackTitle? track, bool connecting)?
+    playing,
+    TResult? Function(RadioStation station, TrackTitle? track)? paused,
+    TResult? Function(RadioStation station)? stopped,
     TResult? Function()? failed,
   }) {
     return hidden?.call();
@@ -182,13 +181,10 @@ class _$BarHiddenImpl implements BarHidden {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? hidden,
     TResult Function()? flying,
-    TResult Function(
-      RadioStation station,
-      TrackTitle? track,
-      bool playing,
-      bool connecting,
-    )?
-    onAir,
+    TResult Function(RadioStation station, TrackTitle? track, bool connecting)?
+    playing,
+    TResult Function(RadioStation station, TrackTitle? track)? paused,
+    TResult Function(RadioStation station)? stopped,
     TResult Function()? failed,
     required TResult orElse(),
   }) {
@@ -203,7 +199,9 @@ class _$BarHiddenImpl implements BarHidden {
   TResult map<TResult extends Object?>({
     required TResult Function(BarHidden value) hidden,
     required TResult Function(BarFlying value) flying,
-    required TResult Function(BarOnAir value) onAir,
+    required TResult Function(BarPlaying value) playing,
+    required TResult Function(BarPaused value) paused,
+    required TResult Function(BarStopped value) stopped,
     required TResult Function(BarFailed value) failed,
   }) {
     return hidden(this);
@@ -214,7 +212,9 @@ class _$BarHiddenImpl implements BarHidden {
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(BarHidden value)? hidden,
     TResult? Function(BarFlying value)? flying,
-    TResult? Function(BarOnAir value)? onAir,
+    TResult? Function(BarPlaying value)? playing,
+    TResult? Function(BarPaused value)? paused,
+    TResult? Function(BarStopped value)? stopped,
     TResult? Function(BarFailed value)? failed,
   }) {
     return hidden?.call(this);
@@ -225,7 +225,9 @@ class _$BarHiddenImpl implements BarHidden {
   TResult maybeMap<TResult extends Object?>({
     TResult Function(BarHidden value)? hidden,
     TResult Function(BarFlying value)? flying,
-    TResult Function(BarOnAir value)? onAir,
+    TResult Function(BarPlaying value)? playing,
+    TResult Function(BarPaused value)? paused,
+    TResult Function(BarStopped value)? stopped,
     TResult Function(BarFailed value)? failed,
     required TResult orElse(),
   }) {
@@ -236,8 +238,9 @@ class _$BarHiddenImpl implements BarHidden {
   }
 }
 
-abstract class BarHidden implements RadioBarState {
+abstract class BarHidden extends RadioBarState {
   const factory BarHidden() = _$BarHiddenImpl;
+  const BarHidden._() : super._();
 }
 
 /// @nodoc
@@ -263,8 +266,8 @@ class __$$BarFlyingImplCopyWithImpl<$Res>
 
 /// @nodoc
 
-class _$BarFlyingImpl implements BarFlying {
-  const _$BarFlyingImpl();
+class _$BarFlyingImpl extends BarFlying {
+  const _$BarFlyingImpl() : super._();
 
   @override
   String toString() {
@@ -288,10 +291,11 @@ class _$BarFlyingImpl implements BarFlying {
     required TResult Function(
       RadioStation station,
       TrackTitle? track,
-      bool playing,
       bool connecting,
     )
-    onAir,
+    playing,
+    required TResult Function(RadioStation station, TrackTitle? track) paused,
+    required TResult Function(RadioStation station) stopped,
     required TResult Function() failed,
   }) {
     return flying();
@@ -302,13 +306,10 @@ class _$BarFlyingImpl implements BarFlying {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? hidden,
     TResult? Function()? flying,
-    TResult? Function(
-      RadioStation station,
-      TrackTitle? track,
-      bool playing,
-      bool connecting,
-    )?
-    onAir,
+    TResult? Function(RadioStation station, TrackTitle? track, bool connecting)?
+    playing,
+    TResult? Function(RadioStation station, TrackTitle? track)? paused,
+    TResult? Function(RadioStation station)? stopped,
     TResult? Function()? failed,
   }) {
     return flying?.call();
@@ -319,13 +320,10 @@ class _$BarFlyingImpl implements BarFlying {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? hidden,
     TResult Function()? flying,
-    TResult Function(
-      RadioStation station,
-      TrackTitle? track,
-      bool playing,
-      bool connecting,
-    )?
-    onAir,
+    TResult Function(RadioStation station, TrackTitle? track, bool connecting)?
+    playing,
+    TResult Function(RadioStation station, TrackTitle? track)? paused,
+    TResult Function(RadioStation station)? stopped,
     TResult Function()? failed,
     required TResult orElse(),
   }) {
@@ -340,7 +338,9 @@ class _$BarFlyingImpl implements BarFlying {
   TResult map<TResult extends Object?>({
     required TResult Function(BarHidden value) hidden,
     required TResult Function(BarFlying value) flying,
-    required TResult Function(BarOnAir value) onAir,
+    required TResult Function(BarPlaying value) playing,
+    required TResult Function(BarPaused value) paused,
+    required TResult Function(BarStopped value) stopped,
     required TResult Function(BarFailed value) failed,
   }) {
     return flying(this);
@@ -351,7 +351,9 @@ class _$BarFlyingImpl implements BarFlying {
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(BarHidden value)? hidden,
     TResult? Function(BarFlying value)? flying,
-    TResult? Function(BarOnAir value)? onAir,
+    TResult? Function(BarPlaying value)? playing,
+    TResult? Function(BarPaused value)? paused,
+    TResult? Function(BarStopped value)? stopped,
     TResult? Function(BarFailed value)? failed,
   }) {
     return flying?.call(this);
@@ -362,7 +364,9 @@ class _$BarFlyingImpl implements BarFlying {
   TResult maybeMap<TResult extends Object?>({
     TResult Function(BarHidden value)? hidden,
     TResult Function(BarFlying value)? flying,
-    TResult Function(BarOnAir value)? onAir,
+    TResult Function(BarPlaying value)? playing,
+    TResult Function(BarPaused value)? paused,
+    TResult Function(BarStopped value)? stopped,
     TResult Function(BarFailed value)? failed,
     required TResult orElse(),
   }) {
@@ -373,34 +377,30 @@ class _$BarFlyingImpl implements BarFlying {
   }
 }
 
-abstract class BarFlying implements RadioBarState {
+abstract class BarFlying extends RadioBarState {
   const factory BarFlying() = _$BarFlyingImpl;
+  const BarFlying._() : super._();
 }
 
 /// @nodoc
-abstract class _$$BarOnAirImplCopyWith<$Res> {
-  factory _$$BarOnAirImplCopyWith(
-    _$BarOnAirImpl value,
-    $Res Function(_$BarOnAirImpl) then,
-  ) = __$$BarOnAirImplCopyWithImpl<$Res>;
+abstract class _$$BarPlayingImplCopyWith<$Res> {
+  factory _$$BarPlayingImplCopyWith(
+    _$BarPlayingImpl value,
+    $Res Function(_$BarPlayingImpl) then,
+  ) = __$$BarPlayingImplCopyWithImpl<$Res>;
   @useResult
-  $Res call({
-    RadioStation station,
-    TrackTitle? track,
-    bool playing,
-    bool connecting,
-  });
+  $Res call({RadioStation station, TrackTitle? track, bool connecting});
 
   $RadioStationCopyWith<$Res> get station;
 }
 
 /// @nodoc
-class __$$BarOnAirImplCopyWithImpl<$Res>
-    extends _$RadioBarStateCopyWithImpl<$Res, _$BarOnAirImpl>
-    implements _$$BarOnAirImplCopyWith<$Res> {
-  __$$BarOnAirImplCopyWithImpl(
-    _$BarOnAirImpl _value,
-    $Res Function(_$BarOnAirImpl) _then,
+class __$$BarPlayingImplCopyWithImpl<$Res>
+    extends _$RadioBarStateCopyWithImpl<$Res, _$BarPlayingImpl>
+    implements _$$BarPlayingImplCopyWith<$Res> {
+  __$$BarPlayingImplCopyWithImpl(
+    _$BarPlayingImpl _value,
+    $Res Function(_$BarPlayingImpl) _then,
   ) : super(_value, _then);
 
   /// Create a copy of RadioBarState
@@ -410,11 +410,10 @@ class __$$BarOnAirImplCopyWithImpl<$Res>
   $Res call({
     Object? station = null,
     Object? track = freezed,
-    Object? playing = null,
     Object? connecting = null,
   }) {
     return _then(
-      _$BarOnAirImpl(
+      _$BarPlayingImpl(
         null == station
             ? _value.station
             : station // ignore: cast_nullable_to_non_nullable
@@ -423,10 +422,6 @@ class __$$BarOnAirImplCopyWithImpl<$Res>
             ? _value.track
             : track // ignore: cast_nullable_to_non_nullable
                   as TrackTitle?,
-        playing: null == playing
-            ? _value.playing
-            : playing // ignore: cast_nullable_to_non_nullable
-                  as bool,
         connecting: null == connecting
             ? _value.connecting
             : connecting // ignore: cast_nullable_to_non_nullable
@@ -448,51 +443,44 @@ class __$$BarOnAirImplCopyWithImpl<$Res>
 
 /// @nodoc
 
-class _$BarOnAirImpl implements BarOnAir {
-  const _$BarOnAirImpl(
-    this.station, {
-    this.track,
-    required this.playing,
-    required this.connecting,
-  });
+class _$BarPlayingImpl extends BarPlaying {
+  const _$BarPlayingImpl(this.station, {this.track, this.connecting = false})
+    : super._();
 
   @override
   final RadioStation station;
   @override
   final TrackTitle? track;
   @override
-  final bool playing;
-  @override
+  @JsonKey()
   final bool connecting;
 
   @override
   String toString() {
-    return 'RadioBarState.onAir(station: $station, track: $track, playing: $playing, connecting: $connecting)';
+    return 'RadioBarState.playing(station: $station, track: $track, connecting: $connecting)';
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$BarOnAirImpl &&
+            other is _$BarPlayingImpl &&
             (identical(other.station, station) || other.station == station) &&
             (identical(other.track, track) || other.track == track) &&
-            (identical(other.playing, playing) || other.playing == playing) &&
             (identical(other.connecting, connecting) ||
                 other.connecting == connecting));
   }
 
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, station, track, playing, connecting);
+  int get hashCode => Object.hash(runtimeType, station, track, connecting);
 
   /// Create a copy of RadioBarState
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
-  _$$BarOnAirImplCopyWith<_$BarOnAirImpl> get copyWith =>
-      __$$BarOnAirImplCopyWithImpl<_$BarOnAirImpl>(this, _$identity);
+  _$$BarPlayingImplCopyWith<_$BarPlayingImpl> get copyWith =>
+      __$$BarPlayingImplCopyWithImpl<_$BarPlayingImpl>(this, _$identity);
 
   @override
   @optionalTypeArgs
@@ -502,13 +490,14 @@ class _$BarOnAirImpl implements BarOnAir {
     required TResult Function(
       RadioStation station,
       TrackTitle? track,
-      bool playing,
       bool connecting,
     )
-    onAir,
+    playing,
+    required TResult Function(RadioStation station, TrackTitle? track) paused,
+    required TResult Function(RadioStation station) stopped,
     required TResult Function() failed,
   }) {
-    return onAir(station, track, playing, connecting);
+    return playing(station, track, connecting);
   }
 
   @override
@@ -516,16 +505,13 @@ class _$BarOnAirImpl implements BarOnAir {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? hidden,
     TResult? Function()? flying,
-    TResult? Function(
-      RadioStation station,
-      TrackTitle? track,
-      bool playing,
-      bool connecting,
-    )?
-    onAir,
+    TResult? Function(RadioStation station, TrackTitle? track, bool connecting)?
+    playing,
+    TResult? Function(RadioStation station, TrackTitle? track)? paused,
+    TResult? Function(RadioStation station)? stopped,
     TResult? Function()? failed,
   }) {
-    return onAir?.call(station, track, playing, connecting);
+    return playing?.call(station, track, connecting);
   }
 
   @override
@@ -533,18 +519,15 @@ class _$BarOnAirImpl implements BarOnAir {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? hidden,
     TResult Function()? flying,
-    TResult Function(
-      RadioStation station,
-      TrackTitle? track,
-      bool playing,
-      bool connecting,
-    )?
-    onAir,
+    TResult Function(RadioStation station, TrackTitle? track, bool connecting)?
+    playing,
+    TResult Function(RadioStation station, TrackTitle? track)? paused,
+    TResult Function(RadioStation station)? stopped,
     TResult Function()? failed,
     required TResult orElse(),
   }) {
-    if (onAir != null) {
-      return onAir(station, track, playing, connecting);
+    if (playing != null) {
+      return playing(station, track, connecting);
     }
     return orElse();
   }
@@ -554,10 +537,12 @@ class _$BarOnAirImpl implements BarOnAir {
   TResult map<TResult extends Object?>({
     required TResult Function(BarHidden value) hidden,
     required TResult Function(BarFlying value) flying,
-    required TResult Function(BarOnAir value) onAir,
+    required TResult Function(BarPlaying value) playing,
+    required TResult Function(BarPaused value) paused,
+    required TResult Function(BarStopped value) stopped,
     required TResult Function(BarFailed value) failed,
   }) {
-    return onAir(this);
+    return playing(this);
   }
 
   @override
@@ -565,10 +550,12 @@ class _$BarOnAirImpl implements BarOnAir {
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(BarHidden value)? hidden,
     TResult? Function(BarFlying value)? flying,
-    TResult? Function(BarOnAir value)? onAir,
+    TResult? Function(BarPlaying value)? playing,
+    TResult? Function(BarPaused value)? paused,
+    TResult? Function(BarStopped value)? stopped,
     TResult? Function(BarFailed value)? failed,
   }) {
-    return onAir?.call(this);
+    return playing?.call(this);
   }
 
   @override
@@ -576,34 +563,418 @@ class _$BarOnAirImpl implements BarOnAir {
   TResult maybeMap<TResult extends Object?>({
     TResult Function(BarHidden value)? hidden,
     TResult Function(BarFlying value)? flying,
-    TResult Function(BarOnAir value)? onAir,
+    TResult Function(BarPlaying value)? playing,
+    TResult Function(BarPaused value)? paused,
+    TResult Function(BarStopped value)? stopped,
     TResult Function(BarFailed value)? failed,
     required TResult orElse(),
   }) {
-    if (onAir != null) {
-      return onAir(this);
+    if (playing != null) {
+      return playing(this);
     }
     return orElse();
   }
 }
 
-abstract class BarOnAir implements RadioBarState {
-  const factory BarOnAir(
+abstract class BarPlaying extends RadioBarState {
+  const factory BarPlaying(
     final RadioStation station, {
     final TrackTitle? track,
-    required final bool playing,
-    required final bool connecting,
-  }) = _$BarOnAirImpl;
+    final bool connecting,
+  }) = _$BarPlayingImpl;
+  const BarPlaying._() : super._();
 
   RadioStation get station;
   TrackTitle? get track;
-  bool get playing;
   bool get connecting;
 
   /// Create a copy of RadioBarState
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$BarOnAirImplCopyWith<_$BarOnAirImpl> get copyWith =>
+  _$$BarPlayingImplCopyWith<_$BarPlayingImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class _$$BarPausedImplCopyWith<$Res> {
+  factory _$$BarPausedImplCopyWith(
+    _$BarPausedImpl value,
+    $Res Function(_$BarPausedImpl) then,
+  ) = __$$BarPausedImplCopyWithImpl<$Res>;
+  @useResult
+  $Res call({RadioStation station, TrackTitle? track});
+
+  $RadioStationCopyWith<$Res> get station;
+}
+
+/// @nodoc
+class __$$BarPausedImplCopyWithImpl<$Res>
+    extends _$RadioBarStateCopyWithImpl<$Res, _$BarPausedImpl>
+    implements _$$BarPausedImplCopyWith<$Res> {
+  __$$BarPausedImplCopyWithImpl(
+    _$BarPausedImpl _value,
+    $Res Function(_$BarPausedImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of RadioBarState
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({Object? station = null, Object? track = freezed}) {
+    return _then(
+      _$BarPausedImpl(
+        null == station
+            ? _value.station
+            : station // ignore: cast_nullable_to_non_nullable
+                  as RadioStation,
+        track: freezed == track
+            ? _value.track
+            : track // ignore: cast_nullable_to_non_nullable
+                  as TrackTitle?,
+      ),
+    );
+  }
+
+  /// Create a copy of RadioBarState
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $RadioStationCopyWith<$Res> get station {
+    return $RadioStationCopyWith<$Res>(_value.station, (value) {
+      return _then(_value.copyWith(station: value));
+    });
+  }
+}
+
+/// @nodoc
+
+class _$BarPausedImpl extends BarPaused {
+  const _$BarPausedImpl(this.station, {this.track}) : super._();
+
+  @override
+  final RadioStation station;
+  @override
+  final TrackTitle? track;
+
+  @override
+  String toString() {
+    return 'RadioBarState.paused(station: $station, track: $track)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$BarPausedImpl &&
+            (identical(other.station, station) || other.station == station) &&
+            (identical(other.track, track) || other.track == track));
+  }
+
+  @override
+  int get hashCode => Object.hash(runtimeType, station, track);
+
+  /// Create a copy of RadioBarState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$BarPausedImplCopyWith<_$BarPausedImpl> get copyWith =>
+      __$$BarPausedImplCopyWithImpl<_$BarPausedImpl>(this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() hidden,
+    required TResult Function() flying,
+    required TResult Function(
+      RadioStation station,
+      TrackTitle? track,
+      bool connecting,
+    )
+    playing,
+    required TResult Function(RadioStation station, TrackTitle? track) paused,
+    required TResult Function(RadioStation station) stopped,
+    required TResult Function() failed,
+  }) {
+    return paused(station, track);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? hidden,
+    TResult? Function()? flying,
+    TResult? Function(RadioStation station, TrackTitle? track, bool connecting)?
+    playing,
+    TResult? Function(RadioStation station, TrackTitle? track)? paused,
+    TResult? Function(RadioStation station)? stopped,
+    TResult? Function()? failed,
+  }) {
+    return paused?.call(station, track);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? hidden,
+    TResult Function()? flying,
+    TResult Function(RadioStation station, TrackTitle? track, bool connecting)?
+    playing,
+    TResult Function(RadioStation station, TrackTitle? track)? paused,
+    TResult Function(RadioStation station)? stopped,
+    TResult Function()? failed,
+    required TResult orElse(),
+  }) {
+    if (paused != null) {
+      return paused(station, track);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(BarHidden value) hidden,
+    required TResult Function(BarFlying value) flying,
+    required TResult Function(BarPlaying value) playing,
+    required TResult Function(BarPaused value) paused,
+    required TResult Function(BarStopped value) stopped,
+    required TResult Function(BarFailed value) failed,
+  }) {
+    return paused(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(BarHidden value)? hidden,
+    TResult? Function(BarFlying value)? flying,
+    TResult? Function(BarPlaying value)? playing,
+    TResult? Function(BarPaused value)? paused,
+    TResult? Function(BarStopped value)? stopped,
+    TResult? Function(BarFailed value)? failed,
+  }) {
+    return paused?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(BarHidden value)? hidden,
+    TResult Function(BarFlying value)? flying,
+    TResult Function(BarPlaying value)? playing,
+    TResult Function(BarPaused value)? paused,
+    TResult Function(BarStopped value)? stopped,
+    TResult Function(BarFailed value)? failed,
+    required TResult orElse(),
+  }) {
+    if (paused != null) {
+      return paused(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class BarPaused extends RadioBarState {
+  const factory BarPaused(
+    final RadioStation station, {
+    final TrackTitle? track,
+  }) = _$BarPausedImpl;
+  const BarPaused._() : super._();
+
+  RadioStation get station;
+  TrackTitle? get track;
+
+  /// Create a copy of RadioBarState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$BarPausedImplCopyWith<_$BarPausedImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class _$$BarStoppedImplCopyWith<$Res> {
+  factory _$$BarStoppedImplCopyWith(
+    _$BarStoppedImpl value,
+    $Res Function(_$BarStoppedImpl) then,
+  ) = __$$BarStoppedImplCopyWithImpl<$Res>;
+  @useResult
+  $Res call({RadioStation station});
+
+  $RadioStationCopyWith<$Res> get station;
+}
+
+/// @nodoc
+class __$$BarStoppedImplCopyWithImpl<$Res>
+    extends _$RadioBarStateCopyWithImpl<$Res, _$BarStoppedImpl>
+    implements _$$BarStoppedImplCopyWith<$Res> {
+  __$$BarStoppedImplCopyWithImpl(
+    _$BarStoppedImpl _value,
+    $Res Function(_$BarStoppedImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of RadioBarState
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({Object? station = null}) {
+    return _then(
+      _$BarStoppedImpl(
+        null == station
+            ? _value.station
+            : station // ignore: cast_nullable_to_non_nullable
+                  as RadioStation,
+      ),
+    );
+  }
+
+  /// Create a copy of RadioBarState
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $RadioStationCopyWith<$Res> get station {
+    return $RadioStationCopyWith<$Res>(_value.station, (value) {
+      return _then(_value.copyWith(station: value));
+    });
+  }
+}
+
+/// @nodoc
+
+class _$BarStoppedImpl extends BarStopped {
+  const _$BarStoppedImpl(this.station) : super._();
+
+  @override
+  final RadioStation station;
+
+  @override
+  String toString() {
+    return 'RadioBarState.stopped(station: $station)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$BarStoppedImpl &&
+            (identical(other.station, station) || other.station == station));
+  }
+
+  @override
+  int get hashCode => Object.hash(runtimeType, station);
+
+  /// Create a copy of RadioBarState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$BarStoppedImplCopyWith<_$BarStoppedImpl> get copyWith =>
+      __$$BarStoppedImplCopyWithImpl<_$BarStoppedImpl>(this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() hidden,
+    required TResult Function() flying,
+    required TResult Function(
+      RadioStation station,
+      TrackTitle? track,
+      bool connecting,
+    )
+    playing,
+    required TResult Function(RadioStation station, TrackTitle? track) paused,
+    required TResult Function(RadioStation station) stopped,
+    required TResult Function() failed,
+  }) {
+    return stopped(station);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? hidden,
+    TResult? Function()? flying,
+    TResult? Function(RadioStation station, TrackTitle? track, bool connecting)?
+    playing,
+    TResult? Function(RadioStation station, TrackTitle? track)? paused,
+    TResult? Function(RadioStation station)? stopped,
+    TResult? Function()? failed,
+  }) {
+    return stopped?.call(station);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? hidden,
+    TResult Function()? flying,
+    TResult Function(RadioStation station, TrackTitle? track, bool connecting)?
+    playing,
+    TResult Function(RadioStation station, TrackTitle? track)? paused,
+    TResult Function(RadioStation station)? stopped,
+    TResult Function()? failed,
+    required TResult orElse(),
+  }) {
+    if (stopped != null) {
+      return stopped(station);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(BarHidden value) hidden,
+    required TResult Function(BarFlying value) flying,
+    required TResult Function(BarPlaying value) playing,
+    required TResult Function(BarPaused value) paused,
+    required TResult Function(BarStopped value) stopped,
+    required TResult Function(BarFailed value) failed,
+  }) {
+    return stopped(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(BarHidden value)? hidden,
+    TResult? Function(BarFlying value)? flying,
+    TResult? Function(BarPlaying value)? playing,
+    TResult? Function(BarPaused value)? paused,
+    TResult? Function(BarStopped value)? stopped,
+    TResult? Function(BarFailed value)? failed,
+  }) {
+    return stopped?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(BarHidden value)? hidden,
+    TResult Function(BarFlying value)? flying,
+    TResult Function(BarPlaying value)? playing,
+    TResult Function(BarPaused value)? paused,
+    TResult Function(BarStopped value)? stopped,
+    TResult Function(BarFailed value)? failed,
+    required TResult orElse(),
+  }) {
+    if (stopped != null) {
+      return stopped(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class BarStopped extends RadioBarState {
+  const factory BarStopped(final RadioStation station) = _$BarStoppedImpl;
+  const BarStopped._() : super._();
+
+  RadioStation get station;
+
+  /// Create a copy of RadioBarState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$BarStoppedImplCopyWith<_$BarStoppedImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
@@ -630,8 +1001,8 @@ class __$$BarFailedImplCopyWithImpl<$Res>
 
 /// @nodoc
 
-class _$BarFailedImpl implements BarFailed {
-  const _$BarFailedImpl();
+class _$BarFailedImpl extends BarFailed {
+  const _$BarFailedImpl() : super._();
 
   @override
   String toString() {
@@ -655,10 +1026,11 @@ class _$BarFailedImpl implements BarFailed {
     required TResult Function(
       RadioStation station,
       TrackTitle? track,
-      bool playing,
       bool connecting,
     )
-    onAir,
+    playing,
+    required TResult Function(RadioStation station, TrackTitle? track) paused,
+    required TResult Function(RadioStation station) stopped,
     required TResult Function() failed,
   }) {
     return failed();
@@ -669,13 +1041,10 @@ class _$BarFailedImpl implements BarFailed {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? hidden,
     TResult? Function()? flying,
-    TResult? Function(
-      RadioStation station,
-      TrackTitle? track,
-      bool playing,
-      bool connecting,
-    )?
-    onAir,
+    TResult? Function(RadioStation station, TrackTitle? track, bool connecting)?
+    playing,
+    TResult? Function(RadioStation station, TrackTitle? track)? paused,
+    TResult? Function(RadioStation station)? stopped,
     TResult? Function()? failed,
   }) {
     return failed?.call();
@@ -686,13 +1055,10 @@ class _$BarFailedImpl implements BarFailed {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? hidden,
     TResult Function()? flying,
-    TResult Function(
-      RadioStation station,
-      TrackTitle? track,
-      bool playing,
-      bool connecting,
-    )?
-    onAir,
+    TResult Function(RadioStation station, TrackTitle? track, bool connecting)?
+    playing,
+    TResult Function(RadioStation station, TrackTitle? track)? paused,
+    TResult Function(RadioStation station)? stopped,
     TResult Function()? failed,
     required TResult orElse(),
   }) {
@@ -707,7 +1073,9 @@ class _$BarFailedImpl implements BarFailed {
   TResult map<TResult extends Object?>({
     required TResult Function(BarHidden value) hidden,
     required TResult Function(BarFlying value) flying,
-    required TResult Function(BarOnAir value) onAir,
+    required TResult Function(BarPlaying value) playing,
+    required TResult Function(BarPaused value) paused,
+    required TResult Function(BarStopped value) stopped,
     required TResult Function(BarFailed value) failed,
   }) {
     return failed(this);
@@ -718,7 +1086,9 @@ class _$BarFailedImpl implements BarFailed {
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(BarHidden value)? hidden,
     TResult? Function(BarFlying value)? flying,
-    TResult? Function(BarOnAir value)? onAir,
+    TResult? Function(BarPlaying value)? playing,
+    TResult? Function(BarPaused value)? paused,
+    TResult? Function(BarStopped value)? stopped,
     TResult? Function(BarFailed value)? failed,
   }) {
     return failed?.call(this);
@@ -729,7 +1099,9 @@ class _$BarFailedImpl implements BarFailed {
   TResult maybeMap<TResult extends Object?>({
     TResult Function(BarHidden value)? hidden,
     TResult Function(BarFlying value)? flying,
-    TResult Function(BarOnAir value)? onAir,
+    TResult Function(BarPlaying value)? playing,
+    TResult Function(BarPaused value)? paused,
+    TResult Function(BarStopped value)? stopped,
     TResult Function(BarFailed value)? failed,
     required TResult orElse(),
   }) {
@@ -740,6 +1112,7 @@ class _$BarFailedImpl implements BarFailed {
   }
 }
 
-abstract class BarFailed implements RadioBarState {
+abstract class BarFailed extends RadioBarState {
   const factory BarFailed() = _$BarFailedImpl;
+  const BarFailed._() : super._();
 }
