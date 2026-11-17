@@ -103,9 +103,9 @@ Il contenuto è una pillola verde:
 | in volo | «In volo…» / SINTONIZZAZIONE | no | no | pausa, disattivato |
 | in onda | stazione · paese / titolo | sì | solo se c'è un titolo | pausa |
 | in pausa | stazione · paese / titolo | sì | solo se c'è un titolo | play |
-| fallito | «Nessun segnale» / «Il volo non è riuscito» | no | no | riprova |
+| fallito, o stazione rotta | «Nessun segnale» / «Il volo non è riuscito» | no | no | riprova: un nuovo volo, come la manopola |
 
-- **Lo stato della barra non si inventa nulla.** È una funzione pura della `RadioSession` e di ciò che la radio già mostra (`RadioDisplay`): il tasto principale fa esattamente quello che fa il tasto play della radio, e «riprova» è il suo comportamento nello stato fallito.
+- **Lo stato della barra non si inventa nulla.** È una funzione pura della `RadioSession` e di ciò che la radio già mostra (`RadioDisplay`): il tasto principale fa esattamente quello che fa il tasto play della radio (`playKeyOn`, `playKeyEnabled`). Dove la radio riprova con la manopola (volo fallito, stazione rotta), «riprova» fa lo stesso: `tuneRandom()`. Durante il buffering la barra mostra «Connessione…» e il tasto resta pausa.
 - **Cuore e segnalibro** usano gli stessi controller e gli stessi avvisi della radio: `favoritesProvider.toggle` e `saveSong`. Gli avvisi compaiono sopra la barra.
 
 ## Le macchine a stati
