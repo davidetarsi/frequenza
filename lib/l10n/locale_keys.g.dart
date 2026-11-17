@@ -76,4 +76,7 @@ abstract class LocaleKeys {
   static const welcomeDemo = 'welcomeDemo';
   static const welcomeHint = 'welcomeHint';
   static const sendFeedback = 'sendFeedback';
+  static const saveSong = 'saveSong';
+  static const songSaved = 'songSaved';
+  static const undo = 'undo';
 }

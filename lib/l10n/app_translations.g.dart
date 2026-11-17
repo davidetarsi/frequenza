@@ -92,6 +92,9 @@ class CodegenLoader extends AssetLoader {
         "Animation: the dial turns and the radio lands on a station far away",
     "welcomeHint": "Tap the dial to turn it on",
     "sendFeedback": "Report a bug or share an idea",
+    "saveSong": "Save song",
+    "songSaved": "Song saved",
+    "undo": "Undo",
   };
   static const Map<String, dynamic> _it = {
     "welcomeTitle": "Gira la manopola.\nAtterra da qualche parte nel mondo.",
@@ -171,6 +174,9 @@ class CodegenLoader extends AssetLoader {
         "Animazione: la manopola gira e la radio atterra su una stazione lontana",
     "welcomeHint": "Tocca la manopola per accendere",
     "sendFeedback": "Segnala un problema o un'idea",
+    "saveSong": "Salva canzone",
+    "songSaved": "Canzone salvata",
+    "undo": "Annulla",
   };
   static const Map<String, Map<String, dynamic>> mapLocales = {
     "en": _en,

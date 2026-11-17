@@ -71,5 +71,8 @@
   "welcomeStart": "Accendi la radio",
   "welcomeDemo": "Animazione: la manopola gira e la radio atterra su una stazione lontana",
   "welcomeHint": "Tocca la manopola per accendere",
-  "sendFeedback": "Segnala un problema o un'idea"
+  "sendFeedback": "Segnala un problema o un'idea",
+  "saveSong": "Salva canzone",
+  "songSaved": "Canzone salvata",
+  "undo": "Annulla"
 }

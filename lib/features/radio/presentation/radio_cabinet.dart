@@ -60,7 +60,9 @@ class RadioCabinet extends StatelessWidget {
     this.tripLabel,
     this.playKey,
     this.saveKey,
+    this.onDetailTap,
     this.onDetailLongPress,
+    this.detailAction,
     this.dialTurns = 0,
     this.dialGlow = 0,
   });
@@ -93,8 +95,12 @@ class RadioCabinet extends StatelessWidget {
   /// Pause/resume and save, as piano keys inside the cabinet.
   final RadioKey? playKey, saveKey;
 
-  /// Set only while [detail] is the song on air: a long press copies it.
-  final VoidCallback? onDetailLongPress;
+  /// Set only while [detail] is the song on air: a tap saves it, a long
+  /// press copies it.
+  final VoidCallback? onDetailTap, onDetailLongPress;
+
+  /// Beside [detail], in the screen's ink: the song's bookmark.
+  final Widget? detailAction;
 
   Widget _equalizer({required double height}) => SizedBox(
     height: height,
@@ -212,16 +218,34 @@ class RadioCabinet extends StatelessWidget {
                 height:
                     scaler.scale(RadioCabinetDesign.detailText.fontSize!) *
                     metrics.detailHeightFactor,
-                child: GestureDetector(
-                  key: const ValueKey('radio-detail'),
-                  behavior: HitTestBehavior.opaque,
-                  onLongPress: onDetailLongPress,
-                  child: Text(
-                    detail,
-                    maxLines: metrics.textLines,
-                    overflow: TextOverflow.ellipsis,
-                    style: RadioCabinetDesign.detailText,
-                  ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: GestureDetector(
+                        key: const ValueKey('radio-detail'),
+                        behavior: HitTestBehavior.opaque,
+                        onTap: onDetailTap,
+                        onLongPress: onDetailLongPress,
+                        child: Text(
+                          detail,
+                          maxLines: metrics.textLines,
+                          overflow: TextOverflow.ellipsis,
+                          style: RadioCabinetDesign.detailText,
+                        ),
+                      ),
+                    ),
+                    if (detailAction case final action?)
+                      IconTheme.merge(
+                        data: IconThemeData(
+                          color: DefaultTextStyle.of(context).style.color,
+                          size: scaler.scale(
+                            RadioCabinetDesign.detailActionSize,
+                          ),
+                        ),
+                        child: action,
+                      ),
+                  ],
                 ),
               ),
               if (!compact) ...[

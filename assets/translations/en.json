@@ -71,5 +71,8 @@
   "welcomeStart": "Turn on the radio",
   "welcomeDemo": "Animation: the dial turns and the radio lands on a station far away",
   "welcomeHint": "Tap the dial to turn it on",
-  "sendFeedback": "Report a bug or share an idea"
+  "sendFeedback": "Report a bug or share an idea",
+  "saveSong": "Save song",
+  "songSaved": "Song saved",
+  "undo": "Undo"
 }
