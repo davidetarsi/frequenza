@@ -8,6 +8,10 @@ part 'external_links.g.dart';
 abstract final class AppLinks {
   static final project = Uri.parse('https://github.com/davidetarsi/frequenza');
 
+  static final privacy = Uri.parse(
+    'https://davidetarsi.github.io/frequenza/privacy.html',
+  );
+
   /// The Google form for ideas and bugs, with the [phone] and the app
   /// [version] filled in.
   static Uri feedback({

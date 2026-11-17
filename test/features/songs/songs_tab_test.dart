@@ -4,16 +4,20 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frequenza/app/app.dart';
 import 'package:frequenza/app/links/external_links.dart';
+import 'package:frequenza/features/analytics/application/analytics_providers.dart';
+import 'package:frequenza/features/analytics/domain/app_event.dart';
 import 'package:frequenza/features/favorites/application/favorites_providers.dart';
 import 'package:frequenza/features/radio/application/radio_providers.dart';
 import 'package:frequenza/features/radio/domain/radio_station.dart';
 import 'package:frequenza/features/songs/application/saved_songs.dart';
 import 'package:frequenza/features/songs/data/installed_apps.dart';
 import 'package:frequenza/features/songs/domain/saved_song.dart';
+import 'package:frequenza/features/songs/domain/song_search.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../favorites/favorites_test.dart' show MemoryFavorites;
 import '../radio/radio_controller_test.dart';
+import '../analytics/recording_analytics.dart';
 import 'saved_songs_test.dart' show MemorySongs, kexp, fip;
 
 const tokyo = RadioStation(
@@ -36,6 +40,7 @@ class Harness {
   final songs = MemorySongs();
   final audio = FakeAudioService();
   final opened = <Uri>[];
+  final analytics = RecordingAnalytics();
 }
 
 Future<Harness> openSongs(
@@ -60,6 +65,7 @@ Future<Harness> openSongs(
         favoritesRepositoryProvider.overrideWithValue(MemoryFavorites()),
         songsRepositoryProvider.overrideWithValue(h.songs),
         installedSearchAppsProvider.overrideWith((ref) async => installed),
+        analyticsProvider.overrideWithValue(h.analytics),
         openExternalProvider.overrideWithValue((uri) async {
           h.opened.add(uri);
           return true;
@@ -235,5 +241,32 @@ void main() {
 
     expect(find.text('Canzoni trovate in viaggio.'), findsNothing);
     expect(h.audio.lastPlayedStation?.id, 'kexp');
+  });
+
+  testWidgets('the menu counts searches, copies and tuning again', (
+    tester,
+  ) async {
+    final h = await openSongs(
+      tester,
+      [song('Desfado', kexp, 14, artist: 'Ana Moura')],
+      installed: {'com.spotify.music'},
+    );
+
+    await openMenu(tester, 'Desfado');
+    await tester.tap(find.text('Cerca su Spotify'));
+    await tester.pumpAndSettle();
+    await openMenu(tester, 'Desfado');
+    await tester.tap(find.text('Copia'));
+    await tester.pumpAndSettle();
+    await openMenu(tester, 'Desfado');
+    await tester.tap(find.text('Riaccendi KEXP'));
+    await tester.pump(const Duration(seconds: 1));
+    await tester.pumpAndSettle();
+
+    expect(h.analytics.events, [
+      AppEvent.songSearchOpened(SearchService.spotify),
+      const AppEvent.songCopied(),
+      const AppEvent.stationRetuned(),
+    ]);
   });
 }

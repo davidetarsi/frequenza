@@ -86,5 +86,10 @@
   "removeSong": "Remove",
   "songRemoved": "Song removed",
   "songOptions": "Song options",
-  "songsError": "Your songs could not be updated. Try again."
+  "songsError": "Your songs could not be updated. Try again.",
+  "privacy": "Privacy",
+  "analyticsSwitch": "Anonymous statistics",
+  "analyticsHint": "They help find what doesn't work. Nothing about you.",
+  "privacyPolicy": "Privacy policy",
+  "analyticsSaveError": "The choice could not be saved. Try again."
 }

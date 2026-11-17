@@ -74,9 +74,17 @@ jobs:
           echo "storeFile=upload-keystore.jks" >> android/key.properties
 
       - name: 🏗️ Build PROD AppBundle (AAB) & APK
+        env:
+          # Anonymous statistics: without them the build ships with them off.
+          TGA_API_KEY: ${{ secrets.TGA_API_KEY }}
+          TGA_SERVER_URL: ${{ vars.TGA_SERVER_URL }}
         run: |
-          flutter build appbundle --flavor prod --release
-          flutter build apk --flavor prod --release --target-platform android-arm64
+          flutter build appbundle --flavor prod --release \
+            --dart-define=TGA_API_KEY="$TGA_API_KEY" \
+            --dart-define=TGA_SERVER_URL="$TGA_SERVER_URL"
+          flutter build apk --flavor prod --release --target-platform android-arm64 \
+            --dart-define=TGA_API_KEY="$TGA_API_KEY" \
+            --dart-define=TGA_SERVER_URL="$TGA_SERVER_URL"
 
       - name: 🏷️ Rename Artifacts
         run: |

@@ -91,4 +91,9 @@ abstract class LocaleKeys {
   static const songRemoved = 'songRemoved';
   static const songOptions = 'songOptions';
   static const songsError = 'songsError';
+  static const privacy = 'privacy';
+  static const analyticsSwitch = 'analyticsSwitch';
+  static const analyticsHint = 'analyticsHint';
+  static const privacyPolicy = 'privacyPolicy';
+  static const analyticsSaveError = 'analyticsSaveError';
 }

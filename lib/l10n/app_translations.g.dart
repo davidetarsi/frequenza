@@ -108,6 +108,11 @@ class CodegenLoader extends AssetLoader {
     "songRemoved": "Song removed",
     "songOptions": "Song options",
     "songsError": "Your songs could not be updated. Try again.",
+    "privacy": "Privacy",
+    "analyticsSwitch": "Anonymous statistics",
+    "analyticsHint": "They help find what doesn't work. Nothing about you.",
+    "privacyPolicy": "Privacy policy",
+    "analyticsSaveError": "The choice could not be saved. Try again.",
   };
   static const Map<String, dynamic> _it = {
     "welcomeTitle": "Gira la manopola.\nAtterra da qualche parte nel mondo.",
@@ -203,6 +208,12 @@ class CodegenLoader extends AssetLoader {
     "songRemoved": "Canzone tolta",
     "songOptions": "Opzioni della canzone",
     "songsError": "Non è stato possibile aggiornare le canzoni. Riprova.",
+    "privacy": "Privacy",
+    "analyticsSwitch": "Statistiche anonime",
+    "analyticsHint":
+        "Aiutano a capire cosa non funziona. Nessun dato su di te.",
+    "privacyPolicy": "Informativa sulla privacy",
+    "analyticsSaveError": "Non è stato possibile salvare la scelta. Riprova.",
   };
   static const Map<String, Map<String, dynamic>> mapLocales = {
     "en": _en,

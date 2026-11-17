@@ -6,7 +6,7 @@ part of 'welcome_seen.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$welcomeSeenHash() => r'aa3f378cd8d23b97c48f86cde57d9b1c91a7ac66';
+String _$welcomeSeenHash() => r'3f22631f9617793c297d50dc71bc46f4614e90ff';
 
 /// Whether the welcome page has been seen: it shows only on the first launch.
 ///

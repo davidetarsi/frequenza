@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:audio_service/audio_service.dart';
 import 'package:just_audio/just_audio.dart';
 
+import '../features/analytics/application/analytics_session.dart';
 import '../features/radio/application/radio_notification.dart';
 import '../features/radio/application/radio_providers.dart';
 import '../features/radio/data/native_channel.dart';
@@ -44,7 +45,10 @@ Future<void> bootstrap({AppConfig config = const AppConfig()}) async {
     overrides: [radioAudioHandlerProvider.overrideWithValue(handler)],
   );
   // The first page depends on it: the welcome, or the radio.
-  await container.read(welcomeSeenProvider.future);
+  final welcomeSeen = await container.read(welcomeSeenProvider.future);
+  // Before the notification: a flight from the headphones must already be
+  // counted whole, with the launch details.
+  await startAnalytics(container, firstOpen: !welcomeSeen, locale: language);
   // The notification answers from the start, before any page is built.
   container.read(radioNotificationProvider);
   runApp(

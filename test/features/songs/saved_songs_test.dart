@@ -31,12 +31,16 @@ const fip = RadioStation(
 
 class MemorySongs implements SongsRepository {
   List<SavedSong> items = [];
+  bool failSave = false;
 
   @override
   Future<List<SavedSong>> load() async => List.of(items);
 
   @override
-  Future<void> save(List<SavedSong> songs) async => items = List.of(songs);
+  Future<void> save(List<SavedSong> songs) async {
+    if (failSave) throw StateError('Storage unavailable');
+    items = List.of(songs);
+  }
 }
 
 void main() {
@@ -176,6 +180,10 @@ void main() {
         {"title":"No date",
          "station":{"id":"fip","name":"FIP","url":"https://fip.example.com/live"}},
         42,
+        {"title":"   ","at":"2026-11-16T20:00:00.000Z",
+         "station":{"id":"fip","name":"FIP","url":"https://fip.example.com/live"}},
+        {"title":"Bad date","at":"not a date",
+         "station":{"id":"fip","name":"FIP","url":"https://fip.example.com/live"}},
         {"title":"Good","artist":7,"at":"2026-11-16T20:00:00.000Z",
          "station":{"id":"fip","name":"FIP","url":"https://fip.example.com/live"}}
       ]''',

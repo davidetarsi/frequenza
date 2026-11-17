@@ -1,3 +1,5 @@
+import '../../analytics/application/analytics_providers.dart';
+import '../../analytics/domain/app_event.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -42,16 +44,20 @@ class SavedSongs extends _$SavedSongs {
       savedAt: DateTime.now(),
     );
     final result = await _update([...current, song]);
-    return !result.hasError;
+    if (result.hasError) return false;
+    ref.read(analyticsProvider).track(AppEvent.songSaved(station));
+    return true;
   }
 
   Future<void> remove(SavedSong song) async {
     final current = state.valueOrNull;
     if (current == null) return;
-    await _update([
+    final result = await _update([
       for (final saved in current)
         if (saved.key != song.key) saved,
     ]);
+    if (result.hasError) return;
+    ref.read(analyticsProvider).track(AppEvent.songRemoved(song.station));
   }
 
   /// Puts [song] back at [index], as it was before a removal.
