@@ -31,12 +31,16 @@ const fip = RadioStation(
 
 class MemorySongs implements SongsRepository {
   List<SavedSong> items = [];
+  bool failSave = false;
 
   @override
   Future<List<SavedSong>> load() async => List.of(items);
 
   @override
-  Future<void> save(List<SavedSong> songs) async => items = List.of(songs);
+  Future<void> save(List<SavedSong> songs) async {
+    if (failSave) throw StateError('Storage unavailable');
+    items = List.of(songs);
+  }
 }
 
 void main() {

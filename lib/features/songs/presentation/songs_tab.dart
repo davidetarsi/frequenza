@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../app/links/external_links.dart';
+import '../../analytics/application/analytics_providers.dart';
+import '../../analytics/domain/app_event.dart';
 import '../../../l10n/locale_keys.g.dart';
 import '../../../ui/theme/app_shape.dart';
 import '../../../ui/theme/app_spacing.dart';
@@ -117,11 +119,14 @@ class _SongsTabState extends ConsumerState<SongsTab> {
 
   Future<void> _choose(SavedSong song, Object choice) async {
     switch (choice) {
-      case final Uri link:
+      case (final SearchService service, final Uri link):
+        ref.read(analyticsProvider).track(AppEvent.songSearchOpened(service));
         await ref.read(openExternalProvider)(link);
       case _Choice.copy:
+        ref.read(analyticsProvider).track(const AppEvent.songCopied());
         await copyTrackTitle(context, song.display);
       case _Choice.tune:
+        ref.read(analyticsProvider).track(const AppEvent.stationRetuned());
         final controller = ref.read(radioControllerProvider.notifier);
         Navigator.pop(context);
         await controller.tuneTo(song.station);
@@ -254,7 +259,7 @@ class _SongRow extends ConsumerWidget {
                     installed,
                   ))
                     PopupMenuItem<Object>(
-                      value: link,
+                      value: (service, link),
                       child: Text(switch (service.label) {
                         final label? => LocaleKeys.searchOn.tr(
                           context: context,
