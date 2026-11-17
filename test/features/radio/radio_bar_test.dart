@@ -7,6 +7,7 @@ import 'package:frequenza/features/favorites/application/favorites_providers.dar
 import 'package:frequenza/features/radio/application/radio_controller.dart';
 import 'package:frequenza/features/radio/domain/journey.dart';
 import 'package:frequenza/features/radio/domain/radio_session.dart';
+import 'package:frequenza/features/radio/domain/radio_station.dart';
 import 'package:frequenza/features/radio/presentation/radio_bar.dart';
 import 'package:frequenza/features/songs/application/saved_songs.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -30,8 +31,18 @@ class BarRadio extends RadioController {
   Future<void> play() async => calls.add('play');
 
   @override
-  Future<void> tuneRandom({Set<String>? countries}) async =>
-      calls.add('tuneRandom');
+  Future<void> tuneRandom({Set<String>? countries}) async {
+    calls.add(
+      countries == null ? 'tuneRandom' : 'tuneRandom:${countries.join(',')}',
+    );
+    state = RadioSession.flying(state.journey, kind: FlightKind.forward);
+  }
+
+  @override
+  Future<void> tuneTo(RadioStation station) async {
+    calls.add('tuneTo:${station.id}');
+    state = RadioSession.flying(state.journey, kind: FlightKind.forward);
+  }
 }
 
 void main() {

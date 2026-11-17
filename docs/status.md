@@ -13,15 +13,19 @@ Il punto di ripresa di ogni sessione: si legge questo, poi solo il piano attivo.
 
 ## Piano attivo
 
-- **Diario di viaggio, parte 1: il registro degli ascolti** (branch `feat/diario-registro`, sopra `feat/analisi`). Design `superpowers/specs/2026-11-16-diario-di-viaggio-design.md`, piano `superpowers/plans/2026-11-16-diario-registro.md`. Database Drift `frequenza.sqlite` (tabelle `stations` e `listens`, schema v1 in `drift_schemas/diary/`), stato sealed `Listening` con `nextListening` (macchina a stati esplicita, come la radio), `ListenRecorder` avviato in `bootstrap` che esegue solo gli effetti; a fine ascolto l'evento anonimo `listen_ended`.
-- **Prove sul telefono:** ascoltare una stazione per qualche minuto, mettere in pausa, cambiare stazione, mandare l'app in background; poi controllare il database (Android Studio → App Inspection → Database Inspector, `frequenza.sqlite`): una riga per ascolto, secondi giusti, nessuna riga sotto i 5 secondi.
-- **Prima:** statistiche anonime (`feat/analisi`), eseguite e riviste il 17/11.
+- **Diario di viaggio, parte 2: la pagina e la barra** (branch `feat/diario-pagina`, sopra `feat/diario-registro`). Design `superpowers/specs/2026-11-17-diario-pagina-design.md`, piano `superpowers/plans/2026-11-17-diario-pagina.md`, mock-up https://claude.ai/artifact/HUKaij9foXqCQnQyxvqbUQ.
+  - L'atlante sa di quale paese è ogni puntino e i nomi IT/EN; riassunto del periodo puro (`DiarySummary`, `CountryCard`, soglia max(5 min, 1%)); barra `RadioBar` (stato da `radioBarOf`); pagina con mappa che si ingrandisce, classifica e scheda del paese nei tre casi; tre eventi anonimi nuovi.
+- **Prove sul telefono:**
+  - apertura toccando lo schermo della radio (o «DIARIO ›» nell'angolo della mappa) e chiusura con Indietro o con la barra: il pannello cresce e rientra nello schermo, la barra sale e scende; mai due diari impilati;
+  - pizzico, trascinamento e tasti + e − sulla mappa; tocco su un paese acceso, di passaggio e mai ascoltato;
+  - «Volaci» e «Vola in …» restano nel diario e la barra mostra il volo;
+  - cuore, segnalibro e pausa dalla barra; testo grande e tema scuro.
+- **Prima:** diario parte 1 (`feat/diario-registro`), statistiche (`feat/analisi`).
 
 ## Prossimi passi, in ordine
 
-1. **Diario di viaggio, parte 2:** la pagina del diario con la mappa per paese. Il piano si scrive dopo la parte 1.
-2. **Cartolina del luogo:** sagoma e cartolina sulla radio, con l'animazione da definire con Davide; poi la collezione nel diario e le foto. Design in `superpowers/specs/2026-11-16-cartolina-design.md`.
-3. **Scelta dei paesi:** il motore c'è, mancano interfaccia e gruppi. Il design va ancora fatto.
+1. **Cartolina del luogo:** sagoma e cartolina sulla radio, con l'animazione da definire con Davide; poi la collezione nel diario e le foto. Design in `superpowers/specs/2026-11-16-cartolina-design.md`.
+2. **Scelta dei paesi:** il motore c'è, mancano interfaccia e gruppi. Il design va ancora fatto.
 
 ## Problemi aperti
 

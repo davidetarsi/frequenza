@@ -145,6 +145,14 @@ class CodegenLoader extends AssetLoader {
     "diaryMapEmpty": "Map off: no countries yet",
     "flyThere": "Fly there",
     "backToRadio": "Back to the radio",
+    "diaryRadios": {"one": "{} station", "other": "{} stations"},
+    "diaryPassing": "Only {} here: a country lights up after {} of listening.",
+    "diaryHeardHere": "Heard here",
+    "diaryUnvisited": "You haven't passed through here yet.",
+    "diaryFlyTo": "Fly to {}",
+    "diaryRandomIn": "A random station from this country.",
+    "diaryLastListen": "Last listen: {}",
+    "diaryCloseSheet": "Close",
   };
   static const Map<String, dynamic> _it = {
     "welcomeTitle": "Gira la manopola.\nAtterra da qualche parte nel mondo.",
@@ -278,6 +286,14 @@ class CodegenLoader extends AssetLoader {
     "diaryMapEmpty": "Mappa spenta: ancora nessun paese",
     "flyThere": "Volaci",
     "backToRadio": "Torna alla radio",
+    "diaryRadios": {"one": "{} radio", "other": "{} radio"},
+    "diaryPassing": "Qui solo {}: un paese si accende dopo {} di ascolto.",
+    "diaryHeardHere": "Sentita qui",
+    "diaryUnvisited": "Non sei ancora passato di qui.",
+    "diaryFlyTo": "Vola in {}",
+    "diaryRandomIn": "Una stazione a caso tra quelle di questo paese.",
+    "diaryLastListen": "Ultimo ascolto: {}",
+    "diaryCloseSheet": "Chiudi",
   };
   static const Map<String, Map<String, dynamic>> mapLocales = {
     "en": _en,

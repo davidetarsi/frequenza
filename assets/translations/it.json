@@ -125,5 +125,16 @@
   "diaryMapSummary": "{}; il più ascoltato: {}",
   "diaryMapEmpty": "Mappa spenta: ancora nessun paese",
   "flyThere": "Volaci",
-  "backToRadio": "Torna alla radio"
+  "backToRadio": "Torna alla radio",
+  "diaryRadios": {
+    "one": "{} radio",
+    "other": "{} radio"
+  },
+  "diaryPassing": "Qui solo {}: un paese si accende dopo {} di ascolto.",
+  "diaryHeardHere": "Sentita qui",
+  "diaryUnvisited": "Non sei ancora passato di qui.",
+  "diaryFlyTo": "Vola in {}",
+  "diaryRandomIn": "Una stazione a caso tra quelle di questo paese.",
+  "diaryLastListen": "Ultimo ascolto: {}",
+  "diaryCloseSheet": "Chiudi"
 }

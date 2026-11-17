@@ -348,4 +348,9 @@ abstract final class DiaryDesign {
   static const barHeight = 6.0;
   static const rankNameWidth = 96.0;
   static const rankTimeWidth = 52.0;
+  static const sheetRadius = Radius.circular(20);
+  static const sheetPadding = EdgeInsets.fromLTRB(16, 8, 16, 16);
+  static const sheetRow = 54.0;
+  static const sheetButton = 48.0;
+  static const sheetMaxShare = 0.62;
 }

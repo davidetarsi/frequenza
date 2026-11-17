@@ -10,19 +10,17 @@ import '../../analytics/domain/app_event.dart';
 import '../../radio/application/radio_controller.dart';
 import '../../radio/presentation/radio_bar.dart';
 import '../application/diary_summary_provider.dart';
+import '../domain/diary_flight.dart';
 import '../domain/diary_period.dart';
 import '../domain/diary_summary.dart';
 import 'country_name.dart';
+import 'country_sheet.dart';
 import 'diary_duration.dart';
 import 'diary_map.dart';
 
 /// The travel diary: a panel over the radio, with the player bar below it.
 class DiaryPage extends ConsumerStatefulWidget {
-  const DiaryPage({super.key, this.onCountry});
-
-  /// A country picked on the map or in the ranking.
-  final void Function(BuildContext context, DiarySummary summary, String code)?
-  onCountry;
+  const DiaryPage({super.key});
 
   @override
   ConsumerState<DiaryPage> createState() => _DiaryPageState();
@@ -33,6 +31,9 @@ class _DiaryPageState extends ConsumerState<DiaryPage> {
   var _period = DiaryPeriod.month;
   String? _selected;
   var _showAll = false;
+
+  /// The open country sheet, if any.
+  CountryCard? _card;
   final _map = TransformationController();
 
   @override
@@ -50,8 +51,28 @@ class _DiaryPageState extends ConsumerState<DiaryPage> {
   void _back() => Navigator.of(context).maybePop();
 
   void _pick(DiarySummary summary, String code) {
-    setState(() => _selected = code);
-    widget.onCountry?.call(context, summary, code);
+    final card = cardFor(summary, code);
+    setState(() {
+      _selected = code;
+      _card = card;
+    });
+    ref.read(analyticsProvider).track(AppEvent.diaryCountryOpened(code, card));
+  }
+
+  void _close() => setState(() {
+    _card = null;
+    _selected = null;
+  });
+
+  /// Flights stay in the diary: the bar shows them.
+  void _fly(
+    DiaryFlightSource source,
+    Future<void> Function(RadioController) go,
+  ) {
+    ref.read(analyticsProvider).track(AppEvent.diaryFlight(source));
+    final radio = ref.read(radioControllerProvider.notifier);
+    _close();
+    go(radio);
   }
 
   @override
@@ -65,33 +86,75 @@ class _DiaryPageState extends ConsumerState<DiaryPage> {
       padding: DiaryDesign.barInset,
       child: RadioBar(onBackToRadio: _back),
     );
-    return Scaffold(
-      body: DecoratedBox(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [p.shellTop, p.shellBottom],
+    return PopScope(
+      canPop: _card == null,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _close();
+      },
+      child: Scaffold(
+        body: DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [p.shellTop, p.shellBottom],
+            ),
           ),
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              Expanded(child: _panel(context, summary)),
-              if (route == null)
-                bar
-              else
-                SlideTransition(
-                  position: Tween(begin: const Offset(0, 1.5), end: Offset.zero)
-                      .animate(
-                        CurvedAnimation(
-                          parent: route,
-                          curve: const Interval(0.55, 1),
-                        ),
-                      ),
-                  child: bar,
+          child: SafeArea(
+            child: Column(
+              children: [
+                Expanded(
+                  child: LayoutBuilder(
+                    builder: (context, box) => Stack(
+                      children: [
+                        Positioned.fill(child: _panel(context, summary)),
+                        if (_card case final card?)
+                          Positioned(
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            child: ConstrainedBox(
+                              constraints: BoxConstraints(
+                                maxHeight:
+                                    box.maxHeight * DiaryDesign.sheetMaxShare,
+                              ),
+                              child: CountrySheet(
+                                card: card,
+                                onClose: _close,
+                                onFly: (station) => _fly(
+                                  DiaryFlightSource.countryStation,
+                                  (radio) => radio.tuneTo(station),
+                                ),
+                                onFlyRandom: (code) => _fly(
+                                  DiaryFlightSource.randomInCountry,
+                                  (radio) =>
+                                      radio.tuneRandom(countries: {code}),
+                                ),
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
                 ),
-            ],
+                if (route == null)
+                  bar
+                else
+                  SlideTransition(
+                    position:
+                        Tween(
+                          begin: const Offset(0, 1.5),
+                          end: Offset.zero,
+                        ).animate(
+                          CurvedAnimation(
+                            parent: route,
+                            curve: const Interval(0.55, 1),
+                          ),
+                        ),
+                    child: bar,
+                  ),
+              ],
+            ),
           ),
         ),
       ),
@@ -257,8 +320,10 @@ class _DiaryPageState extends ConsumerState<DiaryPage> {
         ),
         child: InkWell(
           borderRadius: BorderRadius.circular(10),
-          onTap: () =>
-              ref.read(radioControllerProvider.notifier).tuneTo(top.station),
+          onTap: () => _fly(
+            DiaryFlightSource.topStation,
+            (radio) => radio.tuneTo(top.station),
+          ),
           child: Padding(
             padding: const EdgeInsets.all(12),
             child: Row(

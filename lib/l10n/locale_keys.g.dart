@@ -127,4 +127,12 @@ abstract class LocaleKeys {
   static const diaryMapEmpty = 'diaryMapEmpty';
   static const flyThere = 'flyThere';
   static const backToRadio = 'backToRadio';
+  static const diaryRadios = 'diaryRadios';
+  static const diaryPassing = 'diaryPassing';
+  static const diaryHeardHere = 'diaryHeardHere';
+  static const diaryUnvisited = 'diaryUnvisited';
+  static const diaryFlyTo = 'diaryFlyTo';
+  static const diaryRandomIn = 'diaryRandomIn';
+  static const diaryLastListen = 'diaryLastListen';
+  static const diaryCloseSheet = 'diaryCloseSheet';
 }

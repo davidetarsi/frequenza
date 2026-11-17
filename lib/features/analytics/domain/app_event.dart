@@ -1,4 +1,6 @@
+import '../../diary/domain/diary_flight.dart';
 import '../../diary/domain/diary_period.dart';
+import '../../diary/domain/diary_summary.dart';
 import '../../radio/domain/journey.dart';
 import '../../radio/domain/radio_station.dart';
 import '../../songs/domain/song_search.dart';
@@ -56,6 +58,19 @@ final class AppEvent {
 
   AppEvent.diaryOpened(DiaryPeriod period)
     : this('diary_opened', {'period': period.name});
+
+  AppEvent.diaryCountryOpened(String code, CountryCard card)
+    : this('diary_country_opened', {
+        'country': code,
+        'kind': switch (card) {
+          StoppedCountry() => 'stopped',
+          PassingCountry() => 'passing',
+          UnvisitedCountry() => 'unvisited',
+        },
+      });
+
+  AppEvent.diaryFlight(DiaryFlightSource source)
+    : this('diary_flight', {'source': _snake(source.name)});
 
   const AppEvent.stationRetuned() : this('station_retuned');
 
