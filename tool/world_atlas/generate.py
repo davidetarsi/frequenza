@@ -10,6 +10,7 @@ Usage: python3 -I tool/world_atlas/generate.py LAND COUNTRIES ZONE_TAB OUT
 
 import datetime as dt
 import json
+import math
 import sys
 from collections import Counter
 from zoneinfo import ZoneInfo
@@ -56,6 +57,66 @@ def inside(x, y, all_rings):
                 hit = not hit
             j = i
     return hit
+
+
+def code_of(properties):
+    """ISO 3166 alpha-2; Natural Earth writes -99 where ISO_A2_EH has it."""
+    for key in ('ISO_A2_EH', 'ISO_A2'):
+        code = properties.get(key)
+        if code and len(code) == 2 and code.isalpha():
+            return code
+    return None
+
+
+def country_rings(features):
+    return [(code_of(f['properties']), list(rings(f['geometry'])))
+            for f in features if code_of(f['properties'])]
+
+
+def dot_country(lon, lat, countries):
+    """The country containing the point, or None."""
+    for code, all_rings in countries:
+        if inside(lon, lat, all_rings):
+            return code
+    return None
+
+
+def names(feature):
+    p = feature['properties']
+    return p.get('NAME_IT') or p.get('NAME'), p.get('NAME_EN') or p.get('NAME')
+
+
+def dart_string(text):
+    escaped = text.replace('\\', '\\\\').replace('"', '\\"').replace('$', '\\$')
+    return f'"{escaped}"'
+
+
+def nearest(lat, lon, centroids):
+    return min(centroids, key=lambda c: (centroids[c][0] - lat) ** 2 + (
+        (centroids[c][1] - lon) * math.cos(math.radians(lat))) ** 2)
+
+
+def dot_countries(rows, countries, centroids):
+    """Each land cell's country: the one holding its centre, else the
+    nearest centroid among the countries that hold a centre (coasts the
+    1:50m borders miss), so a tiny country never takes a neighbour's coast."""
+    cells = []
+    for r, row in enumerate(rows):
+        lat = NORTH - STEP / 2 - r * STEP
+        cells.append([
+            (lat, -180 + STEP / 2 + c * STEP,
+             dot_country(-180 + STEP / 2 + c * STEP, lat, countries))
+            if cell == '1' else None
+            for c, cell in enumerate(row)
+        ])
+    holders = {code for row in cells for cell in row if cell and cell[2]
+               for code in [cell[2]]}
+    near = {c: xy for c, xy in centroids.items() if c in holders}
+    return [
+        ''.join('..' if cell is None else cell[2] or nearest(cell[0], cell[1], near)
+                for cell in row)
+        for row in cells
+    ]
 
 
 def dot_rows(land_path):
@@ -156,13 +217,19 @@ def classify(name):
 def main(land_path, countries_path, zone_tab_path, out_path):
     rows = dot_rows(land_path)
 
-    centroids = {}
-    for feature in json.load(open(countries_path))['features']:
+    features = json.load(open(countries_path))['features']
+    centroids, country_names = {}, {}
+    for feature in features:
         p = feature['properties']
-        code = p.get('ISO_A2_EH') or p.get('ISO_A2')
-        if code and len(code) == 2 and code.isalpha():
+        code = code_of(p)
+        if code:
             centroids.setdefault(code, (round(p['LABEL_Y'], 2),
                                         round(p['LABEL_X'], 2)))
+            country_names.setdefault(code, names(feature))
+    with_shape = dict(centroids)
+    dots = dot_countries(rows, country_rings(features), with_shape)
+    on_map = {line[i:i + 2] for line in dots for i in range(0, len(line), 2)}
+    extra = {c: xy for c, xy in sorted(with_shape.items()) if c not in on_map}
 
     zones, zone_index, country_zones, unmatched = [], {}, {}, []
     for code, lat, lon, name in zone_tab(zone_tab_path):
@@ -199,6 +266,22 @@ def main(land_path, countries_path, zone_tab_path, out_path):
         'const worldDotRows = <String>[',
         *[f"  '{r}'," for r in rows],
         '];',
+        '',
+        '/// The country of each cell, two letters per cell, `..` at sea.',
+        'const worldDotCountries = <String>[',
+        *[f"  '{r}'," for r in dots],
+        '];',
+        '',
+        '/// Countries too small for a cell: one extra dot at their label point.',
+        'const extraCountryDots = <String, (double, double)>{',
+        *[f"  '{c}': ({la}, {lo})," for c, (la, lo) in extra.items()],
+        '};',
+        '',
+        '/// Country names from Natural Earth: (Italian, English).',
+        'const countryNames = <String, (String, String)>{',
+        *[f"  '{c}': ({dart_string(it)}, {dart_string(en)}),"
+          for c, (it, en) in sorted(country_names.items())],
+        '};',
         '',
         '/// Country label points from Natural Earth, keyed by ISO 3166 alpha-2.',
         'const countryCentroids = <String, (double, double)>{',
