@@ -18,7 +18,7 @@ final class TrackTitle {
     caseSensitive: false,
   );
   static final _dash = RegExp(r' [-–—] ');
-  static final _noLetters = RegExp(r'^[\d\W_]*$', unicode: true);
+  static final _noLetters = RegExp(r'^[^\p{L}]*$', unicode: true);
   static final _advert = RegExp(
     r'advert|commercial break|pubblicità',
     caseSensitive: false,

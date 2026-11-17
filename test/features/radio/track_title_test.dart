@@ -57,4 +57,21 @@ void main() {
     expect(track.display, 'Ana Moura — Desfado');
     expect(track.query, 'Ana Moura Desfado');
   });
+
+  test('keeps titles in every script', () {
+    final cyrillic = TrackTitle.parse('Кино - Группа крови')!;
+    expect(cyrillic.artist, 'Кино');
+    expect(cyrillic.title, 'Группа крови');
+    for (final raw in [
+      '東京',
+      'Ελλάδα',
+      'فيروز - نسم علينا الهوى',
+      'राम - गीत',
+    ]) {
+      expect(TrackTitle.parse(raw), isNotNull, reason: raw);
+    }
+    final mixed = TrackTitle.parse('Utada - 光')!;
+    expect(mixed.artist, 'Utada');
+    expect(mixed.title, '光');
+  });
 }
