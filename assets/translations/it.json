@@ -86,5 +86,10 @@
   "removeSong": "Togli",
   "songRemoved": "Canzone tolta",
   "songOptions": "Opzioni della canzone",
-  "songsError": "Non è stato possibile aggiornare le canzoni. Riprova."
+  "songsError": "Non è stato possibile aggiornare le canzoni. Riprova.",
+  "privacy": "Privacy",
+  "analyticsSwitch": "Statistiche anonime",
+  "analyticsHint": "Aiutano a capire cosa non funziona. Nessun dato su di te.",
+  "privacyPolicy": "Informativa sulla privacy",
+  "analyticsSaveError": "Non è stato possibile salvare la scelta. Riprova."
 }

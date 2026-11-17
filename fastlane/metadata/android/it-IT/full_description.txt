@@ -16,4 +16,4 @@ ASCOLTA COME VUOI
 • tema chiaro o scuro, in italiano o in inglese.
 
 SEMPLICE E LIBERA
-Niente account, niente pubblicità, nessun dato raccolto. Le stazioni arrivano dall'archivio libero di Radio Browser, e il codice dell'app è aperto su GitHub.
+Niente account, niente pubblicità, solo statistiche anonime che puoi spegnere. Le stazioni arrivano dall'archivio libero di Radio Browser, e il codice dell'app è aperto su GitHub.

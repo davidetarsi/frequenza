@@ -16,9 +16,11 @@ Se un'idea non passa una delle tre domande, si ripensa o si lascia fuori.
 
 ## Scelte che ne derivano
 
-- **Niente account.** Tutto resta sul telefono. Il login porterebbe attrito alla prima apertura, un server, password, dati personali e la cancellazione dell'account richiesta dal Play Store. Serve solo per cose che oggi non ci sono: lo stesso diario su più telefoni, o qualcosa di sociale tra utenti.
+- **Niente account.** Preferiti, canzoni e diario restano sul telefono. Il login porterebbe attrito alla prima apertura, un server, password, dati personali e la cancellazione dell'account richiesta dal Play Store. Serve solo per cose che oggi non ci sono: lo stesso diario su più telefoni, o qualcosa di sociale tra utenti.
+- **Statistiche anonime, che si spengono** (decisione di Davide del 17/11/2026): nessun identificativo, nessun dato su chi sei, mai una domanda prima della prima radio. Sostituisce il «nessun dato raccolto» di prima.
 - **Il cambio di telefono si risolve senza login:** con il backup automatico di Android (`allowBackup`) e, se servirà, un «esporta / importa» in un file.
 - **Niente pubblicità e niente algoritmo** che decide cosa ti piace, come dice il README.
+- **Ogni integrazione esterna ha una necessità concreta** ed è una feature a sé, con il contratto nel domain (regola di AGENTS.md).
 
 ## Esempi
 
