@@ -90,4 +90,20 @@ void main() {
         .get();
     expect(indexes, contains('listens_started_at'));
   });
+
+  test('a listen of an unknown station is refused', () async {
+    await expectLater(
+      database
+          .into(database.listens)
+          .insert(
+            ListensCompanion.insert(
+              stationId: 'nowhere',
+              countryCode: '',
+              startedAt: noon,
+              seconds: 10,
+            ),
+          ),
+      throwsA(isA<SqliteException>()),
+    );
+  });
 }

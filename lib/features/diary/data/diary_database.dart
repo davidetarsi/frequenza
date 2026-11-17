@@ -35,4 +35,12 @@ class DiaryDatabase extends _$DiaryDatabase {
 
   @override
   int get schemaVersion => 1;
+
+  /// SQLite checks the links between tables only when asked. Future
+  /// versions add their steps in `onUpgrade`, tested against
+  /// `drift_schemas/diary/`.
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+    beforeOpen: (_) => customStatement('PRAGMA foreign_keys = ON'),
+  );
 }

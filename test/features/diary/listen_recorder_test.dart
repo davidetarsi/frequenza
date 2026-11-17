@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:fake_async/fake_async.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -23,12 +25,16 @@ class MemoryDiary implements DiaryRepository {
   final writes = <String>[];
   var failWrites = false;
 
+  /// When set, every write waits for it: a slow disk.
+  Completer<void>? gate;
+
   @override
   Future<int> startListen(
     RadioStation station, {
     required DateTime startedAt,
     required int seconds,
   }) async {
+    await gate?.future;
     if (failWrites) throw StateError('Disk full');
     final id = rows.length + 1;
     saved[station.id] = station;
@@ -45,6 +51,7 @@ class MemoryDiary implements DiaryRepository {
 
   @override
   Future<void> setSeconds(int listenId, int seconds) async {
+    await gate?.future;
     if (failWrites) throw StateError('Disk full');
     rows[listenId] = rows[listenId]!.copyWith(seconds: seconds);
     writes.add('set $listenId $seconds');
@@ -194,6 +201,41 @@ void main() {
       async.flushMicrotasks();
       expect(diary.writes, isEmpty);
       expect(c.read(radioControllerProvider), paused);
+      expect(analytics.events, isEmpty, reason: 'an unsaved listen');
+      c.dispose();
+    });
+  });
+
+  test('a start that failed is saved at the next write', () {
+    fakeAsync((async) {
+      final c = open(async);
+      diary.failWrites = true;
+      radio(c).show(playing);
+      async.elapse(const Duration(seconds: 30));
+      diary.failWrites = false;
+      async.elapse(const Duration(seconds: 30));
+      expect(diary.writes, ['start s1 60']);
+      expect(diary.rows[1]!.startedAt, noon);
+      radio(c).show(paused);
+      async.flushMicrotasks();
+      expect(analytics.events, [AppEvent.listenEnded(paris, seconds: 60)]);
+      c.dispose();
+    });
+  });
+
+  test('a slow disk does not move the start time', () {
+    fakeAsync((async) {
+      final c = open(async);
+      radio(c).show(playing);
+      async.elapse(const Duration(seconds: 30));
+      diary.gate = Completer<void>();
+      radio(c).show(paused);
+      radio(c).show(playing);
+      async.elapse(const Duration(seconds: 40));
+      diary.gate!.complete();
+      async.flushMicrotasks();
+      expect(diary.writes, ['start s1 30', 'set 1 30', 'start s1 30']);
+      expect(diary.rows[2]!.startedAt, noon.add(const Duration(seconds: 30)));
       c.dispose();
     });
   });

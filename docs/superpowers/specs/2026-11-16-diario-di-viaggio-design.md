@@ -50,6 +50,7 @@ L'obiettivo non è collezionare paesi. Visitarne uno costa un tocco, quindi colo
 
 Conta solo quando la stazione **suona davvero**, cioè con la sessione `OnAir` e la riproduzione `playing`.
 - **Non contano:** volo, pausa, buffering, stream finito o rotto.
+- **Un'interruzione breve non spezza l'ascolto** (aggiornamento del 17/11/2026, dalla revisione): buffering o riconnessione sulla stessa stazione sospendono il conteggio; se la stazione riprende entro 30 secondi l'ascolto continua nella stessa riga, altrimenti si chiude dove l'interruzione è cominciata.
 - **Contano:** schermo spento e app in background, perché la riproduzione è la stessa.
 
 ### Il registro **[C]**
@@ -82,8 +83,8 @@ Più un indice su `startedAt`.
 ### Scrittura
 
 - **Inizio:** quando si entra in «suona» parte il conteggio in memoria. La riga nasce al primo aggiornamento, oppure alla fine se l'ascolto ha superato i 5 secondi.
-- **Mentre suona:** ogni **30 secondi** si scrive il totale dei `seconds`. Se Android chiude l'app si perdono al massimo 30 secondi. Si scrive anche quando l'app va in background.
-- **Fine:** quando si esce da «suona» (pausa, nuova stazione, buffering, fine) si scrive il valore finale e si chiude la riga. Un ritorno a «suona» apre una riga nuova.
+- **Mentre suona:** ogni **30 secondi** si scrive il totale dei `seconds`. Se Android chiude l'app si perdono al massimo circa 35 secondi (i 30 tra due scritture, più i primi secondi prima che l'ascolto venga salvato). Si scrive anche quando l'app va in background.
+- **Fine:** quando si esce da «suona» (pausa, nuova stazione, stream finito o rotto, un'interruzione oltre i 30 secondi) si scrive il valore finale e si chiude la riga. Un ritorno a «suona» apre una riga nuova.
 - **Tempo:** si misura con un orologio monotono (`Stopwatch`), non con l'ora di sistema, così un cambio d'ora non sporca i dati.
 
 ### Principi del registro **[D]**
