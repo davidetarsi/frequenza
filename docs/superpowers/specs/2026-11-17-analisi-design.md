@@ -1,6 +1,6 @@
 # Analisi d'uso con tgram-analytics — design breve
 
-Data: 17 novembre 2026. Stato: **da approvare**. Branch `docs/analisi`, da `develop`.
+Data: 17 novembre 2026. Stato: **approvato** da Davide il 17/11. Branch `docs/analisi`, da `develop`.
 
 Legenda:
 - **[D]** decisione di Davide;
@@ -84,6 +84,11 @@ Nomi in inglese, `oggetto_azione`, al passato. Le proprietà hanno valori chiusi
   - da `OnAir` a `broken`: `playback_broken`.
 
   Preferiti e canzoni chiamano l'evento dopo un salvataggio riuscito.
+- **Dove nascono gli eventi** **[C]**:
+  - **Radio** (`flight_*`, `playback_broken`): un osservatore, `radioAnalyticsProvider`, avviato in `bootstrap` accanto a `radioNotificationProvider`. Confronta la sessione prima e dopo ogni passaggio, con una funzione pura (prima, dopo) → eventi, testata come `next()`. Manopola, notifica, cuffie e «Riaccendi» passano tutti dalla stessa macchina a stati, quindi nessun volo si perde e nessuno si conta due volte. Il codice della radio resta com'è.
+  - **Salvataggi** (`favorite_*`, `song_saved`, `song_removed`): nei controller `Favorites.toggle` e `SavedSongs.save` / `remove`, dopo che il salvataggio è riuscito. Lo stesso gesto arriva da più punti (segnalibro e tocco sul titolo; trascinamento e menu), e un doppione rifiutato non conta.
+  - **Voci del menu** (`song_search_opened`, `song_copied`, `station_retuned`): in `SongsTab._choose`. Non passano da un controller, e solo lì si sa da dove è partito il gesto.
+  - **Avvio** (`app_opened`, proprietà della sessione): in `bootstrap`, dopo aver letto le preferenze. **`welcome_completed`** in `WelcomeSeen.markSeen`.
 - **Errori:** ogni chiamata è protetta. Senza rete, gli eventi in coda si perdono, senza riprovare all'infinito **[C]**.
 - **Test:**
   - con le analisi spente non parte nessuna chiamata;
@@ -105,4 +110,3 @@ Nomi in inglese, `oggetto_azione`, al passato. Le proprietà hanno valori chiusi
 ## Lasciato a chi costruisce
 
 - Se aggiungere alla stazione il campo `hls` di Radio Browser, per distinguere i flussi HLS (non serve per partire).
-- Come si scrive l'osservatore: ascolto del provider o flusso di eventi.
