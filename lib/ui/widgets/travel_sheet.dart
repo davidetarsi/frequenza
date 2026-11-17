@@ -25,6 +25,7 @@ Future<void> showTravelSheet(
 
 /// The paper drawer shared by favorites and settings: handle, title,
 /// optional subtitle and close button, then [children] in a draggable list.
+/// Snack bars shown from inside it appear at its bottom.
 class TravelSheet extends StatelessWidget {
   const TravelSheet({
     super.key,
@@ -60,67 +61,73 @@ class TravelSheet extends StatelessWidget {
         ),
         child: ClipRRect(
           borderRadius: RadioFavoritesDesign.sheetRadius,
-          child: Material(
-            color: p.paper,
-            child: SafeArea(
-              top: false,
-              child: ListView(
-                controller: scroll,
-                padding: RadioFavoritesDesign.sheetPadding,
-                children: [
-                  Center(
-                    child: Container(
-                      width: RadioFavoritesDesign.handleSize.width,
-                      height: RadioFavoritesDesign.handleSize.height,
-                      decoration: BoxDecoration(
-                        color: p.trim,
-                        borderRadius: RadioFavoritesDesign.handleRadius,
+          // Its own messenger: an undo shows over the sheet, not under it.
+          child: ScaffoldMessenger(
+            child: Scaffold(
+              backgroundColor: p.paper,
+              body: SafeArea(
+                top: false,
+                child: ListView(
+                  controller: scroll,
+                  padding: RadioFavoritesDesign.sheetPadding,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: RadioFavoritesDesign.handleSize.width,
+                        height: RadioFavoritesDesign.handleSize.height,
+                        decoration: BoxDecoration(
+                          color: p.trim,
+                          borderRadius: RadioFavoritesDesign.handleRadius,
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: RadioFavoritesDesign.headerGap),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              title,
-                              style: Theme.of(context).textTheme.headlineSmall
-                                  ?.copyWith(
-                                    color: p.ink,
-                                    fontWeight: FontWeight.w600,
-                                    letterSpacing:
-                                        RadioFavoritesDesign.titleTracking,
-                                  ),
-                            ),
-                            if (subtitle case final subtitle?) ...[
-                              const SizedBox(
-                                height: RadioFavoritesDesign.titleGap,
+                    const SizedBox(height: RadioFavoritesDesign.headerGap),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                title,
+                                style: Theme.of(context).textTheme.headlineSmall
+                                    ?.copyWith(
+                                      color: p.ink,
+                                      fontWeight: FontWeight.w600,
+                                      letterSpacing:
+                                          RadioFavoritesDesign.titleTracking,
+                                    ),
                               ),
-                              Text(subtitle, style: TextStyle(color: p.muted)),
+                              if (subtitle case final subtitle?) ...[
+                                const SizedBox(
+                                  height: RadioFavoritesDesign.titleGap,
+                                ),
+                                Text(
+                                  subtitle,
+                                  style: TextStyle(color: p.muted),
+                                ),
+                              ],
                             ],
-                          ],
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: AppSpacing.standard),
-                      AppIconButton(
-                        variant: AppIconButtonVariant.tonal,
-                        backgroundColor: p.paperRaised,
-                        foregroundColor: p.ink,
-                        tooltip: LocaleKeys.close.tr(context: context),
-                        onPressed: () => Navigator.pop(context),
-                        icon: const Icon(
-                          Icons.close,
-                          size: RadioFavoritesDesign.closeIconSize,
+                        const SizedBox(width: AppSpacing.standard),
+                        AppIconButton(
+                          variant: AppIconButtonVariant.tonal,
+                          backgroundColor: p.paperRaised,
+                          foregroundColor: p.ink,
+                          tooltip: LocaleKeys.close.tr(context: context),
+                          onPressed: () => Navigator.pop(context),
+                          icon: const Icon(
+                            Icons.close,
+                            size: RadioFavoritesDesign.closeIconSize,
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: RadioFavoritesDesign.contentGap),
-                  ...children,
-                ],
+                      ],
+                    ),
+                    const SizedBox(height: RadioFavoritesDesign.contentGap),
+                    ...children,
+                  ],
+                ),
               ),
             ),
           ),

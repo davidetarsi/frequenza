@@ -74,5 +74,17 @@
   "sendFeedback": "Report a bug or share an idea",
   "saveSong": "Save song",
   "songSaved": "Song saved",
-  "undo": "Undo"
+  "undo": "Undo",
+  "tabStations": "Radio",
+  "tabSongs": "Songs",
+  "songsSubtitle": "Songs found on the road.",
+  "songsEmpty": "No songs yet. Tap the bookmark next to the title when you hear one you like.",
+  "searchOn": "Search on {}",
+  "searchWeb": "Search the web",
+  "copy": "Copy",
+  "tuneAgain": "Tune in to {}",
+  "removeSong": "Remove",
+  "songRemoved": "Song removed",
+  "songOptions": "Song options",
+  "songsError": "Your songs could not be updated. Try again."
 }

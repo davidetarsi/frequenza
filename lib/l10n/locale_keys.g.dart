@@ -79,4 +79,16 @@ abstract class LocaleKeys {
   static const saveSong = 'saveSong';
   static const songSaved = 'songSaved';
   static const undo = 'undo';
+  static const tabStations = 'tabStations';
+  static const tabSongs = 'tabSongs';
+  static const songsSubtitle = 'songsSubtitle';
+  static const songsEmpty = 'songsEmpty';
+  static const searchOn = 'searchOn';
+  static const searchWeb = 'searchWeb';
+  static const copy = 'copy';
+  static const tuneAgain = 'tuneAgain';
+  static const removeSong = 'removeSong';
+  static const songRemoved = 'songRemoved';
+  static const songOptions = 'songOptions';
+  static const songsError = 'songsError';
 }
