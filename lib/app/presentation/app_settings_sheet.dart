@@ -87,18 +87,14 @@ class AppSettingsSheet extends ConsumerWidget {
           label: LocaleKeys.analyticsSwitch.tr(context: context),
           selected: false,
           trailing: Switch(
-            value: statistics.valueOrNull ?? false,
+            value: analyticsOn(statistics),
             onChanged: statistics.isLoading
                 ? null
                 : (on) => _setStatistics(context, ref, on),
           ),
           onTap: statistics.isLoading
               ? null
-              : () => _setStatistics(
-                  context,
-                  ref,
-                  !(statistics.valueOrNull ?? false),
-                ),
+              : () => _setStatistics(context, ref, !analyticsOn(statistics)),
         ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.medium),

@@ -1,9 +1,16 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../app/state/latest_save.dart';
 
 part 'analytics_consent.g.dart';
+
+/// Whether the statistics may be sent now: not while a choice is being
+/// saved, and not when saving it failed, since the person may just have
+/// turned them off.
+bool analyticsOn(AsyncValue<bool> consent) =>
+    !consent.isLoading && !consent.hasError && (consent.valueOrNull ?? false);
 
 /// Whether the anonymous statistics are on: on unless turned off in the
 /// settings, off when the preferences cannot be read.

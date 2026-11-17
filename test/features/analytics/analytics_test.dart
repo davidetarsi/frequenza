@@ -15,6 +15,22 @@ import 'package:tgram_analytics/tgram_analytics.dart';
 
 import '../welcome/welcome_seen_test.dart' show BrokenStore;
 
+/// Preferences that read, but cannot write.
+class ReadOnlyStore extends SharedPreferencesStorePlatform {
+  @override
+  Future<Map<String, Object>> getAll() async => {};
+
+  @override
+  Future<bool> clear() async => false;
+
+  @override
+  Future<bool> remove(String key) async => false;
+
+  @override
+  Future<bool> setValue(String valueType, String key, Object value) async =>
+      false;
+}
+
 const complete = (apiKey: 'proj_test', serverUrl: 'https://analytics.test');
 
 void main() {
@@ -136,5 +152,27 @@ void main() {
       analyticsKeysComplete((apiKey: 'proj_', serverUrl: 'https://x')),
       isFalse,
     );
+  });
+
+  test('an off that cannot be saved still stops events', () async {
+    final previous = SharedPreferencesStorePlatform.instance;
+    SharedPreferencesStorePlatform.instance = ReadOnlyStore();
+    SharedPreferences.resetStatic();
+    addTearDown(() {
+      SharedPreferencesStorePlatform.instance = previous;
+      SharedPreferences.resetStatic();
+    });
+    final c = container(client: server());
+    expect(await loaded(c), isA<TgramAnalytics>());
+
+    final saved = c.read(analyticsConsentProvider.notifier).select(false);
+    expect(c.read(analyticsProvider), isA<NoAnalytics>());
+    expect(await saved, isFalse);
+
+    c.read(analyticsProvider).track(AppEvent.songCopied());
+    await settle();
+    expect(requests, isEmpty);
+    expect(c.read(analyticsProvider), isA<NoAnalytics>());
+    expect(analyticsOn(c.read(analyticsConsentProvider)), isFalse);
   });
 }

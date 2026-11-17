@@ -63,7 +63,7 @@ final analyticsSessionIdProvider = Provider<String>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef AnalyticsSessionIdRef = ProviderRef<String>;
-String _$analyticsHash() => r'587b01626f48607d44320a7ae3d1af1c80e32b36';
+String _$analyticsHash() => r'87a2a9c268a2dad9cf5bd593485003b4c016faac';
 
 /// Where the events go: nowhere without the keys, or with the statistics
 /// off or not yet read.

@@ -44,7 +44,7 @@ String analyticsSessionId(Ref ref) {
 @Riverpod(keepAlive: true)
 Analytics analytics(Ref ref) {
   final keys = ref.watch(analyticsKeysProvider);
-  final on = ref.watch(analyticsConsentProvider).valueOrNull ?? false;
+  final on = analyticsOn(ref.watch(analyticsConsentProvider));
   if (!on || !analyticsKeysComplete(keys)) return const NoAnalytics();
   return TgramAnalytics(
     apiKey: keys.apiKey,
