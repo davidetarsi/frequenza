@@ -10,6 +10,7 @@ import '../../favorites/application/favorites_controller.dart';
 import '../../favorites/presentation/favorites_sheet.dart';
 import '../../journey/presentation/journey_texts.dart';
 import '../../journey/presentation/route_map.dart';
+import '../../songs/presentation/save_song.dart';
 import '../application/radio_controller.dart';
 import 'radio_display.dart';
 import 'copy_track_title.dart';
@@ -35,6 +36,7 @@ class RadioPage extends ConsumerWidget {
     final controller = ref.read(radioControllerProvider.notifier);
     final station = display.station;
     final song = display.song;
+    final track = display.track;
     final saved = station != null && favorites?.contains(station.id) == true;
     final theme = Theme.of(context);
     ref.listen(favoritesProvider, (before, after) {
@@ -126,9 +128,15 @@ class RadioPage extends ConsumerWidget {
                     : song ??
                           station?.tags.take(2).join(' · ') ??
                           LocaleKeys.firstTrip.tr(context: context),
+                onDetailTap: track == null || station == null
+                    ? null
+                    : () => saveSong(context, ref, track, station),
                 onDetailLongPress: song == null
                     ? null
                     : () => copyTrackTitle(context, song),
+                detailAction: track == null || station == null
+                    ? null
+                    : SongBookmark(track: track, station: station),
                 status: display.statusKey.tr(context: context),
                 flying: display.flying,
                 landings: journey.trips,

@@ -71,5 +71,20 @@
   "welcomeStart": "Accendi la radio",
   "welcomeDemo": "Animazione: la manopola gira e la radio atterra su una stazione lontana",
   "welcomeHint": "Tocca la manopola per accendere",
-  "sendFeedback": "Segnala un problema o un'idea"
+  "sendFeedback": "Segnala un problema o un'idea",
+  "saveSong": "Salva canzone",
+  "songSaved": "Canzone salvata",
+  "undo": "Annulla",
+  "tabStations": "Radio",
+  "tabSongs": "Canzoni",
+  "songsSubtitle": "Canzoni trovate in viaggio.",
+  "songsEmpty": "Ancora nessuna canzone. Tocca il segnalibro accanto al titolo quando ne senti una che ti piace.",
+  "searchOn": "Cerca su {}",
+  "searchWeb": "Cerca sul web",
+  "copy": "Copia",
+  "tuneAgain": "Riaccendi {}",
+  "removeSong": "Togli",
+  "songRemoved": "Canzone tolta",
+  "songOptions": "Opzioni della canzone",
+  "songsError": "Non è stato possibile aggiornare le canzoni. Riprova."
 }

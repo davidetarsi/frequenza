@@ -58,6 +58,11 @@ class MainActivity : AudioServiceActivity() {
                 }
                 // Dal 13 Android conferma da sé ogni copia negli appunti.
                 "sdkInt" -> result.success(Build.VERSION.SDK_INT)
+                // Le app di musica in cui cercare una canzone salvata.
+                "installedApps" -> {
+                    val packages = (call.arguments as? List<*>).orEmpty().filterIsInstance<String>()
+                    result.success(packages.filter { packageManager.getLaunchIntentForPackage(it) != null })
+                }
                 // Dove copiare il logo di ripiego della notifica.
                 "cacheDir" -> result.success(cacheDir.absolutePath)
                 // Per il modulo delle segnalazioni: «Google Pixel 8 · Android 16».

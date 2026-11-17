@@ -13,6 +13,7 @@ _$RadioStationImpl _$$RadioStationImplFromJson(Map<String, dynamic> json) =>
       streamUrl: json['url'] as String,
       country: json['country'] as String,
       countryCode: json['code'] as String,
+      region: json['region'] as String?,
       faviconUrl: json['faviconUrl'] as String?,
       tags:
           (json['tags'] as List<dynamic>?)?.map((e) => e as String).toList() ??
@@ -30,6 +31,7 @@ Map<String, dynamic> _$$RadioStationImplToJson(_$RadioStationImpl instance) =>
       'url': instance.streamUrl,
       'country': instance.country,
       'code': instance.countryCode,
+      'region': instance.region,
       'faviconUrl': instance.faviconUrl,
       'tags': instance.tags,
       'codec': instance.codec,

@@ -116,6 +116,9 @@ abstract final class RadioCabinetDesign {
     letterSpacing: 2,
   );
   static const detailText = TextStyle(fontSize: 14, height: 1.2);
+
+  /// The bookmark beside the song: a little taller than its text.
+  static const detailActionSize = 18.0;
   static const statusText = TextStyle(fontSize: 12, height: 1.15);
   static const stationText = TextStyle(
     fontWeight: FontWeight.w600,
