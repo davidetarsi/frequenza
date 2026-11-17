@@ -6,7 +6,7 @@ part of 'analytics_consent.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$analyticsConsentHash() => r'ad419a264459d3c68f583f5e2a666a414782cdf0';
+String _$analyticsConsentHash() => r'd2ea3fcb9bdb43a6a7f52fd3fde971bd645fccf5';
 
 /// Whether the anonymous statistics are on: on unless turned off in the
 /// settings, off when the preferences cannot be read.

@@ -201,6 +201,7 @@ Prima del primo rilascio con le statistiche. Senza questi passi la build di prod
   - non condivisi con terze parti; cifrati in transito; raccolta facoltativa (si spegne nelle Impostazioni); scopo «Analisi»;
   - nessun dato collegato all'identità.
 - [ ] Sul bot: avvisi su `flight_failed` e `playback_broken`, e il `/digest` settimanale.
+- La chiave `proj_…` finisce dentro l'app pubblicata, come per ogni chiave di invio: chiunque potrebbe mandare eventi falsi. Se succede, dal bot: `/projects` → Frequenza → Settings → ruota la chiave, poi aggiorna il segreto su GitHub e fai una nuova release.
 
 ## Dopo
 

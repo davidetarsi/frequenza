@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -15,10 +17,13 @@ import 'package:tgram_analytics/tgram_analytics.dart';
 
 import '../welcome/welcome_seen_test.dart' show BrokenStore;
 
-/// Preferences that read, but cannot write.
-class ReadOnlyStore extends SharedPreferencesStorePlatform {
+/// Preferences in memory whose writes fail while [failWrites] is true.
+class FlakyStore extends SharedPreferencesStorePlatform {
+  final values = <String, Object>{};
+  var failWrites = true;
+
   @override
-  Future<Map<String, Object>> getAll() async => {};
+  Future<Map<String, Object>> getAll() async => Map.of(values);
 
   @override
   Future<bool> clear() async => false;
@@ -27,8 +32,11 @@ class ReadOnlyStore extends SharedPreferencesStorePlatform {
   Future<bool> remove(String key) async => false;
 
   @override
-  Future<bool> setValue(String valueType, String key, Object value) async =>
-      false;
+  Future<bool> setValue(String valueType, String key, Object value) async {
+    if (failWrites) return false;
+    values[key] = value;
+    return true;
+  }
 }
 
 const complete = (apiKey: 'proj_test', serverUrl: 'https://analytics.test');
@@ -131,19 +139,95 @@ void main() {
 
   test('a failing server never throws', () async {
     final c = container(client: server(fails: true));
-    final analytics = await loaded(c);
-    analytics.describeSession({'locale': 'it'});
-    analytics.track(AppEvent.welcomeCompleted());
+    c.read(analyticsSessionDetailsProvider.notifier).describe({'locale': 'it'});
+    (await loaded(c)).track(const AppEvent.welcomeCompleted());
     await settle();
     expect(requests, isNotEmpty);
   });
 
-  test('the session id is 32 hex chars and stable', () {
-    final a = container(), b = container();
-    final id = a.read(analyticsSessionIdProvider);
-    expect(id, matches(RegExp(r'^[0-9a-f]{32}$')));
-    expect(a.read(analyticsSessionIdProvider), id);
-    expect(b.read(analyticsSessionIdProvider), isNot(id));
+  test('a server that never answers does not hold anything up', () async {
+    var asked = 0;
+    final silent = MockClient((request) {
+      asked++;
+      return Completer<http.Response>().future;
+    });
+    final analytics = await loaded(container(client: silent));
+    final watch = Stopwatch()..start();
+    analytics.track(const AppEvent.songCopied());
+    analytics.track(const AppEvent.songCopied());
+    expect(watch.elapsedMilliseconds, lessThan(50));
+    await settle();
+    expect(asked, 2);
+  });
+
+  test('a launch code is 32 hex chars, new every time', () {
+    final a = newAnalyticsSessionId(), b = newAnalyticsSessionId();
+    expect(a, matches(RegExp(r'^[0-9a-f]{32}$')));
+    expect(b, isNot(a));
+  });
+
+  Map<String, Object?> sent(http.Request request) =>
+      jsonDecode(request.body) as Map<String, Object?>;
+
+  test('every event carries the launch details', () async {
+    final c = container(client: server());
+    c.read(analyticsSessionDetailsProvider.notifier).describe({
+      'app_version': '0.4.0+5',
+      'locale': 'it',
+    });
+    (await loaded(c)).track(const AppEvent.songCopied());
+    await settle();
+    final properties = sent(requests.single)['properties'] as Map;
+    expect(properties['app_version'], '0.4.0+5');
+    expect(properties['locale'], 'it');
+  });
+
+  test('statistics turned on later still carry the launch details', () async {
+    SharedPreferences.setMockInitialValues({'app.analyticsOn': false});
+    final c = container(client: server());
+    await loaded(c);
+    c.read(analyticsSessionDetailsProvider.notifier).describe({'locale': 'en'});
+    await c.read(analyticsConsentProvider.notifier).select(true);
+    c.read(analyticsProvider).track(const AppEvent.songCopied());
+    await settle();
+    final properties = sent(requests.single)['properties'] as Map;
+    expect(properties['locale'], 'en');
+  });
+
+  test('turning statistics back on starts a new launch code', () async {
+    final c = container(client: server());
+    (await loaded(c)).track(const AppEvent.songCopied());
+    final notifier = c.read(analyticsConsentProvider.notifier);
+    await notifier.select(false);
+    await notifier.select(true);
+    c.read(analyticsProvider).track(const AppEvent.songCopied());
+    await settle();
+    expect(requests, hasLength(2));
+    expect(
+      sent(requests.first)['session_id'],
+      isNot(sent(requests.last)['session_id']),
+    );
+  });
+
+  test('after an off that could not be saved, on can be saved', () async {
+    final store = FlakyStore()..values['flutter.app.analyticsOn'] = true;
+    final previous = SharedPreferencesStorePlatform.instance;
+    SharedPreferencesStorePlatform.instance = store;
+    SharedPreferences.resetStatic();
+    addTearDown(() {
+      SharedPreferencesStorePlatform.instance = previous;
+      SharedPreferences.resetStatic();
+    });
+    final c = container();
+    await loaded(c);
+    final notifier = c.read(analyticsConsentProvider.notifier);
+    expect(await notifier.select(false), isFalse);
+    expect(analyticsOn(c.read(analyticsConsentProvider)), isFalse);
+
+    store.failWrites = false;
+    expect(await notifier.select(true), isTrue);
+    expect(store.values['flutter.app.analyticsOn'], isTrue);
+    expect(analyticsOn(c.read(analyticsConsentProvider)), isTrue);
   });
 
   test('keys come complete only with proj_ and https', () {
@@ -156,7 +240,7 @@ void main() {
 
   test('an off that cannot be saved still stops events', () async {
     final previous = SharedPreferencesStorePlatform.instance;
-    SharedPreferencesStorePlatform.instance = ReadOnlyStore();
+    SharedPreferencesStorePlatform.instance = FlakyStore();
     SharedPreferences.resetStatic();
     addTearDown(() {
       SharedPreferencesStorePlatform.instance = previous;

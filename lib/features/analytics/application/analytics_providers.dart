@@ -29,9 +29,8 @@ AnalyticsKeys analyticsKeys(Ref ref) => (
 @Riverpod(keepAlive: true)
 http.Client? analyticsHttpClient(Ref ref) => null;
 
-/// This launch, as 32 random hex characters. Never stored.
-@Riverpod(keepAlive: true)
-String analyticsSessionId(Ref ref) {
+/// A launch code: 32 random hex characters, never stored.
+String newAnalyticsSessionId() {
   final random = Random.secure();
   return [
     for (var i = 0; i < 16; i++)
@@ -39,17 +38,31 @@ String analyticsSessionId(Ref ref) {
   ].join();
 }
 
+/// The launch details (version, language, theme, Android), sent with
+/// every event; empty until the launch has been described.
+@Riverpod(keepAlive: true)
+class AnalyticsSessionDetails extends _$AnalyticsSessionDetails {
+  @override
+  Map<String, Object> build() => const {};
+
+  void describe(Map<String, Object> details) =>
+      state = Map.unmodifiable(details);
+}
+
 /// Where the events go: nowhere without the keys, or with the statistics
-/// off or not yet read.
+/// off or not yet read. Every time they start, a new launch code.
 @Riverpod(keepAlive: true)
 Analytics analytics(Ref ref) {
   final keys = ref.watch(analyticsKeysProvider);
   final on = analyticsOn(ref.watch(analyticsConsentProvider));
   if (!on || !analyticsKeysComplete(keys)) return const NoAnalytics();
-  return TgramAnalytics(
+  final analytics = TgramAnalytics(
     apiKey: keys.apiKey,
     serverUrl: keys.serverUrl,
-    sessionId: ref.watch(analyticsSessionIdProvider),
+    sessionId: newAnalyticsSessionId(),
+    details: ref.watch(analyticsSessionDetailsProvider),
     client: ref.watch(analyticsHttpClientProvider),
   );
+  ref.onDispose(analytics.close);
+  return analytics;
 }

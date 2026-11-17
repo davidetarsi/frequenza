@@ -180,6 +180,10 @@ void main() {
         {"title":"No date",
          "station":{"id":"fip","name":"FIP","url":"https://fip.example.com/live"}},
         42,
+        {"title":"   ","at":"2026-11-16T20:00:00.000Z",
+         "station":{"id":"fip","name":"FIP","url":"https://fip.example.com/live"}},
+        {"title":"Bad date","at":"not a date",
+         "station":{"id":"fip","name":"FIP","url":"https://fip.example.com/live"}},
         {"title":"Good","artist":7,"at":"2026-11-16T20:00:00.000Z",
          "station":{"id":"fip","name":"FIP","url":"https://fip.example.com/live"}}
       ]''',

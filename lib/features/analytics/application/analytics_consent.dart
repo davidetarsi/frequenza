@@ -31,7 +31,9 @@ class AnalyticsConsent extends _$AnalyticsConsent {
 
   /// False when the choice could not be saved.
   Future<bool> select(bool on) async {
-    if (state.isLoading || state.valueOrNull == on) return true;
+    if (state.isLoading) return true;
+    // After a failed save the old value is not the one in force: save again.
+    if (!state.hasError && state.valueOrNull == on) return true;
     final result = await _save.run(
       shown: state,
       emit: (value) => state = value,

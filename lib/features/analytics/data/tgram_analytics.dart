@@ -11,18 +11,28 @@ final class TgramAnalytics implements Analytics {
     required this.apiKey,
     required this.serverUrl,
     required this.sessionId,
+    this.details = const {},
     this.client,
   });
 
   final String apiKey;
   final String serverUrl;
 
-  /// Random for every launch and kept only in memory.
+  /// Random, kept only in memory: a new one every time the statistics
+  /// start, so an off period separates what came before and after.
   final String sessionId;
+
+  /// The launch details, sent with every event of [sessionId].
+  final Map<String, Object> details;
   final http.Client? client;
+  var _described = false;
 
   void _ready() {
     if (!TGA.isInitialized) TGA.init(apiKey, serverUrl, client: client);
+    if (!_described && details.isNotEmpty) {
+      TGA.identify(sessionId, details);
+      _described = true;
+    }
   }
 
   @override
@@ -35,11 +45,10 @@ final class TgramAnalytics implements Analytics {
     }
   }
 
-  @override
-  void describeSession(Map<String, Object> properties) {
+  /// Drops the details kept for [sessionId].
+  void close() {
     try {
-      _ready();
-      TGA.identify(sessionId, properties);
+      TGA.forget(sessionId);
     } catch (_) {
       // Statistics never reach the radio.
     }
