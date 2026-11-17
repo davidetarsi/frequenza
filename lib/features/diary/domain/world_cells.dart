@@ -29,13 +29,15 @@ List<CountryDot> countryDots() => _dots ??= [
           col: col.toDouble(),
         ),
   for (final MapEntry(key: code, value: (lat, lon)) in extraCountryDots.entries)
-    (
-      code: code,
-      lat: lat,
-      lon: lon,
-      row: ((worldDotNorth - lat) / worldDotStep).floor(),
-      col: (lon + 180) / worldDotStep - 0.5,
-    ),
+    if (((worldDotNorth - lat) / worldDotStep).floor() case final row)
+      (
+        code: code,
+        // Where the map paints it: on its row, so a tap on it finds it.
+        lat: worldDotNorth - worldDotStep / 2 - row * worldDotStep,
+        lon: lon,
+        row: row,
+        col: (lon + 180) / worldDotStep - 0.5,
+      ),
 ];
 
 /// The country of the dot nearest to ([lat], [lon]) within [radiusCells]

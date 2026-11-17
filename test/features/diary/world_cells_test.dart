@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frequenza/features/diary/domain/world_cells.dart';
+import 'package:frequenza/features/journey/data/world_atlas.g.dart';
 
 void main() {
   test('a point in Brasilia is Brazil', () {
@@ -23,5 +24,21 @@ void main() {
     final dots = countryDots();
     expect(dots.where((d) => d.code == 'BR'), isNotEmpty);
     expect(dots.where((d) => d.code == 'SG'), hasLength(1));
+  });
+
+  test('a tap on the drawn extra dot picks its own country', () {
+    // Where the map paints it: the row snapped to the grid.
+    final missed = [
+      for (final dot in countryDots())
+        if (extraCountryDots.containsKey(dot.code))
+          if (countryNear(
+                worldDotNorth - worldDotStep / 2 - dot.row * worldDotStep,
+                dot.lon,
+              ) !=
+              dot.code)
+            dot.code,
+    ];
+    expect(missed, isEmpty);
+    expect(extraCountryDots.keys, containsAll(['SG', 'AT', 'NL', 'LU']));
   });
 }
