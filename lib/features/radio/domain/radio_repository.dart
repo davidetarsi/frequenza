@@ -8,6 +8,10 @@ abstract interface class RadioRepository {
     int limit = 20,
   });
 
-  /// Fetches a single random station from candidates.
-  Future<RadioStation?> getRandomStation({String? countryCode});
+  /// A random station, among the chosen [countries] when given (one country
+  /// is a group of one), preferring stations not in [avoid] (station ids).
+  Future<RadioStation?> getRandomStation({
+    Set<String>? countries,
+    Set<String> avoid = const {},
+  });
 }

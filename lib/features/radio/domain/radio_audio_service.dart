@@ -6,6 +6,9 @@ enum PlaybackStatus { idle, buffering, playing, paused, error }
 abstract interface class RadioAudioService {
   Stream<PlaybackStatus> get playbackStatusStream;
   PlaybackStatus get currentStatus;
+
+  /// The title of the song on air; a new station starts from null, so a
+  /// title never outlives its station.
   Stream<String?> get trackTitleStream;
 
   /// Pauses asked by the system (headphones unplugged, a call…), already

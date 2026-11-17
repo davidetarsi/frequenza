@@ -17,6 +17,10 @@ part 'radio_controller.g.dart';
 class RadioController extends _$RadioController {
   Object? _currentTuneToken;
 
+  /// The last title the stream sent, kept through the flight: the session
+  /// drops titles until the station lands.
+  String? _trackTitle;
+
   /// Runs while the station on air buffers: a stream that stays silent
   /// is reconnected instead of leaving the radio stuck.
   Timer? _stall;
@@ -40,7 +44,9 @@ class RadioController extends _$RadioController {
       _watchPause();
     });
     final trackSubscription = audio.trackTitleStream.listen((title) {
-      if (active) _apply(TrackChanged(title));
+      if (!active) return;
+      _trackTitle = title;
+      _apply(TrackChanged(title));
     });
     // A pause from the system ends a flight; on air the player already
     // paused, and the status reports it.
@@ -60,14 +66,32 @@ class RadioController extends _$RadioController {
     return const RadioSession.off(Journey());
   }
 
-  /// Flies to a random station, retrying after a lost signal.
-  /// If [countryCode] is specified, restricts search to that country.
-  Future<void> tuneRandom({String? countryCode}) => _fly(
-    () => ref
-        .read(radioRepositoryProvider)
-        .getRandomStation(countryCode: countryCode),
-    retries: ref.read(flightTimingProvider).autoRetries,
-  );
+  /// Flies to a random station, retrying after a lost signal, away from the
+  /// stations just heard. [countries] limits it to the chosen ones.
+  Future<void> tuneRandom({Set<String>? countries}) {
+    // Landing ends the flight: a station picked before in this flight is
+    // one that did not play.
+    final tried = <String>{};
+    return _fly(() async {
+      final station = await ref
+          .read(radioRepositoryProvider)
+          .getRandomStation(
+            countries: countries,
+            avoid: {..._justHeard(), ...tried},
+          );
+      if (station != null) tried.add(station.id);
+      return station;
+    }, retries: ref.read(flightTimingProvider).autoRetries);
+  }
+
+  /// The stations left behind and the last one that landed.
+  Set<String> _justHeard() {
+    final journey = state.journey;
+    return {
+      for (final station in journey.previous) station.id,
+      ?journey.landed?.id,
+    };
+  }
 
   /// Flies to a chosen station (e.g. a favorite), without retrying.
   Future<void> tuneTo(RadioStation station) async =>
@@ -217,6 +241,7 @@ class RadioController extends _$RadioController {
       Landed(
         station,
         paused: _audioService.currentStatus == PlaybackStatus.paused,
+        trackTitle: _trackTitle,
       ),
     );
   }

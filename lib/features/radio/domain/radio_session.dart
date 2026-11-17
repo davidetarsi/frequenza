@@ -56,11 +56,15 @@ final class RetryStarted extends RadioEvent {
 }
 
 final class Landed extends RadioEvent {
-  const Landed(this.station, {required this.paused});
+  const Landed(this.station, {required this.paused, this.trackTitle});
   final RadioStation station;
 
   /// A pause that arrived during the flight.
   final bool paused;
+
+  /// The title the station sent while it played silent under the static:
+  /// most stations send it once, as soon as they connect.
+  final String? trackTitle;
 }
 
 final class PlaybackChanged extends RadioEvent {
@@ -86,7 +90,8 @@ final class SwitchedOff extends RadioEvent {
 /// | Flying   | AttemptFailed(retrying)      | Flying, signal lost                       |
 /// | Flying   | AttemptFailed(not retrying)  | Failed                                    |
 /// | Flying   | RetryStarted                 | Flying, next attempt                      |
-/// | Flying   | Landed(station, paused)      | OnAir, playing or paused                  |
+/// | Flying   | Landed(station, paused,      | OnAir, playing or paused, with the title  |
+/// |          |   trackTitle)                | heard during the flight                   |
 /// | OnAir    | PlaybackChanged(status)      | OnAir with that playback                  |
 /// | OnAir    | TrackChanged(title)          | OnAir with that title                     |
 /// | any      | SwitchedOff                  | Off, without the last leg                 |
@@ -109,12 +114,13 @@ RadioSession next(RadioSession session, RadioEvent event) =>
       ),
       (
         Flying(:final journey, :final kind),
-        Landed(:final station, :final paused),
+        Landed(:final station, :final paused, :final trackTitle),
       ) =>
         RadioSession.onAir(
           journey.arrive(station, kind),
           station,
           playback: paused ? OnAirPlayback.paused : OnAirPlayback.playing,
+          trackTitle: trackTitle,
         ),
       (final OnAir onAir, PlaybackChanged(:final status)) => onAir.copyWith(
         playback: switch (status) {

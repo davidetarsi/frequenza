@@ -14,6 +14,7 @@ class LivePlayer extends Fake implements AudioPlayer {
   final playback = Completer<void>();
   final calls = <String>[];
   final states = StreamController<PlayerState>.broadcast();
+  final icy = StreamController<IcyMetadata?>.broadcast();
 
   @override
   Future<void> setVolume(double volume) async => calls.add('volume $volume');
@@ -22,7 +23,7 @@ class LivePlayer extends Fake implements AudioPlayer {
   Stream<PlayerState> get playerStateStream => states.stream;
 
   @override
-  Stream<IcyMetadata?> get icyMetadataStream => const Stream.empty();
+  Stream<IcyMetadata?> get icyMetadataStream => icy.stream;
 
   @override
   Future<Duration?> setAudioSource(
@@ -115,6 +116,23 @@ void main() {
     );
     player.playback.completeError(StateError('Disconnected'));
     await observed;
+  });
+
+  test('a new station starts without the title of the last one', () async {
+    final player = LivePlayer();
+    final service = JustAudioService(player: player);
+    addTearDown(service.dispose);
+    final titles = <String?>[];
+    service.trackTitleStream.listen(titles.add);
+
+    player.icy.add(
+      IcyMetadata(info: IcyInfo(title: ' Old song ', url: null), headers: null),
+    );
+    await pumpEventQueue();
+    await service.playStation(station).timeout(const Duration(seconds: 1));
+    await pumpEventQueue();
+
+    expect(titles, ['Old song', null]);
   });
 
   test('playStation starts silent and shows only the flight', () async {

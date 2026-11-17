@@ -28,9 +28,19 @@ class FakeRadioRepository implements RadioRepository {
     return stationToReturn != null ? [stationToReturn!] : [];
   }
 
+  Set<String>? lastCountries;
+  Set<String> lastAvoid = const {};
+  final avoids = <Set<String>>[];
+
   @override
-  Future<RadioStation?> getRandomStation({String? countryCode}) async {
+  Future<RadioStation?> getRandomStation({
+    Set<String>? countries,
+    Set<String> avoid = const {},
+  }) async {
     randomCalls++;
+    lastCountries = countries;
+    lastAvoid = avoid;
+    avoids.add(avoid);
     if (errorToThrow != null) throw errorToThrow!;
     if (pendingStation != null) return pendingStation!.future;
     return stationToReturn;
@@ -79,10 +89,16 @@ class FakeAudioService implements RadioAudioService {
     _statusController.add(status);
   }
 
+  /// The title each station sends as soon as it connects, by id.
+  final titlesOnConnect = <String, String>{};
+
   @override
   Future<void> playStation(RadioStation station) async {
     lastPlayedStation = station;
     played.add(station);
+    trackTitles.add(null);
+    final title = titlesOnConnect[station.id];
+    if (title != null) trackTitles.add(title);
     emitStatus(PlaybackStatus.buffering);
     if (autoPlay) emitStatus(PlaybackStatus.playing);
   }
@@ -358,6 +374,18 @@ void main() {
       expect(read().departure, homePlace);
     });
 
+    test('a retry does not pick again a station that failed to play', () async {
+      audioService.autoPlay = false;
+      repository.stationToReturn = testStation;
+
+      await controller.tuneRandom();
+
+      expect(repository.avoids, hasLength(3));
+      expect(repository.avoids.first, isNot(contains('station-1')));
+      expect(repository.avoids[1], contains('station-1'));
+      expect(repository.avoids[2], contains('station-1'));
+    });
+
     test('favorite does not retry', () async {
       audioService.autoPlay = false;
       await controller.tuneTo(testStation);
@@ -438,6 +466,55 @@ void main() {
       }
       expect(read().trips, 6);
       expect(read().history, hasLength(5));
+    });
+
+    test('tuning avoids the stations just heard', () async {
+      const paris = RadioStation(
+        id: 'paris',
+        name: 'FIP',
+        streamUrl: 'https://stream.test/fip.mp3',
+        country: 'France',
+        countryCode: 'FR',
+      );
+      await controller.tuneTo(paris);
+      await controller.tuneTo(testStation);
+      repository.stationToReturn = testStation;
+
+      await controller.tuneRandom(countries: {'IT', 'FR'});
+
+      expect(repository.lastAvoid, {'paris', 'station-1'});
+      expect(repository.lastCountries, {'IT', 'FR'});
+    });
+
+    test('the title sent while flying shows once landed', () async {
+      repository.stationToReturn = testStation;
+      audioService.titlesOnConnect[testStation.id] = 'Artista - Titolo';
+      await controller.tuneRandom();
+
+      expect(
+        container.read(radioControllerProvider),
+        isA<OnAir>().having((s) => s.trackTitle, 'title', 'Artista - Titolo'),
+      );
+    });
+
+    test('a station without titles does not show the previous one', () async {
+      const silent = RadioStation(
+        id: 'station-2',
+        name: 'Radio Muta',
+        streamUrl: 'https://stream.test/muta.mp3',
+        country: 'Italy',
+        countryCode: 'IT',
+      );
+      repository.stationToReturn = testStation;
+      audioService.titlesOnConnect[testStation.id] = 'Artista - Titolo';
+      await controller.tuneRandom();
+      repository.stationToReturn = silent;
+      await controller.tuneRandom();
+
+      expect(
+        container.read(radioControllerProvider),
+        isA<OnAir>().having((s) => s.trackTitle, 'title', isNull),
+      );
     });
 
     test('stop during flight grounds the radio', () async {
