@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frequenza/features/radio/domain/radio_station.dart';
@@ -100,6 +102,68 @@ void main() {
     expect(song.station.countryCode, 'US');
     expect(song.station.region, 'Washington');
     expect(song.station.point?.latitude, 47.6);
+  });
+
+  test('songs are stored with the keys of the first version', () async {
+    // Phones already keep songs in this shape: the keys never change.
+    SharedPreferences.setMockInitialValues({});
+    await PreferencesSongsRepository().save([
+      SavedSong(
+        artist: 'Ana Moura',
+        title: 'Desfado',
+        station: kexp,
+        savedAt: DateTime.utc(2026, 11, 16, 21, 30),
+      ),
+      SavedSong(
+        title: 'Only a title',
+        station: fip,
+        savedAt: DateTime.utc(2026, 11, 17, 8),
+      ),
+    ]);
+
+    final prefs = await SharedPreferences.getInstance();
+    expect(jsonDecode(prefs.getString('frequenza.songs.v1')!), [
+      {
+        'artist': 'Ana Moura',
+        'title': 'Desfado',
+        'at': '2026-11-16T21:30:00.000Z',
+        'station': {
+          'id': 'kexp',
+          'name': 'KEXP',
+          'url': 'https://kexp.example.com/live',
+          'country': 'The United States Of America',
+          'code': 'US',
+          'tags': <String>[],
+          'region': 'Washington',
+          'lat': 47.6,
+          'lon': -122.3,
+        },
+      },
+      {
+        'title': 'Only a title',
+        'at': '2026-11-17T08:00:00.000Z',
+        'station': {
+          'id': 'fip',
+          'name': 'FIP',
+          'url': 'https://fip.example.com/live',
+          'country': 'France',
+          'code': 'FR',
+          'tags': <String>[],
+        },
+      },
+    ]);
+  });
+
+  test('a song saved at local time is stored in UTC', () async {
+    SharedPreferences.setMockInitialValues({});
+    final local = DateTime(2026, 11, 16, 21, 30);
+    await PreferencesSongsRepository().save([
+      SavedSong(title: 'Desfado', station: fip, savedAt: local),
+    ]);
+
+    final prefs = await SharedPreferences.getInstance();
+    final stored = jsonDecode(prefs.getString('frequenza.songs.v1')!) as List;
+    expect(stored.single['at'], local.toUtc().toIso8601String());
   });
 
   test('a broken entry is skipped, the others load', () async {

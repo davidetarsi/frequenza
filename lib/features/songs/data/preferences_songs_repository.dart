@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../radio/data/station_record.dart';
 import '../domain/saved_song.dart';
 import '../domain/songs_repository.dart';
 
@@ -24,32 +23,21 @@ class PreferencesSongsRepository implements SongsRepository {
   @override
   Future<void> save(List<SavedSong> songs) async {
     final prefs = await SharedPreferences.getInstance();
-    final encoded = jsonEncode([
-      for (final song in songs)
-        {
-          'artist': ?song.artist,
-          'title': song.title,
-          'at': song.savedAt.toUtc().toIso8601String(),
-          'station': stationRecord(song.station),
-        },
-    ]);
+    final encoded = jsonEncode([for (final song in songs) song.toJson()]);
     if (!await prefs.setString(_key, encoded)) {
       throw StateError('Songs not saved');
     }
   }
 
+  /// A broken entry is skipped: the others still load.
   static SavedSong? _song(Object? entry) {
     if (entry is! Map<String, dynamic>) return null;
-    final title = entry['title'], artist = entry['artist'], at = entry['at'];
-    if (title is! String || title.trim().isEmpty || at is! String) return null;
-    final savedAt = DateTime.tryParse(at);
-    final station = stationFromRecord(entry['station']);
-    if (savedAt == null || station == null) return null;
-    return SavedSong(
-      artist: artist is String && artist.trim().isNotEmpty ? artist : null,
-      title: title,
-      station: station,
-      savedAt: savedAt,
-    );
+    try {
+      final song = SavedSong.fromJson(entry);
+      return song.title.trim().isEmpty ? null : song;
+    } on Object {
+      // FormatException from the station, TypeError from a wrong field.
+      return null;
+    }
   }
 }

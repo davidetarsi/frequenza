@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../radio/data/station_record.dart';
+import '../../radio/domain/station_record.dart';
 import '../../radio/domain/radio_station.dart';
 import '../domain/favorites_repository.dart';
 
