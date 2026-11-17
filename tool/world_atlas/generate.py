@@ -92,8 +92,105 @@ def dart_string(text):
 
 
 def nearest(lat, lon, centroids):
-    return min(centroids, key=lambda c: (centroids[c][0] - lat) ** 2 + (
-        (centroids[c][1] - lon) * math.cos(math.radians(lat))) ** 2)
+    def apart(c):
+        # Longitude difference across the date line: at most 180 degrees.
+        dlon = (centroids[c][1] - lon + 540) % 360 - 180
+        return (centroids[c][0] - lat) ** 2 + (
+            dlon * math.cos(math.radians(lat))) ** 2
+    return min(centroids, key=apart)
+
+
+# Territories that Natural Earth draws inside another country but that have
+# their own ISO code (and their own stations in Radio Browser): Italian and
+# English names, as Natural Earth has none for them.
+TERRITORY_NAMES = {
+    'BQ': ('Paesi Bassi caraibici', 'Caribbean Netherlands'),
+    'CC': ('Isole Cocos', 'Cocos (Keeling) Islands'),
+    'CX': ('Isola di Natale', 'Christmas Island'),
+    'GF': ('Guyana francese', 'French Guiana'),
+    'GP': ('Guadalupa', 'Guadeloupe'),
+    'MQ': ('Martinica', 'Martinique'),
+    'RE': ('Riunione', 'Réunion'),
+    'SJ': ('Svalbard e Jan Mayen', 'Svalbard and Jan Mayen'),
+    'TK': ('Tokelau', 'Tokelau'),
+    'YT': ('Mayotte', 'Mayotte'),
+}
+
+# How far the other islands of a territory may lie from the piece holding
+# its city, in degrees.
+TERRITORY_REACH = 3.0
+
+
+def polygons(geometry):
+    if geometry['type'] == 'Polygon':
+        return [geometry['coordinates']]
+    if geometry['type'] == 'MultiPolygon':
+        return geometry['coordinates']
+    return []
+
+
+def country_pieces(features, cities):
+    """Each country's rings, with the pieces of its overseas territories
+    split off: a piece goes to the territory whose city ([cities]: code →
+    (lat, lon), from zone.tab, for codes Natural Earth has no shape of) lies
+    inside it, or, for a city just off a simplified coast, to the smallest
+    piece whose box (with [CITY_MARGIN]) holds it; the country's other
+    pieces near that one follow it."""
+    parts = []  # [parent, rings of one polygon, owner]
+    for feature in features:
+        parent = code_of(feature['properties'])
+        if parent:
+            parts.extend(
+                [parent, list(rings({'type': 'Polygon', 'coordinates': p})),
+                 parent]
+                for p in polygons(feature['geometry']))
+    anchors = {}
+    for code, (lat, lon) in cities.items():
+        holding = [part for part in parts if inside(lon, lat, part[1][:1])]
+        if not holding:
+            holding = sorted(
+                (part for part in parts if near_box(part[1][0], lat, lon)),
+                key=lambda part: box_area(part[1][0]))[:1]
+        for part in holding:
+            part[2] = code
+            anchors.setdefault(part[0], {})[code] = centre(part[1][0])
+    for part in parts:
+        parent, part_rings, owner = part
+        if owner != parent:
+            continue
+        x, y = centre(part_rings[0])
+        reach = [
+            (abs(x - ax) + abs(y - ay), code)
+            for code, (ax, ay) in anchors.get(parent, {}).items()
+            if abs(x - ax) <= TERRITORY_REACH and abs(y - ay) <= TERRITORY_REACH
+        ]
+        if reach:
+            part[2] = min(reach)[1]
+    pieces = {}
+    for parent, part_rings, owner in parts:
+        pieces.setdefault((parent, owner), []).extend(part_rings)
+    return [(owner, all_rings) for (_, owner), all_rings in pieces.items()]
+
+
+# How far off a simplified coast a territory's city may lie, in degrees.
+CITY_MARGIN = 0.5
+
+
+def near_box(ring, lat, lon):
+    _, (x0, y0, x1, y1) = ring
+    return (x0 - CITY_MARGIN <= lon <= x1 + CITY_MARGIN
+            and y0 - CITY_MARGIN <= lat <= y1 + CITY_MARGIN)
+
+
+def box_area(ring):
+    _, (x0, y0, x1, y1) = ring
+    return (x1 - x0) * (y1 - y0)
+
+
+def centre(ring):
+    """The middle of a ring's box; [ring] as [rings] yields it."""
+    _, (x0, y0, x1, y1) = ring
+    return (x0 + x1) / 2, (y0 + y1) / 2
 
 
 def dot_countries(rows, countries, centroids):
@@ -226,8 +323,16 @@ def main(land_path, countries_path, zone_tab_path, out_path):
             centroids.setdefault(code, (round(p['LABEL_Y'], 2),
                                         round(p['LABEL_X'], 2)))
             country_names.setdefault(code, names(feature))
+    # Territories with a code of their own, drawn inside another country.
+    cities = {code: (lat, lon) for code, lat, lon, _ in zone_tab(zone_tab_path)
+              if code not in centroids and code in TERRITORY_NAMES}
+    pieces = country_pieces(features, cities)
+    for code, (lat, lon) in cities.items():
+        if any(owner == code for owner, _ in pieces):
+            centroids[code] = (round(lat, 2), round(lon, 2))
+            country_names[code] = TERRITORY_NAMES[code]
     with_shape = dict(centroids)
-    dots = dot_countries(rows, country_rings(features), with_shape)
+    dots = dot_countries(rows, pieces, with_shape)
     on_map = {line[i:i + 2] for line in dots for i in range(0, len(line), 2)}
     extra = {c: xy for c, xy in sorted(with_shape.items()) if c not in on_map}
 

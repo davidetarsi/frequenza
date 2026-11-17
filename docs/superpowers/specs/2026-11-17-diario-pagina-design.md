@@ -128,6 +128,7 @@ La regola dello starter distingue i flussi dai valori letti. Qui:
   - `worldDotCountries`: per ogni cella di terra, il codice del paese che contiene il suo centro;
   - `countryNames`: nome italiano e inglese da Natural Earth (`NAME_IT`, `NAME_EN`), anche per i paesi mai ascoltati **[C]**;
   - un puntino in più al centroide per i paesi senza celle (Malta, Singapore, piccole isole).
+  - **i territori d'oltremare con un codice proprio sono paesi a sé** **[D]** (17/11/2026: «la radio è diversa e fa questa distinzione»). Natural Earth li disegna dentro la madrepatria; il generatore assegna al territorio il pezzo che contiene la sua città di `zone.tab`, o il pezzo più piccolo il cui riquadro allargato di mezzo grado la contiene, e le isole vicine (entro 3°) al territorio più vicino. Oggi: GF e SJ con celle proprie; RE, GP, MQ, YT, BQ, CC, CX, TK con il loro puntino. Nomi IT/EN da una piccola tabella nel generatore.
 - **Nome del paese mostrato:** quello dell'atlante nella lingua dell'app; se manca, il `country` di Radio Browser.
 - **Viaggio più lungo:** la distanza massima tra due ascolti consecutivi di stazioni diverse, con `placeOf` (coordinate della stazione o centroide del paese), come nel design generale.
 

@@ -10,6 +10,8 @@ import 'package:frequenza/features/analytics/domain/app_event.dart';
 import 'package:frequenza/features/diary/application/diary_providers.dart';
 import 'package:frequenza/features/diary/domain/diary_period.dart';
 import 'package:frequenza/features/diary/domain/listen.dart';
+import 'package:frequenza/features/diary/domain/world_cells.dart';
+import 'package:frequenza/features/diary/presentation/diary_map.dart';
 import 'package:frequenza/features/diary/presentation/diary_page.dart';
 import 'package:frequenza/features/favorites/application/favorites_providers.dart';
 import 'package:frequenza/features/radio/application/radio_controller.dart';
@@ -209,18 +211,18 @@ void main() {
     final (diary, _, _) = await openRadio(tester, empty: true);
     await diary.startListen(
       const RadioStation(
-        id: 'run',
-        name: 'Radio Freedom',
-        streamUrl: 'https://run.example.com/live',
-        country: 'Réunion',
-        countryCode: 'RE',
+        id: 'gib',
+        name: 'GBC Radio',
+        streamUrl: 'https://gib.example.com/live',
+        country: 'Gibraltar',
+        countryCode: 'GI',
       ),
       startedAt: DateTime.now().toUtc(),
       seconds: 3600,
     );
     await openDiaryPage(tester);
-    expect(find.text('RE'), findsNothing);
-    expect(find.text('Réunion'), findsOneWidget);
+    expect(find.text('GI'), findsNothing);
+    expect(find.text('Gibraltar'), findsOneWidget);
   });
 
   testWidgets('with no stop the map does not name a most heard country', (
@@ -312,6 +314,31 @@ void main() {
     final early = tester.getRect(bar);
     await tester.pumpAndSettle();
     expect(tester.getRect(bar).top, early.top);
+  });
+
+  testWidgets('a listen in French Guiana lights it, not France', (
+    tester,
+  ) async {
+    final (diary, _, _) = await openRadio(tester, empty: true);
+    await diary.startListen(
+      const RadioStation(
+        id: 'gf',
+        name: 'Guyane la 1ère',
+        streamUrl: 'https://gf.example.com/live',
+        country: 'French Guiana',
+        countryCode: 'GF',
+      ),
+      startedAt: DateTime.now().toUtc(),
+      seconds: 3600,
+    );
+    await openDiaryPage(tester);
+    expect(find.text('Guyana francese'), findsOneWidget);
+    expect(find.text('Francia'), findsNothing);
+    final map = find.byKey(const ValueKey('diary-map-paint'));
+    final looks =
+        (tester.widget<CustomPaint>(map).painter! as DiaryMapPainter).looks;
+    expect(looks.keys, ['GF']);
+    expect(countryDots().where((d) => d.code == 'GF'), isNotEmpty);
   });
 }
 

@@ -31,4 +31,33 @@ void main() {
     expect(countryNames['DE'], ('Germania', 'Germany'));
     expect(countryNames['MN']?.$2, 'Mongolia');
   });
+
+  group('overseas territories are countries of their own', () {
+    String cellAt(double lat, double lon) {
+      final row = ((worldDotNorth - lat) / worldDotStep).floor();
+      final col = ((lon + 180) / worldDotStep).floor();
+      return worldDotCountries[row].substring(col * 2, col * 2 + 2);
+    }
+
+    test('a cell of French Guiana is GF, not France', () {
+      expect(cellAt(3.75, -53.75), 'GF');
+    });
+
+    test('Svalbard is SJ, not Norway', () {
+      expect(cellAt(78.75, 16.25), 'SJ');
+    });
+
+    test('the small ones get their own dot', () {
+      expect(
+        extraCountryDots.keys,
+        containsAll(['RE', 'GP', 'MQ', 'YT', 'BQ', 'CC', 'CX', 'TK']),
+      );
+    });
+
+    test('they have names', () {
+      expect(countryNames['GF'], ('Guyana francese', 'French Guiana'));
+      expect(countryNames['RE'], ('Riunione', 'Réunion'));
+      expect(countryNames['SJ']?.$1, 'Svalbard e Jan Mayen');
+    });
+  });
 }

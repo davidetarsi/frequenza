@@ -41,4 +41,9 @@ void main() {
     expect(missed, isEmpty);
     expect(extraCountryDots.keys, containsAll(['SG', 'AT', 'NL', 'LU']));
   });
+
+  test('a tap on Réunion picks Réunion, on French Guiana French Guiana', () {
+    expect(countryNear(-20.9, 55.5), 'RE');
+    expect(countryNear(3.75, -53.75), 'GF');
+  });
 }
