@@ -28,6 +28,9 @@ mixin _$RadioStation {
   String get country => throw _privateConstructorUsedError;
   @JsonKey(name: 'code')
   String get countryCode => throw _privateConstructorUsedError;
+
+  /// The state or region, as Radio Browser writes it: often missing.
+  String? get region => throw _privateConstructorUsedError;
   String? get faviconUrl => throw _privateConstructorUsedError;
   List<String> get tags => throw _privateConstructorUsedError;
   String? get codec => throw _privateConstructorUsedError;
@@ -60,6 +63,7 @@ abstract class $RadioStationCopyWith<$Res> {
     @JsonKey(name: 'url') String streamUrl,
     String country,
     @JsonKey(name: 'code') String countryCode,
+    String? region,
     String? faviconUrl,
     List<String> tags,
     String? codec,
@@ -89,6 +93,7 @@ class _$RadioStationCopyWithImpl<$Res, $Val extends RadioStation>
     Object? streamUrl = null,
     Object? country = null,
     Object? countryCode = null,
+    Object? region = freezed,
     Object? faviconUrl = freezed,
     Object? tags = null,
     Object? codec = freezed,
@@ -118,6 +123,10 @@ class _$RadioStationCopyWithImpl<$Res, $Val extends RadioStation>
                 ? _value.countryCode
                 : countryCode // ignore: cast_nullable_to_non_nullable
                       as String,
+            region: freezed == region
+                ? _value.region
+                : region // ignore: cast_nullable_to_non_nullable
+                      as String?,
             faviconUrl: freezed == faviconUrl
                 ? _value.faviconUrl
                 : faviconUrl // ignore: cast_nullable_to_non_nullable
@@ -163,6 +172,7 @@ abstract class _$$RadioStationImplCopyWith<$Res>
     @JsonKey(name: 'url') String streamUrl,
     String country,
     @JsonKey(name: 'code') String countryCode,
+    String? region,
     String? faviconUrl,
     List<String> tags,
     String? codec,
@@ -191,6 +201,7 @@ class __$$RadioStationImplCopyWithImpl<$Res>
     Object? streamUrl = null,
     Object? country = null,
     Object? countryCode = null,
+    Object? region = freezed,
     Object? faviconUrl = freezed,
     Object? tags = null,
     Object? codec = freezed,
@@ -220,6 +231,10 @@ class __$$RadioStationImplCopyWithImpl<$Res>
             ? _value.countryCode
             : countryCode // ignore: cast_nullable_to_non_nullable
                   as String,
+        region: freezed == region
+            ? _value.region
+            : region // ignore: cast_nullable_to_non_nullable
+                  as String?,
         faviconUrl: freezed == faviconUrl
             ? _value.faviconUrl
             : faviconUrl // ignore: cast_nullable_to_non_nullable
@@ -258,6 +273,7 @@ class _$RadioStationImpl extends _RadioStation {
     @JsonKey(name: 'url') required this.streamUrl,
     required this.country,
     @JsonKey(name: 'code') required this.countryCode,
+    this.region,
     this.faviconUrl,
     final List<String> tags = const [],
     this.codec,
@@ -282,6 +298,10 @@ class _$RadioStationImpl extends _RadioStation {
   @override
   @JsonKey(name: 'code')
   final String countryCode;
+
+  /// The state or region, as Radio Browser writes it: often missing.
+  @override
+  final String? region;
   @override
   final String? faviconUrl;
   final List<String> _tags;
@@ -306,7 +326,7 @@ class _$RadioStationImpl extends _RadioStation {
 
   @override
   String toString() {
-    return 'RadioStation(id: $id, name: $name, streamUrl: $streamUrl, country: $country, countryCode: $countryCode, faviconUrl: $faviconUrl, tags: $tags, codec: $codec, bitrate: $bitrate, latitude: $latitude, longitude: $longitude)';
+    return 'RadioStation(id: $id, name: $name, streamUrl: $streamUrl, country: $country, countryCode: $countryCode, region: $region, faviconUrl: $faviconUrl, tags: $tags, codec: $codec, bitrate: $bitrate, latitude: $latitude, longitude: $longitude)';
   }
 
   /// Create a copy of RadioStation
@@ -330,6 +350,7 @@ abstract class _RadioStation extends RadioStation {
     @JsonKey(name: 'url') required final String streamUrl,
     required final String country,
     @JsonKey(name: 'code') required final String countryCode,
+    final String? region,
     final String? faviconUrl,
     final List<String> tags,
     final String? codec,
@@ -354,6 +375,10 @@ abstract class _RadioStation extends RadioStation {
   @override
   @JsonKey(name: 'code')
   String get countryCode;
+
+  /// The state or region, as Radio Browser writes it: often missing.
+  @override
+  String? get region;
   @override
   String? get faviconUrl;
   @override

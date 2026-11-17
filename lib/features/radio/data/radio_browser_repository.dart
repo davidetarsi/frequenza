@@ -208,6 +208,7 @@ class RadioBrowserRepository implements RadioRepository {
         : null;
 
     final point = GeoPoint.tryFrom(json['geo_lat'], json['geo_long']);
+    final region = json['state']?.toString().trim();
 
     return RadioStation(
       id: id,
@@ -215,6 +216,7 @@ class RadioBrowserRepository implements RadioRepository {
       streamUrl: urlResolved,
       country: country,
       countryCode: countryCode,
+      region: (region == null || region.isEmpty) ? null : region,
       faviconUrl: faviconUrl,
       tags: tags,
       codec: (codec != null && codec.isNotEmpty) ? codec.toUpperCase() : null,

@@ -174,6 +174,34 @@ void main() {
 
       expect(stations.single.country, isEmpty);
     });
+    test('parses the region from Radio Browser\'s state', () async {
+      Map<String, Object?> raw(String id, Object? state) => {
+        'stationuuid': id,
+        'name': 'Radio $id',
+        'url_resolved': 'https://stream.example.com/$id',
+        'country': 'The United States Of America',
+        'countrycode': 'US',
+        'state': state,
+      };
+      final client = MockClient(
+        (request) async => http.Response(
+          jsonEncode([
+            raw('la', ' California '),
+            raw('blank', ''),
+            raw('none', null),
+          ]),
+          200,
+        ),
+      );
+      final repository = RadioBrowserRepository(
+        client: client,
+        mirrors: ['https://mirror1.test'],
+      );
+
+      final stations = await repository.getCandidates();
+
+      expect(stations.map((s) => s.region), ['California', null, null]);
+    });
     test('reads valid station coordinates only', () async {
       Map<String, Object?> raw(String id, Object? lat, Object? lon) => {
         'stationuuid': id,
