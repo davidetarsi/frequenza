@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../diary/presentation/diary_route.dart';
 import '../../../l10n/locale_keys.g.dart';
 import '../../../ui/theme/app_spacing.dart';
 import '../../../ui/theme/travel_radio_design.dart';
@@ -16,6 +17,9 @@ import 'radio_display.dart';
 import 'copy_track_title.dart';
 import 'radio_cabinet.dart';
 import 'radio_keys.dart';
+
+/// The radio's screen: the diary grows out of it.
+final radioScreenKey = GlobalKey(debugLabel: 'radio-screen');
 
 class RadioPage extends ConsumerWidget {
   const RadioPage({
@@ -118,6 +122,10 @@ class RadioPage extends ConsumerWidget {
             );
             final cabinet = RadioCabinetHero(
               child: RadioCabinet(
+                screenKey: radioScreenKey,
+                onScreenTap: () => openDiary(context, radioScreenKey),
+                screenLabel: LocaleKeys.diaryLabel.tr(context: context),
+                screenLabelSemantics: LocaleKeys.diaryOpen.tr(context: context),
                 compact: compact,
                 horizontal: wide,
                 country: text(display.country),

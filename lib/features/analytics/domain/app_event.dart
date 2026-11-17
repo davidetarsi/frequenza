@@ -1,3 +1,4 @@
+import '../../diary/domain/diary_period.dart';
 import '../../radio/domain/journey.dart';
 import '../../radio/domain/radio_station.dart';
 import '../../songs/domain/song_search.dart';
@@ -52,6 +53,9 @@ final class AppEvent {
     : this('song_search_opened', {'service': _snake(service.name)});
 
   const AppEvent.songCopied() : this('song_copied');
+
+  AppEvent.diaryOpened(DiaryPeriod period)
+    : this('diary_opened', {'period': period.name});
 
   const AppEvent.stationRetuned() : this('station_retuned');
 

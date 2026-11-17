@@ -71,7 +71,8 @@ class RadioBar extends ConsumerWidget {
     return SafeArea(
       top: false,
       child: Container(
-        height: RadioBarDesign.height,
+        // Grows with large text instead of cutting it.
+        constraints: const BoxConstraints(minHeight: RadioBarDesign.height),
         padding: RadioBarDesign.padding,
         decoration: BoxDecoration(
           color: TravelRadioPalette.screen,

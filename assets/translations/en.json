@@ -99,5 +99,31 @@
   "barFlightFailed": "The flight did not land",
   "barBackToRadio": "Back to the radio: {}",
   "barSaveStation": "Save the station",
-  "barRemoveStation": "Remove from favourites"
+  "barRemoveStation": "Remove from favourites",
+  "diaryLabel": "DIARY ›",
+  "diaryOpen": "Open the travel diary",
+  "diaryTitle": "Travel diary",
+  "diaryWeek": "7 days",
+  "diaryMonth": "30 days",
+  "diaryYear": "Year",
+  "diaryAlways": "Always",
+  "diaryCountryCount": {
+    "one": "{} country",
+    "other": "{} countries"
+  },
+  "diaryHours": "{} h",
+  "diaryMinutes": "{} min",
+  "diaryTop": "Most heard",
+  "diaryCountries": "Countries",
+  "diaryShowAll": "Show all {}",
+  "diaryLongestTrip": "Longest trip",
+  "diaryKm": "{} km",
+  "diaryEmpty": "The diary fills as you listen: a country lights up after 5 minutes.",
+  "diaryTapCountry": "Tap a country",
+  "diaryZoomIn": "Zoom in",
+  "diaryZoomOut": "Zoom out",
+  "diaryMapSummary": "{}; most heard: {}",
+  "diaryMapEmpty": "Map off: no countries yet",
+  "flyThere": "Fly there",
+  "backToRadio": "Back to the radio"
 }

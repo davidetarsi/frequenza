@@ -99,5 +99,31 @@
   "barFlightFailed": "Il volo non è riuscito",
   "barBackToRadio": "Torna alla radio: {}",
   "barSaveStation": "Salva la stazione",
-  "barRemoveStation": "Togli dai preferiti"
+  "barRemoveStation": "Togli dai preferiti",
+  "diaryLabel": "DIARIO ›",
+  "diaryOpen": "Apri il diario di viaggio",
+  "diaryTitle": "Diario di viaggio",
+  "diaryWeek": "7 giorni",
+  "diaryMonth": "30 giorni",
+  "diaryYear": "Anno",
+  "diaryAlways": "Sempre",
+  "diaryCountryCount": {
+    "one": "{} paese",
+    "other": "{} paesi"
+  },
+  "diaryHours": "{} h",
+  "diaryMinutes": "{} min",
+  "diaryTop": "La più ascoltata",
+  "diaryCountries": "Paesi",
+  "diaryShowAll": "Mostra tutti i {}",
+  "diaryLongestTrip": "Viaggio più lungo",
+  "diaryKm": "{} km",
+  "diaryEmpty": "Il diario si riempie mentre ascolti: un paese si accende dopo 5 minuti.",
+  "diaryTapCountry": "Tocca un paese",
+  "diaryZoomIn": "Ingrandisci",
+  "diaryZoomOut": "Rimpicciolisci",
+  "diaryMapSummary": "{}; il più ascoltato: {}",
+  "diaryMapEmpty": "Mappa spenta: ancora nessun paese",
+  "flyThere": "Volaci",
+  "backToRadio": "Torna alla radio"
 }

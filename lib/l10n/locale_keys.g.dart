@@ -104,4 +104,27 @@ abstract class LocaleKeys {
   static const barBackToRadio = 'barBackToRadio';
   static const barSaveStation = 'barSaveStation';
   static const barRemoveStation = 'barRemoveStation';
+  static const diaryLabel = 'diaryLabel';
+  static const diaryOpen = 'diaryOpen';
+  static const diaryTitle = 'diaryTitle';
+  static const diaryWeek = 'diaryWeek';
+  static const diaryMonth = 'diaryMonth';
+  static const diaryYear = 'diaryYear';
+  static const diaryAlways = 'diaryAlways';
+  static const diaryCountryCount = 'diaryCountryCount';
+  static const diaryHours = 'diaryHours';
+  static const diaryMinutes = 'diaryMinutes';
+  static const diaryTop = 'diaryTop';
+  static const diaryCountries = 'diaryCountries';
+  static const diaryShowAll = 'diaryShowAll';
+  static const diaryLongestTrip = 'diaryLongestTrip';
+  static const diaryKm = 'diaryKm';
+  static const diaryEmpty = 'diaryEmpty';
+  static const diaryTapCountry = 'diaryTapCountry';
+  static const diaryZoomIn = 'diaryZoomIn';
+  static const diaryZoomOut = 'diaryZoomOut';
+  static const diaryMapSummary = 'diaryMapSummary';
+  static const diaryMapEmpty = 'diaryMapEmpty';
+  static const flyThere = 'flyThere';
+  static const backToRadio = 'backToRadio';
 }

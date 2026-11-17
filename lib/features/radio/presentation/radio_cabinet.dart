@@ -65,7 +65,21 @@ class RadioCabinet extends StatelessWidget {
     this.detailAction,
     this.dialTurns = 0,
     this.dialGlow = 0,
+    this.screenKey,
+    this.onScreenTap,
+    this.screenLabel,
+    this.screenLabelSemantics,
   });
+
+  /// Marks the screen, so a page can grow out of it.
+  final GlobalKey? screenKey;
+
+  /// A tap on the screen outside the song: it opens the diary.
+  final VoidCallback? onScreenTap;
+
+  /// In the corner of the map or the equalizer: «DIARIO ›». The screen
+  /// itself carries [screenLabelSemantics] for screen readers.
+  final String? screenLabel, screenLabelSemantics;
   final String country, station, detail, status, knobLabel, tuneLabel;
 
   /// How far the dial is turned, in full turns: only the welcome demo
@@ -122,7 +136,8 @@ class RadioCabinet extends StatelessWidget {
         scaler.scale(TravelRadioLayout.referenceTextSize) >
             TravelRadioLayout.largeTextThreshold;
     final stationLines = largeText ? 1 : 2;
-    final display = Container(
+    final screen = Container(
+      key: screenKey,
       padding: const EdgeInsets.all(RadioCabinetDesign.screenFrameInset),
       decoration: BoxDecoration(
         color: TravelRadioPalette.hardware,
@@ -236,28 +251,51 @@ class RadioCabinet extends StatelessWidget {
                       ),
                     ),
                     if (detailAction case final action?)
-                      IconTheme.merge(
-                        data: IconThemeData(
-                          color: DefaultTextStyle.of(context).style.color,
-                          size: scaler.scale(
-                            RadioCabinetDesign.detailActionSize,
+                      // The bookmark keeps its taps, even when already
+                      // full: they never fall through to the screen.
+                      GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        excludeFromSemantics: true,
+                        onTap: () {},
+                        child: IconTheme.merge(
+                          data: IconThemeData(
+                            color: DefaultTextStyle.of(context).style.color,
+                            size: scaler.scale(
+                              RadioCabinetDesign.detailActionSize,
+                            ),
                           ),
+                          child: action,
                         ),
-                        child: action,
                       ),
                   ],
                 ),
               ),
               if (!compact) ...[
                 const SizedBox(height: RadioCabinetDesign.screenItemGap),
-                if (map case final map?)
-                  SizedBox(
-                    height: RouteMapDesign.height,
-                    width: double.infinity,
-                    child: map,
-                  )
-                else
-                  _equalizer(height: RadioEqualizerDesign.height),
+                Stack(
+                  children: [
+                    if (map case final map?)
+                      SizedBox(
+                        height: RouteMapDesign.height,
+                        width: double.infinity,
+                        child: map,
+                      )
+                    else
+                      _equalizer(height: RadioEqualizerDesign.height),
+                    // In the decorative corner: it never takes a word's room.
+                    if (screenLabel case final label?)
+                      Positioned(
+                        top: 0,
+                        right: 0,
+                        child: ExcludeSemantics(
+                          child: Text(
+                            label,
+                            style: RadioCabinetDesign.countryText,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
               ],
               SizedBox(height: metrics.statusGap),
               Container(
@@ -323,6 +361,23 @@ class RadioCabinet extends StatelessWidget {
         ),
       ),
     );
+    // A tap on the screen opens the diary; the song's own row keeps its tap.
+    final display = onScreenTap == null
+        ? screen
+        : Semantics(
+            button: true,
+            label: screenLabelSemantics,
+            onTap: onScreenTap,
+            explicitChildNodes: true,
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              excludeFromSemantics: true,
+              onTap: onScreenTap,
+              // A press held on the screen is not a tap: it opens nothing.
+              onLongPress: () {},
+              child: screen,
+            ),
+          );
     final controls = Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisAlignment: MainAxisAlignment.spaceBetween,

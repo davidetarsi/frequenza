@@ -303,3 +303,49 @@ abstract final class RadioBarDesign {
   static const detailOpacity = 0.8;
   static const savedHeart = Color(0xFFF0A47E);
 }
+
+/// The travel diary: the radio's screen, enlarged.
+abstract final class DiaryDesign {
+  /// The touched country, on the screen.
+  static const selected = Color(0xFFF0A47E);
+
+  /// Dot opacity: never heard, passing through, then the four levels of
+  /// the stops.
+  static const offOpacity = 0.16;
+  static const passingOpacity = 0.38;
+  static const levelOpacity = [0.55, 0.7, 0.85, 1.0];
+
+  /// A dot's radius, as a share of its cell; bigger for the two top levels.
+  static const dotShare = 0.35;
+  static const bigDotShare = 0.44;
+
+  static const minScale = 1.0;
+  static const maxScale = 6.0;
+  static const zoomStep = 2.0;
+  static const zoomKey = 36.0;
+  static const zoomKeyRadius = 8.0;
+  static const zoomIconSize = 16.0;
+  static const zoomInset = 10.0;
+
+  static const mapMinHeight = 180.0;
+  static const mapMaxShare = 0.45;
+  static const panelRadius = Radius.circular(22);
+  static const panelBorder = 3.0;
+  static const barInset = EdgeInsets.fromLTRB(12, 12, 12, 14);
+  static const pagePadding = EdgeInsets.fromLTRB(16, 14, 16, 10);
+  static const titleText = TextStyle(
+    fontSize: 13,
+    letterSpacing: 2.4,
+    fontWeight: FontWeight.w500,
+  );
+  static const numbersText = TextStyle(
+    fontSize: 13,
+    fontFamily: 'monospace',
+    fontWeight: FontWeight.w500,
+  );
+  static const sectionText = TextStyle(fontSize: 11, letterSpacing: 1.8);
+  static const mutedOpacity = 0.78;
+  static const barHeight = 6.0;
+  static const rankNameWidth = 96.0;
+  static const rankTimeWidth = 52.0;
+}
