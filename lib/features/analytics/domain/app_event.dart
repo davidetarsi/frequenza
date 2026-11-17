@@ -44,6 +44,10 @@ final class AppEvent {
   AppEvent.songRemoved(RadioStation station)
     : this('song_removed', _place(station));
 
+  /// A listen saved in the diary has ended, after [seconds] on air.
+  AppEvent.listenEnded(RadioStation station, {required int seconds})
+    : this('listen_ended', {..._place(station), 'duration': _band(seconds)});
+
   AppEvent.songSearchOpened(SearchService service)
     : this('song_search_opened', {'service': _snake(service.name)});
 
@@ -65,6 +69,14 @@ final class AppEvent {
       final codec? when codec.isNotEmpty => codec,
       _ => 'unknown',
     },
+  };
+
+  static String _band(int seconds) => switch (seconds) {
+    < 30 => '5s-30s',
+    < 120 => '30s-2m',
+    < 600 => '2m-10m',
+    < 1800 => '10m-30m',
+    _ => '30m+',
   };
 
   static String _snake(String name) => name.replaceAllMapped(

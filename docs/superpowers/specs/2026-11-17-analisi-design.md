@@ -67,7 +67,7 @@ Nomi in inglese, `oggetto_azione`, al passato. Le proprietà hanno valori chiusi
 
 - **`station`** è il nome pubblico della stazione da Radio Browser; `country` è il codice ISO **[C]**.
 - **`codec`**, già nella stazione, serve anche per le stazioni mute e per i formati che si rompono **[C]**.
-- **Il tempo di ascolto** (`listen_ended`, con la durata a fasce) **arriva con il diario.** Lo calcola già il `ListenTracker` della parte 1, e non lo si scrive due volte **[C]**. Il piano del diario aggiunge una riga per mandarlo.
+- **Il tempo di ascolto** (`listen_ended`, con la durata a fasce) **arriva con il diario.** Lo calcola già la macchina a stati del registro (`Listening`, parte 1), e non lo si scrive due volte **[C]**. Il piano del diario aggiunge una riga per mandarlo.
 - **Avvisi sul bot:** si configurano dal bot, non nel codice. Consiglio `flight_failed` e `playback_broken`, più il `/digest` settimanale **[C]**.
 
 ## Come si costruisce

@@ -101,6 +101,7 @@ void main() {
       'youtube',
       'amazon_music',
       'web',
+      '2m-10m',
     };
     final events = [
       AppEvent.appOpened(firstOpen: false),
@@ -110,6 +111,7 @@ void main() {
       AppEvent.playbackBroken(station),
       AppEvent.favoriteAdded(station),
       AppEvent.songSaved(station),
+      AppEvent.listenEnded(station, seconds: 300),
       for (final service in SearchService.values)
         AppEvent.songSearchOpened(service),
     ];
@@ -122,5 +124,31 @@ void main() {
         );
       }
     }
+  });
+
+  test('duration bands', () {
+    String band(int seconds) =>
+        AppEvent.listenEnded(radio(), seconds: seconds).properties['duration']!
+            as String;
+    expect([5, 29, 30, 119, 120, 599, 600, 1799, 1800, 7200].map(band), [
+      '5s-30s',
+      '5s-30s',
+      '30s-2m',
+      '30s-2m',
+      '2m-10m',
+      '2m-10m',
+      '10m-30m',
+      '10m-30m',
+      '30m+',
+      '30m+',
+    ]);
+    expect(
+      AppEvent.listenEnded(radio(), seconds: 60),
+      const AppEvent('listen_ended', {
+        'country': 'IT',
+        'station': 'Radio 1',
+        'duration': '30s-2m',
+      }),
+    );
   });
 }

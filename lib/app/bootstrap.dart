@@ -8,6 +8,7 @@ import 'package:audio_service/audio_service.dart';
 import 'package:just_audio/just_audio.dart';
 
 import '../features/analytics/application/analytics_session.dart';
+import '../features/diary/application/listen_recorder.dart';
 import '../features/radio/application/radio_notification.dart';
 import '../features/radio/application/radio_providers.dart';
 import '../features/radio/data/native_channel.dart';
@@ -49,6 +50,8 @@ Future<void> bootstrap({AppConfig config = const AppConfig()}) async {
   // Before the notification: a flight from the headphones must already be
   // counted whole, with the launch details.
   await startAnalytics(container, firstOpen: !welcomeSeen, locale: language);
+  // The diary writes down every listen, from the first one.
+  container.read(listenRecorderProvider);
   // The notification answers from the start, before any page is built.
   container.read(radioNotificationProvider);
   runApp(
