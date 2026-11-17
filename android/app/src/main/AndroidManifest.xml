@@ -72,6 +72,6 @@
         <!-- Le app in cui cercare una canzone salvata. -->
         <package android:name="com.spotify.music"/>
         <package android:name="com.google.android.youtube"/>
-        <package android:name="com.apple.android.music"/>
+        <package android:name="com.amazon.mp3"/>
     </queries>
 </manifest>

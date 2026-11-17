@@ -24,8 +24,8 @@ void main() {
         ),
       ),
       (
-        SearchService.appleMusic,
-        Uri.parse('https://music.apple.com/search?term=Ana%20Moura%20Desfado'),
+        SearchService.amazonMusic,
+        Uri.parse('https://music.amazon.com/search/Ana%20Moura%20Desfado'),
       ),
       (
         SearchService.web,
@@ -46,7 +46,7 @@ void main() {
     expect(everyApp, {
       'com.spotify.music',
       'com.google.android.youtube',
-      'com.apple.android.music',
+      'com.amazon.mp3',
     });
   });
 

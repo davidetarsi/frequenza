@@ -49,7 +49,7 @@ Ogni paese in cui si atterra lascia una cartolina: sul fronte il luogo, sul retr
 - **Sulla cartolina** piccola, agganciata alla radio, il retro non scorre: mostra le ultime 3 canzoni e «e altre N» **[C]**.
 - **Aperto grande**, il retro diventa un elenco che scorre, dalla più recente, con il conteggio in alto («13 canzoni») **[D]**.
 - **I tre puntini verticali** accanto a ogni canzone aprono un menu vicino alla riga, non una scheda dal basso **[D]**. Le voci sono:
-  - Cerca su Spotify, Cerca su YouTube, Cerca su Apple Music;
+  - Cerca su Spotify, Cerca su YouTube, Cerca su Amazon Music;
   - Copia;
   - Riaccendi questa radio;
   - **Togli dalla cartolina**, per ultima e in rosso **[C]**.
@@ -60,8 +60,8 @@ Ogni paese in cui si atterra lascia una cartolina: sul fronte il luogo, sul retr
 - **Le ricerche** aprono direttamente l'app, con la ricerca già scritta; senza l'app si apre la stessa ricerca nel browser. Non si passa dalla clipboard **[C]**.
   - YouTube: `https://www.youtube.com/results?search_query=<q>`;
   - Spotify: `spotify:search:<q>`, oppure `https://open.spotify.com/search/<q>`;
-  - Apple Music: `https://music.apple.com/search?term=<q>`.
-- **Prima di costruire**, una prova sul telefono di Davide con una build di sviluppo dice quale link di Spotify funziona meglio e se Apple Music arriva sulla ricerca o solo sulla home **[C]**.
+  - Amazon Music: `https://music.amazon.com/search/<q>` (al posto di Apple Music, decisione di Davide del 17/11/2026).
+- **Prima di costruire**, una prova sul telefono di Davide con una build di sviluppo dice quale link di Spotify funziona meglio e se Amazon Music arriva sulla ricerca o solo sulla home **[C]**.
 - **Solo i servizi installati:** il menu mostra solo le app presenti sul telefono, più «Cerca sul web». I tre pacchetti vanno dichiarati in `<queries>` nel manifest **[C]**.
 
 ## Dati

@@ -2,7 +2,7 @@
 enum SearchService {
   spotify('com.spotify.music', 'Spotify'),
   youtube('com.google.android.youtube', 'YouTube'),
-  appleMusic('com.apple.android.music', 'Apple Music'),
+  amazonMusic('com.amazon.mp3', 'Amazon Music'),
   web(null, null);
 
   const SearchService(this.package, this.label);
@@ -32,7 +32,7 @@ abstract final class SongSearch {
   static String _link(SearchService service, String q) => switch (service) {
     SearchService.spotify => 'spotify:search:$q',
     SearchService.youtube => 'https://www.youtube.com/results?search_query=$q',
-    SearchService.appleMusic => 'https://music.apple.com/search?term=$q',
+    SearchService.amazonMusic => 'https://music.amazon.com/search/$q',
     SearchService.web => 'https://www.google.com/search?q=$q',
   };
 }
