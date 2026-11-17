@@ -1,8 +1,11 @@
+import 'dart:math' as math;
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/locale_keys.g.dart';
+import '../../../ui/theme/app_motion.dart';
 import '../../../ui/theme/travel_radio_design.dart';
 import '../../../ui/theme/travel_radio_palette.dart';
 import '../../analytics/application/analytics_providers.dart';
@@ -29,17 +32,22 @@ class DiaryPage extends ConsumerStatefulWidget {
 class _DiaryPageState extends ConsumerState<DiaryPage> {
   // The page's own view state: it does not outlive the page.
   var _period = DiaryPeriod.month;
-  String? _selected;
   var _showAll = false;
 
-  /// The open country sheet, if any.
-  CountryCard? _card;
+  /// The country whose sheet is open; its card follows the summary.
+  String? _selected;
+
+  /// Until a country is picked, the map invites a tap.
+  var _picked = false;
+
+  /// The last summary read, kept while another period loads.
+  DiarySummary? _last;
   final _map = TransformationController();
 
   @override
   void initState() {
     super.initState();
-    ref.read(analyticsProvider).track(AppEvent.diaryOpened(_period));
+    ref.read(analyticsProvider).track(const AppEvent.diaryOpened());
   }
 
   @override
@@ -48,21 +56,31 @@ class _DiaryPageState extends ConsumerState<DiaryPage> {
     super.dispose();
   }
 
+  /// Back closes the sheet first, then the diary.
   void _back() => Navigator.of(context).maybePop();
 
+  /// The bar is the player: one touch is always back to the radio.
+  void _backToRadio() => Navigator.of(context).pop();
+
   void _pick(DiarySummary summary, String code) {
-    final card = cardFor(summary, code);
     setState(() {
       _selected = code;
-      _card = card;
+      _picked = true;
     });
-    ref.read(analyticsProvider).track(AppEvent.diaryCountryOpened(code, card));
+    ref
+        .read(analyticsProvider)
+        .track(AppEvent.diaryCountryOpened(code, cardFor(summary, code)));
   }
 
-  void _close() => setState(() {
-    _card = null;
-    _selected = null;
-  });
+  void _choose(DiaryPeriod period) {
+    setState(() {
+      _period = period;
+      _showAll = false;
+    });
+    ref.read(analyticsProvider).track(AppEvent.diaryPeriodChosen(period));
+  }
+
+  void _close() => setState(() => _selected = null);
 
   /// Flights stay in the diary: the bar shows them.
   void _fly(
@@ -78,82 +96,91 @@ class _DiaryPageState extends ConsumerState<DiaryPage> {
   @override
   Widget build(BuildContext context) {
     final p = TravelRadioPalette.of(context);
-    final summary =
-        ref.watch(diarySummaryProvider(_period)).valueOrNull ??
-        const DiarySummary.empty();
+    final read = ref.watch(diarySummaryProvider(_period));
+    if (read.valueOrNull case final summary?) _last = summary;
+    final summary = _last;
+    final failed = summary == null && read.hasError;
+    final card = switch ((summary, _selected)) {
+      (final summary?, final code?) => cardFor(summary, code),
+      _ => null,
+    };
     final route = ModalRoute.of(context)?.animation;
-    final bar = Padding(
-      padding: DiaryDesign.barInset,
-      child: RadioBar(onBackToRadio: _back),
+    final bar = SafeArea(
+      top: false,
+      child: Padding(
+        padding: DiaryDesign.barInset,
+        child: RadioBar(onBackToRadio: _backToRadio),
+      ),
     );
     return PopScope(
-      canPop: _card == null,
+      canPop: card == null,
       onPopInvokedWithResult: (didPop, _) {
         if (!didPop) _close();
       },
-      child: Scaffold(
-        body: DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [p.shellTop, p.shellBottom],
-            ),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [p.shellTop, p.shellBottom],
           ),
-          child: SafeArea(
-            child: Column(
-              children: [
-                Expanded(
-                  child: LayoutBuilder(
-                    builder: (context, box) => Stack(
-                      children: [
-                        Positioned.fill(child: _panel(context, summary)),
-                        if (_card case final card?)
-                          Positioned(
-                            left: 0,
-                            right: 0,
-                            bottom: 0,
-                            child: ConstrainedBox(
-                              constraints: BoxConstraints(
-                                maxHeight:
-                                    box.maxHeight * DiaryDesign.sheetMaxShare,
-                              ),
-                              child: CountrySheet(
-                                card: card,
-                                onClose: _close,
-                                onFly: (station) => _fly(
-                                  DiaryFlightSource.countryStation,
-                                  (radio) => radio.tuneTo(station),
-                                ),
-                                onFlyRandom: (code) => _fly(
-                                  DiaryFlightSource.randomInCountry,
-                                  (radio) =>
-                                      radio.tuneRandom(countries: {code}),
-                                ),
-                              ),
-                            ),
-                          ),
-                      ],
+        ),
+        child: Scaffold(
+          backgroundColor: Colors.transparent,
+          // Under the panel, apart from it: notices rise above the bar.
+          bottomNavigationBar: route == null || !AppMotion.enabled(context)
+              ? bar
+              : SlideTransition(
+                  position:
+                      Tween(
+                        begin: AppMotion.diaryBarFrom,
+                        end: Offset.zero,
+                      ).animate(
+                        CurvedAnimation(
+                          parent: route,
+                          curve: const Interval(AppMotion.diaryBarStart, 1),
+                        ),
+                      ),
+                  child: bar,
+                ),
+          body: SafeArea(
+            bottom: false,
+            child: LayoutBuilder(
+              builder: (context, box) => Stack(
+                children: [
+                  Positioned.fill(
+                    child: _panel(
+                      context,
+                      summary ?? const DiarySummary.empty(),
+                      loading: summary == null && !failed,
+                      failed: failed,
                     ),
                   ),
-                ),
-                if (route == null)
-                  bar
-                else
-                  SlideTransition(
-                    position:
-                        Tween(
-                          begin: const Offset(0, 1.5),
-                          end: Offset.zero,
-                        ).animate(
-                          CurvedAnimation(
-                            parent: route,
-                            curve: const Interval(0.55, 1),
+                  if (card != null)
+                    Positioned(
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(
+                          maxHeight: box.maxHeight * DiaryDesign.sheetMaxShare,
+                        ),
+                        child: CountrySheet(
+                          card: card,
+                          onClose: _close,
+                          onFly: (station) => _fly(
+                            DiaryFlightSource.countryStation,
+                            (radio) => radio.tuneTo(station),
+                          ),
+                          onFlyRandom: (code) => _fly(
+                            DiaryFlightSource.randomInCountry,
+                            (radio) => radio.tuneRandom(countries: {code}),
                           ),
                         ),
-                    child: bar,
-                  ),
-              ],
+                      ),
+                    ),
+                ],
+              ),
             ),
           ),
         ),
@@ -161,7 +188,12 @@ class _DiaryPageState extends ConsumerState<DiaryPage> {
     );
   }
 
-  Widget _panel(BuildContext context, DiarySummary summary) {
+  Widget _panel(
+    BuildContext context,
+    DiarySummary summary, {
+    required bool loading,
+    required bool failed,
+  }) {
     String t(String key, [List<String>? args]) =>
         key.tr(context: context, args: args);
     final ink = TravelRadioPalette.screenInk;
@@ -197,101 +229,127 @@ class _DiaryPageState extends ConsumerState<DiaryPage> {
       clipBehavior: Clip.antiAlias,
       child: DefaultTextStyle(
         style: Theme.of(context).textTheme.bodyMedium!.copyWith(color: ink),
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final mapHeight = (constraints.maxHeight * DiaryDesign.mapMaxShare)
-                .clamp(DiaryDesign.mapMinHeight, double.infinity);
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Padding(
-                  padding: DiaryDesign.pagePadding,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    spacing: 8,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Padding(
+              padding: DiaryDesign.pagePadding,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                spacing: 8,
+                children: [
+                  Row(
                     children: [
-                      Row(
-                        children: [
-                          IconButton(
-                            tooltip: t(LocaleKeys.backToRadio),
-                            onPressed: _back,
-                            color: ink,
-                            icon: const Icon(Icons.chevron_left),
-                          ),
-                          Expanded(
-                            child: Text(
-                              t(LocaleKeys.diaryTitle).toUpperCase(),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: DiaryDesign.titleText,
-                            ),
-                          ),
-                          Flexible(
-                            child: Text(
-                              total == 0
-                                  ? countryCount
-                                  : '$countryCount · ${diaryDuration(context, total)}',
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: DiaryDesign.numbersText,
-                            ),
-                          ),
-                        ],
+                      IconButton(
+                        tooltip: t(LocaleKeys.backToRadio),
+                        onPressed: _back,
+                        color: ink,
+                        icon: const Icon(Icons.chevron_left),
                       ),
-                      Wrap(
-                        spacing: 6,
-                        runSpacing: 6,
-                        children: [
-                          for (final (period, key) in const [
-                            (DiaryPeriod.week, LocaleKeys.diaryWeek),
-                            (DiaryPeriod.month, LocaleKeys.diaryMonth),
-                            (DiaryPeriod.year, LocaleKeys.diaryYear),
-                            (DiaryPeriod.always, LocaleKeys.diaryAlways),
-                          ])
-                            _PeriodPill(
-                              label: t(key),
-                              selected: _period == period,
-                              onTap: () => setState(() {
-                                _period = period;
-                                _showAll = false;
-                              }),
-                            ),
-                        ],
+                      Expanded(
+                        child: Text(
+                          t(LocaleKeys.diaryTitle).toUpperCase(),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: DiaryDesign.titleText,
+                        ),
+                      ),
+                      Flexible(
+                        child: Text(
+                          total == 0
+                              ? countryCount
+                              : '$countryCount · ${diaryDuration(context, total)}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: DiaryDesign.numbersText,
+                        ),
                       ),
                     ],
                   ),
-                ),
-                SizedBox(
-                  key: const ValueKey('diary-map'),
-                  height: mapHeight,
-                  child: DiaryMap(
-                    summary: summary,
-                    selected: _selected,
-                    controller: _map,
-                    onCountry: (code) => _pick(summary, code),
-                    zoomInLabel: t(LocaleKeys.diaryZoomIn),
-                    zoomOutLabel: t(LocaleKeys.diaryZoomOut),
-                    semanticsLabel: mapLabel,
-                  ),
-                ),
-                Expanded(
-                  child: ListView(
-                    key: const ValueKey('diary-list'),
-                    padding: DiaryDesign.pagePadding,
-                    children: switch (summary) {
-                      DiaryEmpty() => [
-                        Text(
-                          t(LocaleKeys.diaryEmpty),
-                          style: TextStyle(color: muted),
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
+                    children: [
+                      for (final (period, key) in const [
+                        (DiaryPeriod.week, LocaleKeys.diaryWeek),
+                        (DiaryPeriod.month, LocaleKeys.diaryMonth),
+                        (DiaryPeriod.year, LocaleKeys.diaryYear),
+                        (DiaryPeriod.always, LocaleKeys.diaryAlways),
+                      ])
+                        _PeriodPill(
+                          label: t(key),
+                          selected: _period == period,
+                          onTap: () => _choose(period),
                         ),
-                      ],
-                      final DiaryFilled filled => _list(context, filled, muted),
-                    },
+                    ],
                   ),
-                ),
-              ],
-            );
-          },
+                ],
+              ),
+            ),
+            Expanded(
+              child: LayoutBuilder(
+                builder: (context, room) {
+                  // The map takes most of the room, the list keeps a
+                  // line or two even on a phone held sideways.
+                  final mapHeight = math.max(
+                    0.0,
+                    math.min(
+                      room.maxHeight - DiaryDesign.listMinHeight,
+                      math.max(
+                        DiaryDesign.mapMinHeight,
+                        room.maxHeight * DiaryDesign.mapShare,
+                      ),
+                    ),
+                  );
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      SizedBox(
+                        key: const ValueKey('diary-map'),
+                        height: mapHeight,
+                        child: DiaryMap(
+                          summary: summary,
+                          selected: _selected,
+                          controller: _map,
+                          onCountry: (code) => _pick(summary, code),
+                          zoomInLabel: t(LocaleKeys.diaryZoomIn),
+                          zoomOutLabel: t(LocaleKeys.diaryZoomOut),
+                          semanticsLabel: mapLabel,
+                          hint: _picked ? null : t(LocaleKeys.diaryTapCountry),
+                        ),
+                      ),
+                      Expanded(
+                        child: ListView(
+                          key: const ValueKey('diary-list'),
+                          padding: DiaryDesign.pagePadding,
+                          children: switch (summary) {
+                            _ when failed => [
+                              Text(
+                                t(LocaleKeys.diaryError),
+                                style: TextStyle(color: muted),
+                              ),
+                            ],
+                            _ when loading => const [],
+                            DiaryEmpty() => [
+                              Text(
+                                t(LocaleKeys.diaryEmpty),
+                                style: TextStyle(color: muted),
+                              ),
+                            ],
+                            final DiaryFilled filled => _list(
+                              context,
+                              filled,
+                              muted,
+                            ),
+                          },
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ),
+          ],
         ),
       ),
     );

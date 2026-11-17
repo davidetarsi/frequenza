@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../ui/theme/app_motion.dart';
+import '../../../ui/theme/travel_radio_design.dart';
 import 'diary_page.dart';
 
 /// Opens the diary over the radio: the panel grows out of the radio's
@@ -20,11 +22,11 @@ Future<void> openDiary(
 class _DiaryRoute extends PageRouteBuilder<void> {
   _DiaryRoute({required DiaryPage page, required Rect? from})
     : super(
-        transitionDuration: const Duration(milliseconds: 420),
-        reverseTransitionDuration: const Duration(milliseconds: 340),
+        transitionDuration: AppMotion.diaryOpen,
+        reverseTransitionDuration: AppMotion.diaryClose,
         pageBuilder: (_, _, _) => page,
         transitionsBuilder: (context, animation, _, child) {
-          if (from == null || MediaQuery.disableAnimationsOf(context)) {
+          if (from == null || !AppMotion.enabled(context)) {
             return FadeTransition(opacity: animation, child: child);
           }
           final grow = CurvedAnimation(
@@ -53,7 +55,7 @@ class _GrowClipper extends CustomClipper<RRect> {
   @override
   RRect getClip(Size size) => RRect.fromRectAndRadius(
     Rect.lerp(from, Offset.zero & size, t)!,
-    Radius.circular(16 * (1 - t)),
+    Radius.circular(DiaryDesign.growRadius * (1 - t)),
   );
 
   @override

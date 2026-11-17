@@ -353,4 +353,25 @@ abstract final class DiaryDesign {
   static const sheetRow = 54.0;
   static const sheetButton = 48.0;
   static const sheetMaxShare = 0.62;
+
+  /// The «touch a country» pill in the map's corner.
+  static const hintRadius = 10.0;
+  static const hintPadding = EdgeInsets.symmetric(horizontal: 8, vertical: 4);
+  static const hintText = TextStyle(fontSize: 11);
+
+  /// The map takes this share of the room under the header, never less
+  /// than [mapMinHeight] unless the list would drop under [listMinHeight].
+  static const mapShare = 0.6;
+  static const listMinHeight = 64.0;
+
+  /// The close handle of the country sheet: a thin bar in a touch area.
+  static const handleTouch = 48.0;
+  static const handleWidth = 40.0;
+  static const handleHeight = 4.0;
+
+  /// How far down a scrolled sheet must be pulled past its top to close.
+  static const sheetPullToClose = 24.0;
+
+  /// The corner of the diary's panel while it grows out of the screen.
+  static const growRadius = 16.0;
 }

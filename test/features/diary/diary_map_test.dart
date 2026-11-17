@@ -77,4 +77,43 @@ void main() {
     await tester.pumpAndSettle();
     expect(controller.value.getMaxScaleOnAxis(), closeTo(1, 0.01));
   });
+
+  testWidgets('the map paints in its own layer, and only when it changes', (
+    tester,
+  ) async {
+    await show(tester);
+    final paint = find.descendant(
+      of: find.byType(DiaryMap),
+      matching: find.byKey(const ValueKey('diary-map-paint')),
+    );
+    expect(
+      find.ancestor(of: paint, matching: find.byType(RepaintBoundary)),
+      findsWidgets,
+    );
+    final first = tester.widget<CustomPaint>(paint).painter!;
+    await show(tester);
+    final again = tester.widget<CustomPaint>(paint).painter!;
+    expect(again.shouldRepaint(first), isFalse);
+  });
+
+  testWidgets('zooming out near an edge stays inside the world', (
+    tester,
+  ) async {
+    final (_, controller) = await show(tester);
+    // Zoomed in 4×, then pushed past the left edge of the world.
+    controller.value = Matrix4.identity()
+      ..translateByDouble(200, 0, 0, 1)
+      ..scaleByDouble(4, 4, 1, 1);
+    await tester.pump();
+    await tester.tap(find.byTooltip('Rimpicciolisci'));
+    await tester.pumpAndSettle();
+    final scale = controller.value.getMaxScaleOnAxis();
+    final shift = controller.value.getTranslation();
+    final height = worldDotRows.length * cell;
+    expect(scale, greaterThan(1));
+    expect(shift.x, lessThanOrEqualTo(0));
+    expect(shift.x, greaterThanOrEqualTo(width - width * scale));
+    expect(shift.y, lessThanOrEqualTo(0));
+    expect(shift.y, greaterThanOrEqualTo(height - height * scale));
+  });
 }

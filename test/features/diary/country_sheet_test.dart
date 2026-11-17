@@ -47,13 +47,14 @@ void main() {
 
   late BarRadio controller;
   late RecordingAnalytics analytics;
+  late MemoryDiary diary;
 
   Future<void> openDiaryPage(WidgetTester tester) async {
     tester.platformDispatcher.accessibilityFeaturesTestValue =
         const FakeAccessibilityFeatures(disableAnimations: true);
     addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
     final now = DateTime.now().toUtc();
-    final diary = MemoryDiary();
+    diary = MemoryDiary();
     await diary.startListen(
       paraiso,
       startedAt: now.subtract(const Duration(days: 2)),
@@ -240,5 +241,67 @@ void main() {
       analytics.events.single,
       AppEvent.diaryFlight(DiaryFlightSource.topStation),
     );
+  });
+
+  testWidgets('with a sheet open, one tap on the bar goes back to the radio', (
+    tester,
+  ) async {
+    await openDiaryPage(tester);
+    await tester.tap(find.text('Brasile').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.bySemanticsLabel(RegExp('^Torna alla radio:')));
+    await tester.pumpAndSettle();
+    expect(find.byType(DiaryPage), findsNothing);
+  });
+
+  testWidgets('the open sheet follows new listens', (tester) async {
+    await openDiaryPage(tester);
+    await tester.tap(find.text('Brasile').last);
+    await tester.pumpAndSettle();
+    await diary.startListen(
+      radio('nuova', 'BR'),
+      startedAt: DateTime.now().toUtc(),
+      seconds: 1800,
+    );
+    await tester.pumpAndSettle();
+    expect(
+      find.descendant(
+        of: find.byKey(const ValueKey('country-sheet')),
+        matching: find.text('Radio nuova'),
+      ),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('the close handle is big enough to touch', (tester) async {
+    await openDiaryPage(tester);
+    await tester.tap(find.text('Brasile').last);
+    await tester.pumpAndSettle();
+    final handle = tester.getSize(find.bySemanticsLabel('Chiudi'));
+    expect(handle.height, greaterThanOrEqualTo(44));
+    expect(handle.width, greaterThanOrEqualTo(44));
+  });
+
+  testWidgets('a drag down closes the sheet even when its content scrolls', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(360, 640);
+    tester.view.devicePixelRatio = 1;
+    tester.platformDispatcher.textScaleFactorTestValue = 2;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+    await openDiaryPage(tester);
+    await tapCountry(tester, 'BR');
+    expect(find.byKey(const ValueKey('country-sheet')), findsOneWidget);
+    final sheet = find.byKey(const ValueKey('country-sheet'));
+    // The content is taller than the sheet: it scrolls.
+    expect(
+      tester.getRect(find.text('Radio paraiso').last).bottom,
+      greaterThan(tester.getRect(sheet).bottom),
+    );
+    await tester.flingFrom(tester.getCenter(sheet), const Offset(0, 300), 1500);
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('country-sheet')), findsNothing);
   });
 }

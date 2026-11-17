@@ -162,57 +162,74 @@ class CountrySheet extends StatelessWidget {
             namesRoute: true,
             explicitChildNodes: true,
             label: name,
-            child: SingleChildScrollView(
-              padding: DiaryDesign.sheetPadding,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Center(
-                    child: Semantics(
-                      button: true,
-                      label: t(LocaleKeys.diaryCloseSheet),
-                      onTap: onClose,
-                      child: GestureDetector(
+            child: _PullToClose(
+              onClose: onClose,
+              child: SingleChildScrollView(
+                padding: DiaryDesign.sheetPadding.copyWith(top: 0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Center(
+                      child: Semantics(
+                        button: true,
+                        label: t(LocaleKeys.diaryCloseSheet),
                         onTap: onClose,
-                        child: Container(
-                          width: 40,
-                          height: 4,
-                          margin: const EdgeInsets.only(bottom: 12),
-                          decoration: BoxDecoration(
-                            color: p.trim,
-                            borderRadius: BorderRadius.circular(2),
+                        excludeSemantics: true,
+                        child: GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onTap: onClose,
+                          // A thin bar, in an area big enough to touch.
+                          child: SizedBox.square(
+                            dimension: DiaryDesign.handleTouch,
+                            child: Center(
+                              child: Container(
+                                width: DiaryDesign.handleWidth,
+                                height: DiaryDesign.handleHeight,
+                                decoration: BoxDecoration(
+                                  color: p.trim,
+                                  borderRadius: BorderRadius.circular(
+                                    DiaryDesign.handleHeight / 2,
+                                  ),
+                                ),
+                              ),
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                  Row(
-                    spacing: 10,
-                    children: [
-                      CodeBadge(_code),
-                      Expanded(
-                        child: Text(
-                          name,
-                          style: theme.textTheme.titleLarge?.copyWith(
-                            color: ink,
-                            fontWeight: FontWeight.w700,
+                    Row(
+                      spacing: 10,
+                      children: [
+                        CodeBadge(_code),
+                        Expanded(
+                          child: Text(
+                            name,
+                            style: theme.textTheme.titleLarge?.copyWith(
+                              color: ink,
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
                         ),
-                      ),
-                      if (summary case final summary?)
-                        Text(
-                          summary,
-                          style: DiaryDesign.numbersText.copyWith(
-                            color: ink,
-                            fontSize: 14,
+                        if (summary case final summary?)
+                          Flexible(
+                            child: Text(
+                              summary,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.end,
+                              style: DiaryDesign.numbersText.copyWith(
+                                color: ink,
+                                fontSize: 14,
+                              ),
+                            ),
                           ),
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                  ...body,
-                ],
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    ...body,
+                  ],
+                ),
               ),
             ),
           ),
@@ -220,4 +237,43 @@ class CountrySheet extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Closes the sheet when its content, already at the top, is pulled down
+/// far enough: a drag down closes it even when it scrolls.
+class _PullToClose extends StatefulWidget {
+  const _PullToClose({required this.onClose, required this.child});
+
+  final VoidCallback onClose;
+  final Widget child;
+
+  @override
+  State<_PullToClose> createState() => _PullToCloseState();
+}
+
+class _PullToCloseState extends State<_PullToClose> {
+  var _pulled = 0.0;
+
+  bool _onScroll(ScrollNotification event) {
+    switch (event) {
+      case OverscrollNotification(:final overscroll, dragDetails: _?)
+          when overscroll < 0:
+        _pulled -= overscroll;
+        if (_pulled >= DiaryDesign.sheetPullToClose) {
+          _pulled = 0;
+          widget.onClose();
+        }
+      case ScrollEndNotification() || ScrollStartNotification():
+        _pulled = 0;
+      default:
+    }
+    return false;
+  }
+
+  @override
+  Widget build(BuildContext context) =>
+      NotificationListener<ScrollNotification>(
+        onNotification: _onScroll,
+        child: widget.child,
+      );
 }

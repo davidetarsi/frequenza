@@ -136,4 +136,5 @@ abstract class LocaleKeys {
   static const diaryLastListen = 'diaryLastListen';
   static const diaryCloseSheet = 'diaryCloseSheet';
   static const diaryUnderAMinute = 'diaryUnderAMinute';
+  static const diaryError = 'diaryError';
 }

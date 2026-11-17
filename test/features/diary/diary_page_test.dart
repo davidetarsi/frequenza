@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,6 +9,7 @@ import 'package:frequenza/features/analytics/application/analytics_providers.dar
 import 'package:frequenza/features/analytics/domain/app_event.dart';
 import 'package:frequenza/features/diary/application/diary_providers.dart';
 import 'package:frequenza/features/diary/domain/diary_period.dart';
+import 'package:frequenza/features/diary/domain/listen.dart';
 import 'package:frequenza/features/diary/presentation/diary_page.dart';
 import 'package:frequenza/features/favorites/application/favorites_providers.dart';
 import 'package:frequenza/features/radio/application/radio_controller.dart';
@@ -41,12 +44,14 @@ void main() {
     WidgetTester tester, {
     bool empty = false,
     String? title,
+    MemoryDiary? log,
+    bool reducedMotion = true,
   }) async {
     tester.platformDispatcher.accessibilityFeaturesTestValue =
-        const FakeAccessibilityFeatures(disableAnimations: true);
+        FakeAccessibilityFeatures(disableAnimations: reducedMotion);
     addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
     final now = DateTime.now().toUtc();
-    final diary = MemoryDiary();
+    final diary = log ?? MemoryDiary();
     if (!empty) {
       await diary.startListen(
         brazil,
@@ -118,15 +123,16 @@ void main() {
       find.bySemanticsLabel('2 paesi; il più ascoltato: Brasile'),
       findsOneWidget,
     );
-    expect(analytics.events, [AppEvent.diaryOpened(DiaryPeriod.month)]);
+    expect(analytics.events, [const AppEvent.diaryOpened()]);
   });
 
-  testWidgets('a shorter period counts again', (tester) async {
-    await openRadio(tester);
+  testWidgets('a shorter period counts again, and is counted', (tester) async {
+    final (_, analytics, _) = await openRadio(tester);
     await openDiaryPage(tester);
     await tester.tap(find.text('7 giorni'));
     await tester.pumpAndSettle();
     expect(find.text('1 paese · 9 h'), findsOneWidget);
+    expect(analytics.events.last, AppEvent.diaryPeriodChosen(DiaryPeriod.week));
   });
 
   testWidgets('an empty diary says how it fills', (tester) async {
@@ -232,4 +238,92 @@ void main() {
       findsOneWidget,
     );
   });
+
+  testWidgets('a phone held sideways: no overflow, the list within reach', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(640, 360);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await openRadio(tester);
+    await openDiaryPage(tester);
+    expect(tester.takeException(), isNull);
+    final list = tester.getSize(find.byKey(const ValueKey('diary-list')));
+    expect(list.height, greaterThanOrEqualTo(64));
+  });
+
+  testWidgets('a notice from the bar sits above the bar', (tester) async {
+    await openRadio(tester, title: 'Ana Moura - Desfado');
+    await openDiaryPage(tester);
+    await tester.tap(find.byTooltip('Salva canzone'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+    final notice = tester.getRect(find.byType(SnackBar));
+    final bar = tester.getRect(
+      find.bySemanticsLabel(RegExp('^Torna alla radio:')),
+    );
+    expect(notice.bottom, lessThanOrEqualTo(bar.top));
+  });
+
+  testWidgets('the map invites a tap until a country is picked', (
+    tester,
+  ) async {
+    await openRadio(tester);
+    await openDiaryPage(tester);
+    expect(find.text('Tocca un paese'), findsOneWidget);
+    await tester.tap(find.text('Brasile').last);
+    await tester.pumpAndSettle();
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    expect(find.byType(DiaryPage), findsOneWidget);
+    expect(find.text('Tocca un paese'), findsNothing);
+  });
+
+  testWidgets('a new period keeps the last diary while it loads', (
+    tester,
+  ) async {
+    final log = HeldDiary();
+    await openRadio(tester, log: log);
+    await openDiaryPage(tester);
+    log.hold = true;
+    await tester.tap(find.text('7 giorni'));
+    await tester.pumpAndSettle();
+    expect(find.text('2 paesi · 14 h'), findsOneWidget);
+    expect(find.textContaining('Il diario si riempie'), findsNothing);
+  });
+
+  testWidgets('a diary that cannot be read says so', (tester) async {
+    await openRadio(tester, log: HeldDiary()..broken = true);
+    await openDiaryPage(tester);
+    expect(
+      find.text('Non è stato possibile leggere il diario.'),
+      findsOneWidget,
+    );
+    expect(find.textContaining('Il diario si riempie'), findsNothing);
+  });
+
+  testWidgets('with reduced motion the bar does not slide in', (tester) async {
+    await openRadio(tester);
+    await tester.tap(find.bySemanticsLabel('Apri il diario di viaggio'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 16));
+    final bar = find.bySemanticsLabel(RegExp('^Torna alla radio:'));
+    final early = tester.getRect(bar);
+    await tester.pumpAndSettle();
+    expect(tester.getRect(bar).top, early.top);
+  });
+}
+
+/// A diary that can hold back a period, or fail to be read.
+class HeldDiary extends MemoryDiary {
+  var hold = false;
+  var broken = false;
+
+  @override
+  Stream<List<Listen>> watchListensSince(DateTime? since) {
+    if (broken) return Stream.error(StateError('Disk unreadable'));
+    if (hold) return StreamController<List<Listen>>().stream;
+    return super.watchListensSince(since);
+  }
 }

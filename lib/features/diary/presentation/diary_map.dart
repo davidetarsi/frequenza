@@ -8,7 +8,7 @@ import '../domain/world_cells.dart';
 
 /// The diary's world: every country's dots lit by the time spent there.
 /// Pinch and drag to explore, or use the keys; a tap picks a country.
-class DiaryMap extends StatelessWidget {
+class DiaryMap extends StatefulWidget {
   const DiaryMap({
     super.key,
     required this.summary,
@@ -18,6 +18,7 @@ class DiaryMap extends StatelessWidget {
     required this.zoomInLabel,
     required this.zoomOutLabel,
     required this.semanticsLabel,
+    this.hint,
   });
 
   final DiarySummary summary;
@@ -26,9 +27,28 @@ class DiaryMap extends StatelessWidget {
   final ValueChanged<String> onCountry;
   final String zoomInLabel, zoomOutLabel, semanticsLabel;
 
+  /// A short invitation in the map's corner, until a country is picked.
+  final String? hint;
+
+  @override
+  State<DiaryMap> createState() => _DiaryMapState();
+}
+
+class _DiaryMapState extends State<DiaryMap> {
+  // Worked out once per summary: the painter repaints only on a change.
+  late var _looks = _looksOf(widget.summary);
+
+  @override
+  void didUpdateWidget(DiaryMap old) {
+    super.didUpdateWidget(old);
+    if (old.summary != widget.summary) _looks = _looksOf(widget.summary);
+  }
+
   static int get _columns => worldDotRows.first.length;
 
-  void _zoom(double factor, Size view) {
+  TransformationController get controller => widget.controller;
+
+  void _zoom(double factor, Size view, Size map) {
     final scale = controller.value.getMaxScaleOnAxis();
     final target = (scale * factor).clamp(
       DiaryDesign.minScale,
@@ -41,10 +61,21 @@ class DiaryMap extends StatelessWidget {
     }
     final centre = view.center(Offset.zero);
     final focus = controller.toScene(centre);
+    final shift = centre - focus * target;
+    // Never past the edges of the world.
+    double inside(double value, double viewSide, double mapSide) {
+      final scaled = mapSide * target;
+      return scaled <= viewSide ? 0 : value.clamp(viewSide - scaled, 0);
+    }
+
     controller.value = Matrix4.identity()
-      ..translateByDouble(centre.dx, centre.dy, 0, 1)
-      ..scaleByDouble(target, target, 1, 1)
-      ..translateByDouble(-focus.dx, -focus.dy, 0, 1);
+      ..translateByDouble(
+        inside(shift.dx, view.width, map.width),
+        inside(shift.dy, view.height, map.height),
+        0,
+        1,
+      )
+      ..scaleByDouble(target, target, 1, 1);
   }
 
   @override
@@ -56,7 +87,7 @@ class DiaryMap extends StatelessWidget {
       return Stack(
         children: [
           Semantics(
-            label: semanticsLabel,
+            label: widget.semanticsLabel,
             image: true,
             child: InteractiveViewer(
               transformationController: controller,
@@ -72,19 +103,46 @@ class DiaryMap extends StatelessWidget {
                     worldDotNorth - p.dy / cell * worldDotStep,
                     -180 + p.dx / cell * worldDotStep,
                   );
-                  if (code != null) onCountry(code);
+                  if (code != null) widget.onCountry(code);
                 },
-                child: CustomPaint(
-                  size: mapSize,
-                  painter: _DiaryMapPainter(
-                    looks: _looks(summary),
-                    selected: selected,
-                    cell: cell,
+                child: RepaintBoundary(
+                  child: CustomPaint(
+                    key: const ValueKey('diary-map-paint'),
+                    size: mapSize,
+                    painter: DiaryMapPainter(
+                      looks: _looks,
+                      selected: widget.selected,
+                      cell: cell,
+                    ),
                   ),
                 ),
               ),
             ),
           ),
+          if (widget.hint case final hint?)
+            Positioned(
+              left: DiaryDesign.zoomInset,
+              bottom: DiaryDesign.zoomInset,
+              child: IgnorePointer(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: TravelRadioPalette.screenHighlight,
+                    borderRadius: BorderRadius.circular(DiaryDesign.hintRadius),
+                  ),
+                  child: Padding(
+                    padding: DiaryDesign.hintPadding,
+                    child: Text(
+                      hint,
+                      style: DiaryDesign.hintText.copyWith(
+                        color: TravelRadioPalette.screenInk.withValues(
+                          alpha: DiaryDesign.mutedOpacity,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
           Positioned(
             right: DiaryDesign.zoomInset,
             bottom: DiaryDesign.zoomInset,
@@ -94,13 +152,14 @@ class DiaryMap extends StatelessWidget {
               children: [
                 _ZoomKey(
                   icon: Icons.add,
-                  tooltip: zoomInLabel,
-                  onPressed: () => _zoom(DiaryDesign.zoomStep, view),
+                  tooltip: widget.zoomInLabel,
+                  onPressed: () => _zoom(DiaryDesign.zoomStep, view, mapSize),
                 ),
                 _ZoomKey(
                   icon: Icons.remove,
-                  tooltip: zoomOutLabel,
-                  onPressed: () => _zoom(1 / DiaryDesign.zoomStep, view),
+                  tooltip: widget.zoomOutLabel,
+                  onPressed: () =>
+                      _zoom(1 / DiaryDesign.zoomStep, view, mapSize),
                 ),
               ],
             ),
@@ -111,15 +170,16 @@ class DiaryMap extends StatelessWidget {
   );
 
   /// Each heard country's opacity; countries not here were never heard.
-  static Map<String, double> _looks(DiarySummary summary) => switch (summary) {
-    DiaryEmpty() => const {},
-    DiaryFilled(:final countries) => {
-      for (final country in countries)
-        country.code: country.level == 0
-            ? DiaryDesign.passingOpacity
-            : DiaryDesign.levelOpacity[country.level - 1],
-    },
-  };
+  static Map<String, double> _looksOf(DiarySummary summary) =>
+      switch (summary) {
+        DiaryEmpty() => const {},
+        DiaryFilled(:final countries) => {
+          for (final country in countries)
+            country.code: country.level == 0
+                ? DiaryDesign.passingOpacity
+                : DiaryDesign.levelOpacity[country.level - 1],
+        },
+      };
 }
 
 class _ZoomKey extends StatelessWidget {
@@ -158,8 +218,8 @@ class _ZoomKey extends StatelessWidget {
   );
 }
 
-class _DiaryMapPainter extends CustomPainter {
-  _DiaryMapPainter({
+class DiaryMapPainter extends CustomPainter {
+  DiaryMapPainter({
     required this.looks,
     required this.selected,
     required this.cell,
@@ -188,6 +248,8 @@ class _DiaryMapPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_DiaryMapPainter old) =>
-      old.looks != looks || old.selected != selected || old.cell != cell;
+  bool shouldRepaint(DiaryMapPainter old) =>
+      !identical(old.looks, looks) ||
+      old.selected != selected ||
+      old.cell != cell;
 }

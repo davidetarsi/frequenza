@@ -105,7 +105,7 @@ void main() {
       'amazon_music',
       'web',
       '2m-10m',
-      'year',
+      for (final period in DiaryPeriod.values) period.name,
       'unvisited',
       'top_station',
       'country_station',
@@ -120,7 +120,9 @@ void main() {
       AppEvent.favoriteAdded(station),
       AppEvent.songSaved(station),
       AppEvent.listenEnded(station, seconds: 300),
-      AppEvent.diaryOpened(DiaryPeriod.year),
+      const AppEvent.diaryOpened(),
+      for (final period in DiaryPeriod.values)
+        AppEvent.diaryPeriodChosen(period),
       AppEvent.diaryCountryOpened('IT', const CountryCard.unvisited('IT')),
       for (final source in DiaryFlightSource.values)
         AppEvent.diaryFlight(source),
@@ -161,6 +163,14 @@ void main() {
         'station': 'Radio 1',
         'duration': '30s-2m',
       }),
+    );
+  });
+
+  test('the diary events: opened has nothing, a period carries its name', () {
+    expect(const AppEvent.diaryOpened(), const AppEvent('diary_opened'));
+    expect(
+      AppEvent.diaryPeriodChosen(DiaryPeriod.week),
+      const AppEvent('diary_period_chosen', {'period': 'week'}),
     );
   });
 }

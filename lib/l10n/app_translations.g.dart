@@ -154,6 +154,7 @@ class CodegenLoader extends AssetLoader {
     "diaryLastListen": "Last listen: {}",
     "diaryCloseSheet": "Close",
     "diaryUnderAMinute": "under 1 min",
+    "diaryError": "The diary could not be read.",
   };
   static const Map<String, dynamic> _it = {
     "welcomeTitle": "Gira la manopola.\nAtterra da qualche parte nel mondo.",
@@ -296,6 +297,7 @@ class CodegenLoader extends AssetLoader {
     "diaryLastListen": "Ultimo ascolto: {}",
     "diaryCloseSheet": "Chiudi",
     "diaryUnderAMinute": "meno di 1 min",
+    "diaryError": "Non è stato possibile leggere il diario.",
   };
   static const Map<String, Map<String, dynamic>> mapLocales = {
     "en": _en,

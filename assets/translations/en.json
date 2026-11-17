@@ -137,5 +137,6 @@
   "diaryRandomIn": "A random station from this country.",
   "diaryLastListen": "Last listen: {}",
   "diaryCloseSheet": "Close",
-  "diaryUnderAMinute": "under 1 min"
+  "diaryUnderAMinute": "under 1 min",
+  "diaryError": "The diary could not be read."
 }

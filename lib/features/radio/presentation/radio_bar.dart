@@ -101,6 +101,7 @@ class RadioBar extends ConsumerWidget {
                   onTap: onBackToRadio,
                   borderRadius: BorderRadius.circular(RadioBarDesign.radius),
                   child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [

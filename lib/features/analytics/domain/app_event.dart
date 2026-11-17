@@ -56,8 +56,11 @@ final class AppEvent {
 
   const AppEvent.songCopied() : this('song_copied');
 
-  AppEvent.diaryOpened(DiaryPeriod period)
-    : this('diary_opened', {'period': period.name});
+  /// The diary always opens on the last 30 days: the period is not news.
+  const AppEvent.diaryOpened() : this('diary_opened');
+
+  AppEvent.diaryPeriodChosen(DiaryPeriod period)
+    : this('diary_period_chosen', {'period': period.name});
 
   AppEvent.diaryCountryOpened(String code, CountryCard card)
     : this('diary_country_opened', {
