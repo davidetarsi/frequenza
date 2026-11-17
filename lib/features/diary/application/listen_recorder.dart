@@ -9,7 +9,7 @@ import '../../analytics/application/analytics_providers.dart';
 import '../../analytics/domain/app_event.dart';
 import '../../radio/application/radio_controller.dart';
 import '../../radio/domain/radio_station.dart';
-import '../domain/listen_tracker.dart';
+import '../domain/listening.dart';
 import 'diary_providers.dart';
 
 part 'listen_recorder.g.dart';
@@ -40,7 +40,8 @@ const diaryWriteEvery = Duration(seconds: 30);
 @Riverpod(keepAlive: true)
 void listenRecorder(Ref ref) {
   final clock = ref.watch(diaryClockProvider);
-  final tracker = ListenTracker();
+  // The controller only runs the effects; [nextListening] decides.
+  var listening = const Listening.idle();
   var queue = Future<void>.value();
   int? listenId;
   // A start that could not be written: the next total tries again.
@@ -96,15 +97,19 @@ void listenRecorder(Ref ref) {
     }
   }
 
-  void tick() {
-    final now = clock.elapsed();
-    apply(tracker.tick(now), now);
+  void step(ListenEvent event) {
+    final result = nextListening(listening, event);
+    listening = result.state;
+    apply(result.writes, event.at);
   }
 
-  ref.listen(radioControllerProvider, (_, session) {
-    final now = clock.elapsed();
-    apply(tracker.observe(session, now), now);
-  }, fireImmediately: true);
+  void tick() => step(ClockTicked(at: clock.elapsed()));
+
+  ref.listen(
+    radioControllerProvider,
+    (_, session) => step(RadioChanged(session, at: clock.elapsed())),
+    fireImmediately: true,
+  );
   final timer = Timer.periodic(diaryWriteEvery, (_) => tick());
   final lifecycle = AppLifecycleListener(onPause: tick);
   ref.onDispose(() {

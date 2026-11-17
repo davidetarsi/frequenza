@@ -13,7 +13,7 @@ Il punto di ripresa di ogni sessione: si legge questo, poi solo il piano attivo.
 
 ## Piano attivo
 
-- **Diario di viaggio, parte 1: il registro degli ascolti** (branch `feat/diario-registro`, sopra `feat/analisi`). Design `superpowers/specs/2026-11-16-diario-di-viaggio-design.md`, piano `superpowers/plans/2026-11-16-diario-registro.md`. Database Drift `frequenza.sqlite` (tabelle `stations` e `listens`, schema v1 in `drift_schemas/diary/`), `ListenTracker` puro, `ListenRecorder` avviato in `bootstrap`; a fine ascolto l'evento anonimo `listen_ended`.
+- **Diario di viaggio, parte 1: il registro degli ascolti** (branch `feat/diario-registro`, sopra `feat/analisi`). Design `superpowers/specs/2026-11-16-diario-di-viaggio-design.md`, piano `superpowers/plans/2026-11-16-diario-registro.md`. Database Drift `frequenza.sqlite` (tabelle `stations` e `listens`, schema v1 in `drift_schemas/diary/`), stato sealed `Listening` con `nextListening` (macchina a stati esplicita, come la radio), `ListenRecorder` avviato in `bootstrap` che esegue solo gli effetti; a fine ascolto l'evento anonimo `listen_ended`.
 - **Prove sul telefono:** ascoltare una stazione per qualche minuto, mettere in pausa, cambiare stazione, mandare l'app in background; poi controllare il database (Android Studio → App Inspection → Database Inspector, `frequenza.sqlite`): una riga per ascolto, secondi giusti, nessuna riga sotto i 5 secondi.
 - **Prima:** statistiche anonime (`feat/analisi`), eseguite e riviste il 17/11.
 

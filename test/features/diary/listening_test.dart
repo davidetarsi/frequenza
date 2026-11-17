@@ -1,9 +1,25 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:frequenza/features/diary/domain/listen_tracker.dart';
+import 'package:frequenza/features/diary/domain/listening.dart';
 import 'package:frequenza/features/radio/domain/journey.dart';
 import 'package:frequenza/features/radio/domain/radio_session.dart';
 
 import '../radio/journey_test.dart' show station;
+
+/// Threads the state through [nextListening], as the recorder does.
+class Tracker {
+  Listening state = const Listening.idle();
+
+  List<ListenWrite> observe(RadioSession session, Duration now) =>
+      _step(RadioChanged(session, at: now));
+
+  List<ListenWrite> tick(Duration now) => _step(ClockTicked(at: now));
+
+  List<ListenWrite> _step(ListenEvent event) {
+    final step = nextListening(state, event);
+    state = step.state;
+    return step.writes;
+  }
+}
 
 void main() {
   final paris = station(1);
@@ -17,8 +33,8 @@ void main() {
   const flying = RadioSession.flying(Journey(), kind: FlightKind.forward);
   Duration s(int seconds) => Duration(seconds: seconds);
 
-  late ListenTracker tracker;
-  setUp(() => tracker = ListenTracker());
+  late Tracker tracker;
+  setUp(() => tracker = Tracker());
 
   test('a minute on air starts at the first tick, then updates', () {
     expect(tracker.observe(playing, s(0)), isEmpty);
@@ -152,5 +168,37 @@ void main() {
         FinishListen(paris, seconds: 40),
       ]);
     });
+  });
+
+  group('the states have names', () {
+    test('idle, counting, stalled, and back', () {
+      tracker.observe(playing, s(0));
+      expect(tracker.state, isA<Counting>());
+      tracker.observe(onAir(OnAirPlayback.buffering), s(10));
+      expect(tracker.state, isA<Stalled>());
+      tracker.observe(playing, s(12));
+      expect(tracker.state, isA<Counting>());
+      tracker.observe(flying, s(20));
+      expect(tracker.state, const Listening.idle());
+    });
+
+    test(
+      'nextListening is pure: the same step twice gives the same result',
+      () {
+        final counting = nextListening(
+          const Listening.idle(),
+          RadioChanged(playing, at: s(0)),
+        ).state;
+        final a = nextListening(counting, ClockTicked(at: s(30)));
+        final b = nextListening(counting, ClockTicked(at: s(30)));
+        expect(a.state, b.state);
+        expect(a.writes, b.writes);
+        expect(
+          nextListening(counting, ClockTicked(at: s(30))).writes,
+          [StartListen(paris, since: s(0), seconds: 30)],
+          reason: 'the state given is never changed',
+        );
+      },
+    );
   });
 }

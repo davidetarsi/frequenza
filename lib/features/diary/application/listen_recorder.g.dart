@@ -23,7 +23,7 @@ final diaryClockProvider = Provider<DiaryClock>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef DiaryClockRef = ProviderRef<DiaryClock>;
-String _$listenRecorderHash() => r'915ecb1616e53c2f774023133f65bf8631afb2a8';
+String _$listenRecorderHash() => r'c33e8da41c1eb9aef27b692ef9ee92c68b23de35';
 
 /// Watches the radio from outside and writes the log: every 30 seconds,
 /// when the app goes to the background, and when a listen ends. The

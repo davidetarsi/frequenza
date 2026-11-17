@@ -95,7 +95,7 @@ Davide teme i registri a eventi: un evento vero spezzato in sotto-eventi, alcuni
 2. **Si scrive il totale, non l'incremento:** `seconds = 120`, mai `seconds += 30`. Ripetere o saltare una scrittura non cambia il risultato.
 3. **Stazione e primo ascolto in una sola transazione:** o entrambi, o nessuno.
 4. **Nessuna tabella di totali, nessun lavoro di aggregazione.** Tutto si calcola alla lettura con una query (`SUM … GROUP BY`): nessun riepilogo può andare fuori sincrono.
-5. **La logica decide in memoria, il database conserva.** Una macchina a stati pura (`ListenTracker`) decide inizio, aggiornamento e fine di un ascolto ed è testata senza database. Al database arrivano solo fotografie complete.
+5. **La logica decide in memoria, il database conserva.** Una macchina a stati esplicita decide inizio, aggiornamento e fine di un ascolto: lo stato sealed `Listening` (`idle`, `counting`, `stalled`) con le transizioni pure `nextListening` e la tabella accanto, come `RadioSession` (aggiornamento del 17/11/2026) ed è testata senza database. Al database arrivano solo fotografie complete.
 6. **Niente righe di rumore:** un ascolto si salva solo da **5 secondi** in su, al primo aggiornamento o alla fine. Girare la manopola non riempie il registro.
 7. **Schema versionato dal primo giorno**, con lo schema della versione 1 salvato nel repo per i test di migrazione futuri.
 
