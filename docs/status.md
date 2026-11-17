@@ -13,11 +13,13 @@ Il punto di ripresa di ogni sessione: si legge questo, poi solo il piano attivo.
 
 ## Piano attivo
 
-- **Analisi d'uso** con tgram-analytics (branch `feat/analisi`, sopra `refactor/riallineamento-starter`): eseguita e rivista il 17/11, 302 test. Design `superpowers/specs/2026-11-17-analisi-design.md`, piano `superpowers/plans/2026-11-17-analisi.md`. Prima del rilascio: server, segreti e Play Console, punto 8 di [azioni-manuali.md](azioni-manuali.md).
+- **Diario di viaggio, parte 1: il registro degli ascolti** (branch `feat/diario-registro`, sopra `feat/analisi`). Design `superpowers/specs/2026-11-16-diario-di-viaggio-design.md`, piano `superpowers/plans/2026-11-16-diario-registro.md`. Database Drift `frequenza.sqlite` (tabelle `stations` e `listens`, schema v1 in `drift_schemas/diary/`), `ListenTracker` puro, `ListenRecorder` avviato in `bootstrap`; a fine ascolto l'evento anonimo `listen_ended`.
+- **Prove sul telefono:** ascoltare una stazione per qualche minuto, mettere in pausa, cambiare stazione, mandare l'app in background; poi controllare il database (Android Studio → App Inspection → Database Inspector, `frequenza.sqlite`): una riga per ascolto, secondi giusti, nessuna riga sotto i 5 secondi.
+- **Prima:** statistiche anonime (`feat/analisi`), eseguite e riviste il 17/11.
 
 ## Prossimi passi, in ordine
 
-1. **Diario di viaggio, parte 1** (registro degli ascolti): piano pronto sul branch `docs/diario-di-viaggio`.
+1. **Diario di viaggio, parte 2:** la pagina del diario con la mappa per paese. Il piano si scrive dopo la parte 1.
 2. **Cartolina del luogo:** sagoma e cartolina sulla radio, con l'animazione da definire con Davide; poi la collezione nel diario e le foto. Design in `superpowers/specs/2026-11-16-cartolina-design.md`.
 3. **Scelta dei paesi:** il motore c'è, mancano interfaccia e gruppi. Il design va ancora fatto.
 
