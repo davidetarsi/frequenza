@@ -13,8 +13,7 @@ Il punto di ripresa di ogni sessione: si legge questo, poi solo il piano attivo.
 
 ## Piano attivo
 
-- **Riallineamento allo starter** (branch `refactor/riallineamento-starter`): JSON generato per le canzoni, provider annotato, questo file.
-- **Analisi d'uso** con tgram-analytics: design `superpowers/specs/2026-11-17-analisi-design.md`, piano `superpowers/plans/2026-11-17-analisi.md`. Da eseguire dopo il riallineamento.
+- **Analisi d'uso** con tgram-analytics (branch `feat/analisi`, sopra `refactor/riallineamento-starter`): eseguita e rivista il 17/11, 302 test. Design `superpowers/specs/2026-11-17-analisi-design.md`, piano `superpowers/plans/2026-11-17-analisi.md`. Prima del rilascio: server, segreti e Play Console, punto 8 di [azioni-manuali.md](azioni-manuali.md).
 
 ## Prossimi passi, in ordine
 
