@@ -25,7 +25,7 @@ L'obiettivo non è collezionare paesi. Visitarne uno costa un tocco, quindi colo
 ## Non obiettivi
 
 - Login, account, sincronizzazione tra telefoni **[D]**.
-- Analytics o qualunque dato che lasci il telefono **[D]**. La scheda dello Store resta «nessun dato raccolto».
+- Il registro non lascia mai il telefono **[D]**. Aggiornamento del 17/11/2026: con le statistiche anonime (`docs/superpowers/specs/2026-11-17-analisi-design.md`) la fine di un ascolto manda un solo evento anonimo, `listen_ended`, con paese, stazione e durata a fasce; il registro in sé resta sul telefono **[D]**.
 - Passaporto, timbri, collezioni **[D]**. Davide potrebbe usarli in PackLog.
 - Riepilogo annuale stile Wrapped e cartolina da condividere: vengono dopo, e il registro li rende possibili senza cambiarlo.
 - Recuperare gli ascolti precedenti all'aggiornamento: il diario parte vuoto.

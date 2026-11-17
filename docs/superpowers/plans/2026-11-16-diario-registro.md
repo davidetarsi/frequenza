@@ -9,7 +9,9 @@
 - `ListenTracker`, una macchina a stati pura, decide inizio, aggiornamento e fine di un ascolto a partire dalla `RadioSession`;
 - `ListenRecorder`, un provider avviato in `bootstrap`, collega tracker, orologio e repository.
 
-**Tech Stack:** Flutter, Riverpod, Drift (+ `drift_flutter` per aprire il database, `drift_dev` per la generazione), `sqlite3` di sistema nei test.
+**Tech Stack:** Flutter, Riverpod, Drift 2.28 (`drift: ^2.28.2`, `drift_flutter: ^0.2.7`, dev `drift_dev: ^2.28.0`: le versioni che si risolvono con l'analyzer di freezed e riverpod_generator, verificato il 17/11 con `flutter pub add --dry-run`), `sqlite3` di sistema nei test (`libsqlite3.so.0`, presente sulla VPS e sui runner di GitHub).
+
+**Base:** branch `feat/diario-registro`, sopra `feat/analisi`: il Task 3 manda l'evento `listen_ended` delle statistiche.
 
 **Spec:** `docs/superpowers/specs/2026-11-16-diario-di-viaggio-design.md`. Questa parte copre «Cosa si registra»; la pagina viene in un piano separato.
 
@@ -27,7 +29,10 @@
 - **Scrittura del totale:** ogni **30 s**, e quando l'app va in background (`AppLifecycleState.paused`).
 - **Tempo:** misurato con un orologio monotono, iniettabile per i test. `startedAt` in UTC dall'orologio di sistema, una volta sola.
 - **Database:** file `frequenza.sqlite` nella cartella dati dell'app; `schemaVersion = 1`.
-- **Verifica di fine task:** `bash tool/check.sh`; l'ultimo con `--apk`.
+- **La stazione in `stations.json`** si scrive e si legge con `stationRecord` / `StationRecordConverter` (`lib/features/radio/domain/station_record.dart`), lo stesso formato di preferiti e canzoni: niente JSON scritto a mano.
+- **La feature** è `lib/features/diary/` con i livelli dello starter: `domain` senza Flutter, Riverpod né Drift; Drift solo in `data`.
+- **Evento `listen_ended`** (statistiche anonime): proprietà `country`, `station`, `duration` ∈ `5s-30s|30s-2m|2m-10m|10m-30m|30m+`. Parte una sola volta alla fine di un ascolto salvato (≥ 5 s), mai per gli aggiornamenti ogni 30 s.
+- **Verifica di fine task:** `bash tool/check.sh`; l'ultimo con `--apk`. Dopo `--apk`, cancellare `build/unit_test_assets` prima di rilanciare i test (la build lascia uno shader vecchio).
 
 ## Review Focus
 
@@ -100,10 +105,11 @@
 
 **Files:**
 - Create: `lib/features/diary/application/listen_recorder.dart`
-- Modify: `lib/app/bootstrap.dart` (avvio come `radioNotificationProvider`), `docs/privacy.html` (una riga in «Cosa resta sul telefono», it ed en), `docs/status.md`
+- Modify: `lib/app/bootstrap.dart` (avvio come `radioNotificationProvider`), `lib/features/analytics/domain/app_event.dart` (`listenEnded`), `docs/privacy.html` (una riga in «Cosa resta sul telefono» e «la fine di un ascolto, con la durata a fasce» nell'elenco degli eventi, it ed en), `docs/status.md`
 - Test: `test/features/diary/listen_recorder_test.dart`
 
 **Interfaces:**
+- `AppEvent.listenEnded(RadioStation station, {required int seconds})` in `lib/features/analytics/domain/app_event.dart`, con la fascia calcolata lì (limiti esclusi a destra: 29 s → `5s-30s`, 30 s → `30s-2m`, 120 s → `2m-10m`, 600 s → `10m-30m`, 1800 s → `30m+`).
 - `@Riverpod(keepAlive: true) void listenRecorder(Ref ref)`:
   - ascolta `radioControllerProvider`;
   - un `Timer.periodic(30 s)` chiama `tick`;
@@ -114,8 +120,11 @@
 - [ ] **Step 1:** test con un repository finto e `fakeAsync`:
   - «a station played for a minute is saved with 60 seconds»;
   - «pausing finishes the listen»;
-  - «going to the background writes the total».
+  - «going to the background writes the total»;
+  - «a finished listen is counted once, with its duration band» (con `RecordingAnalytics`: un minuto → un solo `listen_ended` con `duration: 30s-2m`, nessuno per i tick);
+  - «under five seconds no listen_ended»;
+  - in `app_event_test.dart`: «duration bands» con i cinque limiti qui sopra, e `listenEnded` nel test «no event carries free text».
 - [ ] **Step 2:** eseguirli. Expected: FAIL.
 - [ ] **Step 3:** implementare e collegare in `bootstrap`; riga nell'informativa: «Gli ascolti (stazione, paese, durata) restano sul telefono per il diario di viaggio» / «Your listening (station, country, duration) stays on the phone for the travel diary».
 - [ ] **Step 4:** `bash tool/check.sh --apk`. Expected: verde e APK costruita.
-- [ ] **Step 5:** `docs/status.md`, sezione «Diario: il registro degli ascolti — 16 novembre 2026», con le prove sul telefono. Commit `feat(diario): l'app registra gli ascolti sul telefono`.
+- [ ] **Step 5:** `docs/status.md`: il piano attivo diventa il diario, con le prove sul telefono. Commit `feat(diario): l'app registra gli ascolti sul telefono`.
