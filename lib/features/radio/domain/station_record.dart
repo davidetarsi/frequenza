@@ -1,5 +1,7 @@
+import 'package:freezed_annotation/freezed_annotation.dart';
+
 import '../../journey/domain/geo_point.dart';
-import '../domain/radio_station.dart';
+import 'radio_station.dart';
 
 /// A station as the phone keeps it: short keys, and only what is needed to
 /// tune in again.
@@ -46,4 +48,19 @@ RadioStation? stationFromRecord(Object? record) {
     'lat': point?.latitude,
     'lon': point?.longitude,
   });
+}
+
+/// A station inside another stored record: it throws when the station
+/// cannot be tuned in again, so the record holding it is skipped.
+class StationRecordConverter
+    implements JsonConverter<RadioStation, Map<String, Object?>> {
+  const StationRecordConverter();
+
+  @override
+  RadioStation fromJson(Map<String, Object?> json) =>
+      stationFromRecord(json) ??
+      (throw const FormatException('Station cannot be tuned in again'));
+
+  @override
+  Map<String, Object?> toJson(RadioStation station) => stationRecord(station);
 }

@@ -177,7 +177,7 @@ class _SongRow extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final p = TravelRadioPalette.of(context);
     final error = Theme.of(context).colorScheme.error;
-    final installed = ref.watch(installedPackagesProvider).valueOrNull ?? {};
+    final installed = ref.watch(installedSearchAppsProvider).valueOrNull ?? {};
     final station = song.station;
     final day = DateFormat.yMMMd(
       context.locale.toLanguageTag(),

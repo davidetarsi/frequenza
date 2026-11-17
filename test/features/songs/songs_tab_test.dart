@@ -59,7 +59,7 @@ Future<Harness> openSongs(
         radioAudioServiceProvider.overrideWithValue(h.audio),
         favoritesRepositoryProvider.overrideWithValue(MemoryFavorites()),
         songsRepositoryProvider.overrideWithValue(h.songs),
-        installedPackagesProvider.overrideWith((ref) async => installed),
+        installedSearchAppsProvider.overrideWith((ref) async => installed),
         openExternalProvider.overrideWithValue((uri) async {
           h.opened.add(uri);
           return true;

@@ -15,12 +15,22 @@ final _privateConstructorUsedError = UnsupportedError(
   'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
 );
 
+SavedSong _$SavedSongFromJson(Map<String, dynamic> json) {
+  return _SavedSong.fromJson(json);
+}
+
 /// @nodoc
 mixin _$SavedSong {
+  @JsonKey(fromJson: _text)
   String? get artist => throw _privateConstructorUsedError;
   String get title => throw _privateConstructorUsedError;
+  @StationRecordConverter()
   RadioStation get station => throw _privateConstructorUsedError;
+  @JsonKey(name: 'at', toJson: _utc)
   DateTime get savedAt => throw _privateConstructorUsedError;
+
+  /// Serializes this SavedSong to a JSON map.
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
 
   /// Create a copy of SavedSong
   /// with the given fields replaced by the non-null parameter values.
@@ -35,10 +45,10 @@ abstract class $SavedSongCopyWith<$Res> {
       _$SavedSongCopyWithImpl<$Res, SavedSong>;
   @useResult
   $Res call({
-    String? artist,
+    @JsonKey(fromJson: _text) String? artist,
     String title,
-    RadioStation station,
-    DateTime savedAt,
+    @StationRecordConverter() RadioStation station,
+    @JsonKey(name: 'at', toJson: _utc) DateTime savedAt,
   });
 
   $RadioStationCopyWith<$Res> get station;
@@ -108,10 +118,10 @@ abstract class _$$SavedSongImplCopyWith<$Res>
   @override
   @useResult
   $Res call({
-    String? artist,
+    @JsonKey(fromJson: _text) String? artist,
     String title,
-    RadioStation station,
-    DateTime savedAt,
+    @StationRecordConverter() RadioStation station,
+    @JsonKey(name: 'at', toJson: _utc) DateTime savedAt,
   });
 
   @override
@@ -162,21 +172,28 @@ class __$$SavedSongImplCopyWithImpl<$Res>
 
 /// @nodoc
 
+@JsonSerializable(includeIfNull: false)
 class _$SavedSongImpl extends _SavedSong {
   const _$SavedSongImpl({
-    this.artist,
+    @JsonKey(fromJson: _text) this.artist,
     required this.title,
-    required this.station,
-    required this.savedAt,
+    @StationRecordConverter() required this.station,
+    @JsonKey(name: 'at', toJson: _utc) required this.savedAt,
   }) : super._();
 
+  factory _$SavedSongImpl.fromJson(Map<String, dynamic> json) =>
+      _$$SavedSongImplFromJson(json);
+
   @override
+  @JsonKey(fromJson: _text)
   final String? artist;
   @override
   final String title;
   @override
+  @StationRecordConverter()
   final RadioStation station;
   @override
+  @JsonKey(name: 'at', toJson: _utc)
   final DateTime savedAt;
 
   @override
@@ -195,6 +212,7 @@ class _$SavedSongImpl extends _SavedSong {
             (identical(other.savedAt, savedAt) || other.savedAt == savedAt));
   }
 
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(runtimeType, artist, title, station, savedAt);
 
@@ -205,24 +223,35 @@ class _$SavedSongImpl extends _SavedSong {
   @pragma('vm:prefer-inline')
   _$$SavedSongImplCopyWith<_$SavedSongImpl> get copyWith =>
       __$$SavedSongImplCopyWithImpl<_$SavedSongImpl>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$SavedSongImplToJson(this);
+  }
 }
 
 abstract class _SavedSong extends SavedSong {
   const factory _SavedSong({
-    final String? artist,
+    @JsonKey(fromJson: _text) final String? artist,
     required final String title,
-    required final RadioStation station,
-    required final DateTime savedAt,
+    @StationRecordConverter() required final RadioStation station,
+    @JsonKey(name: 'at', toJson: _utc) required final DateTime savedAt,
   }) = _$SavedSongImpl;
   const _SavedSong._() : super._();
 
+  factory _SavedSong.fromJson(Map<String, dynamic> json) =
+      _$SavedSongImpl.fromJson;
+
   @override
+  @JsonKey(fromJson: _text)
   String? get artist;
   @override
   String get title;
   @override
+  @StationRecordConverter()
   RadioStation get station;
   @override
+  @JsonKey(name: 'at', toJson: _utc)
   DateTime get savedAt;
 
   /// Create a copy of SavedSong
