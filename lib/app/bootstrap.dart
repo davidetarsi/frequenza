@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:easy_localization/easy_localization.dart';
@@ -7,6 +8,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:audio_service/audio_service.dart';
 import 'package:just_audio/just_audio.dart';
 
+import '../features/analytics/application/analytics_consent.dart';
+import '../features/analytics/application/analytics_session.dart';
+import '../features/analytics/application/radio_analytics.dart';
 import '../features/radio/application/radio_notification.dart';
 import '../features/radio/application/radio_providers.dart';
 import '../features/radio/data/native_channel.dart';
@@ -44,9 +48,19 @@ Future<void> bootstrap({AppConfig config = const AppConfig()}) async {
     overrides: [radioAudioHandlerProvider.overrideWithValue(handler)],
   );
   // The first page depends on it: the welcome, or the radio.
-  await container.read(welcomeSeenProvider.future);
+  final welcomeSeen = await container.read(welcomeSeenProvider.future);
   // The notification answers from the start, before any page is built.
   container.read(radioNotificationProvider);
+  // The statistics choice is read before the first flight can start.
+  await container.read(analyticsConsentProvider.future);
+  container.read(radioAnalyticsProvider);
+  unawaited(
+    describeAnalyticsSession(
+      container,
+      firstOpen: !welcomeSeen,
+      locale: language,
+    ),
+  );
   runApp(
     UncontrolledProviderScope(
       container: container,
