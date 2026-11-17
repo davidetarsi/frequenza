@@ -288,3 +288,18 @@ abstract final class RouteMapDesign {
     letterSpacing: 1.5,
   );
 }
+
+/// The player bar under the pages opened over the radio.
+abstract final class RadioBarDesign {
+  static const height = 60.0;
+  static const radius = 30.0;
+  static const border = 2.0;
+  static const key = 44.0;
+  static const iconSize = 20.0;
+  static const keyIconSize = 16.0;
+  static const padding = EdgeInsets.fromLTRB(16, 0, 6, 0);
+  static const titleText = TextStyle(fontSize: 14, fontWeight: FontWeight.w500);
+  static const detailText = TextStyle(fontSize: 12);
+  static const detailOpacity = 0.8;
+  static const savedHeart = Color(0xFFF0A47E);
+}

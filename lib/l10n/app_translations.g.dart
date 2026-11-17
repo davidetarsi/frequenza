@@ -113,6 +113,14 @@ class CodegenLoader extends AssetLoader {
     "analyticsHint": "They help find what doesn't work. Nothing about you.",
     "privacyPolicy": "Privacy policy",
     "analyticsSaveError": "The choice could not be saved. Try again.",
+    "barFlying": "In flight…",
+    "barTuning": "Tuning in",
+    "barConnecting": "Connecting…",
+    "barNoSignal": "No signal",
+    "barFlightFailed": "The flight did not land",
+    "barBackToRadio": "Back to the radio: {}",
+    "barSaveStation": "Save the station",
+    "barRemoveStation": "Remove from favourites",
   };
   static const Map<String, dynamic> _it = {
     "welcomeTitle": "Gira la manopola.\nAtterra da qualche parte nel mondo.",
@@ -214,6 +222,14 @@ class CodegenLoader extends AssetLoader {
         "Aiutano a capire cosa non funziona. Nessun dato su di te.",
     "privacyPolicy": "Informativa sulla privacy",
     "analyticsSaveError": "Non è stato possibile salvare la scelta. Riprova.",
+    "barFlying": "In volo…",
+    "barTuning": "Sintonizzazione",
+    "barConnecting": "Connessione…",
+    "barNoSignal": "Nessun segnale",
+    "barFlightFailed": "Il volo non è riuscito",
+    "barBackToRadio": "Torna alla radio: {}",
+    "barSaveStation": "Salva la stazione",
+    "barRemoveStation": "Togli dai preferiti",
   };
   static const Map<String, Map<String, dynamic>> mapLocales = {
     "en": _en,

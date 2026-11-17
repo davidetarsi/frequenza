@@ -96,4 +96,12 @@ abstract class LocaleKeys {
   static const analyticsHint = 'analyticsHint';
   static const privacyPolicy = 'privacyPolicy';
   static const analyticsSaveError = 'analyticsSaveError';
+  static const barFlying = 'barFlying';
+  static const barTuning = 'barTuning';
+  static const barConnecting = 'barConnecting';
+  static const barNoSignal = 'barNoSignal';
+  static const barFlightFailed = 'barFlightFailed';
+  static const barBackToRadio = 'barBackToRadio';
+  static const barSaveStation = 'barSaveStation';
+  static const barRemoveStation = 'barRemoveStation';
 }

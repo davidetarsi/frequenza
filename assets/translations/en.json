@@ -91,5 +91,13 @@
   "analyticsSwitch": "Anonymous statistics",
   "analyticsHint": "They help find what doesn't work. Nothing about you.",
   "privacyPolicy": "Privacy policy",
-  "analyticsSaveError": "The choice could not be saved. Try again."
+  "analyticsSaveError": "The choice could not be saved. Try again.",
+  "barFlying": "In flight…",
+  "barTuning": "Tuning in",
+  "barConnecting": "Connecting…",
+  "barNoSignal": "No signal",
+  "barFlightFailed": "The flight did not land",
+  "barBackToRadio": "Back to the radio: {}",
+  "barSaveStation": "Save the station",
+  "barRemoveStation": "Remove from favourites"
 }

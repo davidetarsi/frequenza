@@ -91,5 +91,13 @@
   "analyticsSwitch": "Statistiche anonime",
   "analyticsHint": "Aiutano a capire cosa non funziona. Nessun dato su di te.",
   "privacyPolicy": "Informativa sulla privacy",
-  "analyticsSaveError": "Non è stato possibile salvare la scelta. Riprova."
+  "analyticsSaveError": "Non è stato possibile salvare la scelta. Riprova.",
+  "barFlying": "In volo…",
+  "barTuning": "Sintonizzazione",
+  "barConnecting": "Connessione…",
+  "barNoSignal": "Nessun segnale",
+  "barFlightFailed": "Il volo non è riuscito",
+  "barBackToRadio": "Torna alla radio: {}",
+  "barSaveStation": "Salva la stazione",
+  "barRemoveStation": "Togli dai preferiti"
 }
