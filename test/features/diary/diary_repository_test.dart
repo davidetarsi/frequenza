@@ -106,4 +106,43 @@ void main() {
       throwsA(isA<SqliteException>()),
     );
   });
+
+  test(
+    'watching a period sees only its listens, and every new total',
+    () async {
+      final old = await repository.startListen(
+        kexp,
+        startedAt: noon.subtract(const Duration(days: 40)),
+        seconds: 60,
+      );
+      final recent = await repository.startListen(
+        kexp,
+        startedAt: noon,
+        seconds: 30,
+      );
+      final seen = <List<int>>[];
+      final subscription = repository
+          .watchListensSince(noon.subtract(const Duration(days: 30)))
+          .listen((listens) => seen.add([for (final l in listens) l.seconds]));
+      await pumpEventQueue();
+      await repository.setSeconds(recent, 90);
+      await pumpEventQueue();
+      await subscription.cancel();
+      expect(seen, [
+        [30],
+        [90],
+      ]);
+      expect(old, isNot(recent));
+    },
+  );
+
+  test('watching always sees every listen', () async {
+    await repository.startListen(
+      kexp,
+      startedAt: noon.subtract(const Duration(days: 400)),
+      seconds: 60,
+    );
+    await repository.startListen(kexp, startedAt: noon, seconds: 30);
+    expect((await repository.watchListensSince(null).first).length, 2);
+  });
 }

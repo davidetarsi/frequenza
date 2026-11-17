@@ -15,5 +15,9 @@ abstract interface class DiaryRepository {
 
   Future<List<Listen>> listens();
 
+  /// The listens begun at or after [since] (all when null), again every
+  /// time the log changes.
+  Stream<List<Listen>> watchListensSince(DateTime? since);
+
   Future<List<RadioStation>> stations();
 }

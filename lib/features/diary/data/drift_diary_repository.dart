@@ -45,16 +45,25 @@ class DriftDiaryRepository implements DiaryRepository {
   }
 
   @override
-  Future<List<Listen>> listens() async => [
-    for (final row in await _db.select(_db.listens).get())
-      Listen(
-        id: row.id,
-        stationId: row.stationId,
-        countryCode: row.countryCode,
-        startedAt: row.startedAt.toUtc(),
-        seconds: row.seconds,
-      ),
-  ];
+  Future<List<Listen>> listens() async =>
+      (await _db.select(_db.listens).get()).map(_listen).toList();
+
+  @override
+  Stream<List<Listen>> watchListensSince(DateTime? since) {
+    final query = _db.select(_db.listens);
+    if (since != null) {
+      query.where((row) => row.startedAt.isBiggerOrEqualValue(since.toUtc()));
+    }
+    return query.watch().map((rows) => rows.map(_listen).toList());
+  }
+
+  static Listen _listen(ListenRow row) => Listen(
+    id: row.id,
+    stationId: row.stationId,
+    countryCode: row.countryCode,
+    startedAt: row.startedAt.toUtc(),
+    seconds: row.seconds,
+  );
 
   @override
   Future<List<RadioStation>> stations() async => [

@@ -1,5 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frequenza/features/analytics/domain/app_event.dart';
+import 'package:frequenza/features/diary/domain/diary_flight.dart';
+import 'package:frequenza/features/diary/domain/diary_period.dart';
+import 'package:frequenza/features/diary/domain/diary_summary.dart';
 import 'package:frequenza/features/radio/domain/journey.dart';
 import 'package:frequenza/features/radio/domain/radio_station.dart';
 import 'package:frequenza/features/songs/domain/song_search.dart';
@@ -102,6 +105,11 @@ void main() {
       'amazon_music',
       'web',
       '2m-10m',
+      for (final period in DiaryPeriod.values) period.name,
+      'unvisited',
+      'top_station',
+      'country_station',
+      'random_in_country',
     };
     final events = [
       AppEvent.appOpened(firstOpen: false),
@@ -112,6 +120,12 @@ void main() {
       AppEvent.favoriteAdded(station),
       AppEvent.songSaved(station),
       AppEvent.listenEnded(station, seconds: 300),
+      const AppEvent.diaryOpened(),
+      for (final period in DiaryPeriod.values)
+        AppEvent.diaryPeriodChosen(period),
+      AppEvent.diaryCountryOpened('IT', const CountryCard.unvisited('IT')),
+      for (final source in DiaryFlightSource.values)
+        AppEvent.diaryFlight(source),
       for (final service in SearchService.values)
         AppEvent.songSearchOpened(service),
     ];
@@ -149,6 +163,14 @@ void main() {
         'station': 'Radio 1',
         'duration': '30s-2m',
       }),
+    );
+  });
+
+  test('the diary events: opened has nothing, a period carries its name', () {
+    expect(const AppEvent.diaryOpened(), const AppEvent('diary_opened'));
+    expect(
+      AppEvent.diaryPeriodChosen(DiaryPeriod.week),
+      const AppEvent('diary_period_chosen', {'period': 'week'}),
     );
   });
 }

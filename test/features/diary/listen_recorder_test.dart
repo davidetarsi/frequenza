@@ -46,6 +46,7 @@ class MemoryDiary implements DiaryRepository {
       seconds: seconds,
     );
     writes.add('start ${station.id} $seconds');
+    _changes.add(null);
     return id;
   }
 
@@ -55,6 +56,7 @@ class MemoryDiary implements DiaryRepository {
     if (failWrites) throw StateError('Disk full');
     rows[listenId] = rows[listenId]!.copyWith(seconds: seconds);
     writes.add('set $listenId $seconds');
+    _changes.add(null);
   }
 
   @override
@@ -62,6 +64,22 @@ class MemoryDiary implements DiaryRepository {
 
   @override
   Future<List<RadioStation>> stations() async => saved.values.toList();
+
+  /// Every write emits again, as Drift's watch does.
+  final _changes = StreamController<void>.broadcast(sync: true);
+
+  List<Listen> _since(DateTime? since) => [
+    for (final listen in rows.values)
+      if (since == null || !listen.startedAt.isBefore(since)) listen,
+  ];
+
+  @override
+  Stream<List<Listen>> watchListensSince(DateTime? since) async* {
+    yield _since(since);
+    await for (final _ in _changes.stream) {
+      yield _since(since);
+    }
+  }
 }
 
 /// A radio whose state the test sets by hand.

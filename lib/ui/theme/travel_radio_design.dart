@@ -288,3 +288,90 @@ abstract final class RouteMapDesign {
     letterSpacing: 1.5,
   );
 }
+
+/// The player bar under the pages opened over the radio.
+abstract final class RadioBarDesign {
+  static const height = 60.0;
+  static const radius = 30.0;
+  static const border = 2.0;
+  static const key = 44.0;
+  static const iconSize = 20.0;
+  static const keyIconSize = 16.0;
+  static const padding = EdgeInsets.fromLTRB(16, 0, 6, 0);
+  static const titleText = TextStyle(fontSize: 14, fontWeight: FontWeight.w500);
+  static const detailText = TextStyle(fontSize: 12);
+  static const detailOpacity = 0.8;
+  static const savedHeart = Color(0xFFF0A47E);
+}
+
+/// The travel diary: the radio's screen, enlarged.
+abstract final class DiaryDesign {
+  /// The touched country, on the screen.
+  static const selected = Color(0xFFF0A47E);
+
+  /// Dot opacity: never heard, passing through, then the four levels of
+  /// the stops.
+  static const offOpacity = 0.16;
+  static const passingOpacity = 0.38;
+  static const levelOpacity = [0.55, 0.7, 0.85, 1.0];
+
+  /// A dot's radius, as a share of its cell; bigger for the two top levels.
+  static const dotShare = 0.35;
+  static const bigDotShare = 0.44;
+
+  static const minScale = 1.0;
+  static const maxScale = 6.0;
+  static const zoomStep = 2.0;
+  static const zoomKey = 36.0;
+  static const zoomKeyRadius = 8.0;
+  static const zoomIconSize = 16.0;
+  static const zoomInset = 10.0;
+
+  static const mapMinHeight = 180.0;
+  static const mapMaxShare = 0.45;
+  static const panelRadius = Radius.circular(22);
+  static const panelBorder = 3.0;
+  static const barInset = EdgeInsets.fromLTRB(12, 12, 12, 14);
+  static const pagePadding = EdgeInsets.fromLTRB(16, 14, 16, 10);
+  static const titleText = TextStyle(
+    fontSize: 13,
+    letterSpacing: 2.4,
+    fontWeight: FontWeight.w500,
+  );
+  static const numbersText = TextStyle(
+    fontSize: 13,
+    fontFamily: 'monospace',
+    fontWeight: FontWeight.w500,
+  );
+  static const sectionText = TextStyle(fontSize: 11, letterSpacing: 1.8);
+  static const mutedOpacity = 0.78;
+  static const barHeight = 6.0;
+  static const rankNameWidth = 96.0;
+  static const rankTimeWidth = 52.0;
+  static const sheetRadius = Radius.circular(20);
+  static const sheetPadding = EdgeInsets.fromLTRB(16, 8, 16, 16);
+  static const sheetRow = 54.0;
+  static const sheetButton = 48.0;
+  static const sheetMaxShare = 0.62;
+
+  /// The «touch a country» pill in the map's corner.
+  static const hintRadius = 10.0;
+  static const hintPadding = EdgeInsets.symmetric(horizontal: 8, vertical: 4);
+  static const hintText = TextStyle(fontSize: 11);
+
+  /// The map takes this share of the room under the header, never less
+  /// than [mapMinHeight] unless the list would drop under [listMinHeight].
+  static const mapShare = 0.6;
+  static const listMinHeight = 64.0;
+
+  /// The close handle of the country sheet: a thin bar in a touch area.
+  static const handleTouch = 48.0;
+  static const handleWidth = 40.0;
+  static const handleHeight = 4.0;
+
+  /// How far down a scrolled sheet must be pulled past its top to close.
+  static const sheetPullToClose = 24.0;
+
+  /// The corner of the diary's panel while it grows out of the screen.
+  static const growRadius = 16.0;
+}
