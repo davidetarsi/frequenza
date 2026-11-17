@@ -38,7 +38,11 @@ class CountrySheet extends StatelessWidget {
     final theme = Theme.of(context);
     String t(String key, [List<String>? args]) =>
         key.tr(context: context, args: args);
-    final name = countryName(context, _code);
+    final name = switch (card) {
+      StoppedCountry(:final country) || PassingCountry(:final country) =>
+        countryName(context, country.code, fallback: country.name),
+      UnvisitedCountry(:final code) => countryName(context, code),
+    };
     final muted = p.muted;
     final ink = p.ink;
 

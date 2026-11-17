@@ -29,6 +29,9 @@ class StationTime with _$StationTime {
 class CountryTime with _$CountryTime {
   const factory CountryTime({
     required String code,
+
+    /// Radio Browser's name, for countries the atlas does not know.
+    required String name,
     required int seconds,
 
     /// Most heard first.
@@ -63,6 +66,9 @@ extension DiaryFilledCountries on DiaryFilled {
     for (final country in countries)
       if (country.level > 0) country,
   ];
+
+  /// The most heard country stopped in; null when there is none.
+  CountryTime? get topStop => countries.where((c) => c.level > 0).firstOrNull;
 
   List<CountryTime> get passing => [
     for (final country in countries)
@@ -120,6 +126,9 @@ DiarySummary summarize(
     for (final MapEntry(key: code, value: items) in byCountry.entries)
       (
         code: code,
+        name: items
+            .map((item) => item.$2.country)
+            .firstWhere((name) => name.isNotEmpty, orElse: () => code),
         seconds: items.fold(0, (sum, item) => sum + item.$1.seconds),
         stations: ({
           for (final (l, _) in items) l.stationId,
@@ -137,6 +146,7 @@ DiarySummary summarize(
       for (final (index, c) in unranked.indexed)
         CountryTime(
           code: c.code,
+          name: c.name,
           seconds: c.seconds,
           stations: c.stations,
           lastListen: c.last,

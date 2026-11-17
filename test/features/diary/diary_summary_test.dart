@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:frequenza/features/diary/domain/diary_duration.dart';
 import 'package:frequenza/features/diary/domain/diary_period.dart';
 import 'package:frequenza/features/diary/domain/diary_summary.dart';
 import 'package:frequenza/features/diary/domain/listen.dart';
@@ -178,5 +179,49 @@ void main() {
         const CountryCard.unvisited('BR'),
       );
     });
+  });
+
+  group('names and the top stop', () {
+    test("a country carries Radio Browser's name for a fallback", () {
+      const reunion = RadioStation(
+        id: 'run',
+        name: 'Radio Freedom',
+        streamUrl: 'https://run.example.com/live',
+        country: 'Réunion',
+        countryCode: 'RE',
+      );
+      final summary =
+          summarize([listen(reunion, 3600)], byId([reunion])) as DiaryFilled;
+      expect(summary.countries.single.name, 'Réunion');
+    });
+
+    test('the top stop is the first country stopped in, if any', () {
+      final br = radio('br', 'BR'), cl = radio('cl', 'CL');
+      final passingOnly =
+          summarize([listen(cl, 180)], byId([cl])) as DiaryFilled;
+      expect(passingOnly.topStop, isNull);
+      final both =
+          summarize([listen(br, 3600), listen(cl, 180)], byId([br, cl]))
+              as DiaryFilled;
+      expect(both.topStop?.code, 'BR');
+    });
+  });
+
+  group('durations', () {
+    final cases = <(int, DiaryDuration)>[
+      (0, const DiaryDuration.underAMinute()),
+      (59, const DiaryDuration.underAMinute()),
+      (60, const DiaryDuration.minutes(1)),
+      (89, const DiaryDuration.minutes(1)),
+      (90, const DiaryDuration.minutes(2)),
+      (3569, const DiaryDuration.minutes(59)),
+      (3570, const DiaryDuration.hours(1)),
+      (5340, const DiaryDuration.hours(1)),
+      (7140, const DiaryDuration.hours(2)),
+      (9 * h, const DiaryDuration.hours(9)),
+    ];
+    for (final (seconds, expected) in cases) {
+      test('$seconds s', () => expect(diaryDurationOf(seconds), expected));
+    }
   });
 }

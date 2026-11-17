@@ -175,10 +175,10 @@ class _DiaryPageState extends ConsumerState<DiaryPage> {
       context: context,
     );
     final mapLabel = switch (summary) {
-      DiaryFilled(:final countries) when countries.isNotEmpty => t(
-        LocaleKeys.diaryMapSummary,
-        [countryCount, countryName(context, countries.first.code)],
-      ),
+      DiaryFilled(:final topStop?) => t(LocaleKeys.diaryMapSummary, [
+        countryCount,
+        countryName(context, topStop.code, fallback: topStop.name),
+      ]),
       _ => t(LocaleKeys.diaryMapEmpty),
     };
     return Container(
@@ -358,7 +358,7 @@ class _DiaryPageState extends ConsumerState<DiaryPage> {
                 SizedBox(
                   width: DiaryDesign.rankNameWidth,
                   child: Text(
-                    countryName(context, country.code),
+                    countryName(context, country.code, fallback: country.name),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),

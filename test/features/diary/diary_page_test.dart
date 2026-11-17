@@ -13,6 +13,7 @@ import 'package:frequenza/features/radio/application/radio_controller.dart';
 import 'package:frequenza/features/radio/application/radio_providers.dart';
 import 'package:frequenza/features/radio/domain/journey.dart';
 import 'package:frequenza/features/radio/domain/radio_session.dart';
+import 'package:frequenza/features/radio/domain/radio_station.dart';
 import 'package:frequenza/features/radio/presentation/radio_page.dart';
 import 'package:frequenza/features/songs/application/saved_songs.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -194,5 +195,41 @@ void main() {
     await tester.tap(find.text('DIARIO ›'));
     await tester.pumpAndSettle();
     expect(find.byType(DiaryPage), findsOneWidget);
+  });
+
+  testWidgets("a country the atlas does not name shows Radio Browser's name", (
+    tester,
+  ) async {
+    final (diary, _, _) = await openRadio(tester, empty: true);
+    await diary.startListen(
+      const RadioStation(
+        id: 'run',
+        name: 'Radio Freedom',
+        streamUrl: 'https://run.example.com/live',
+        country: 'Réunion',
+        countryCode: 'RE',
+      ),
+      startedAt: DateTime.now().toUtc(),
+      seconds: 3600,
+    );
+    await openDiaryPage(tester);
+    expect(find.text('RE'), findsNothing);
+    expect(find.text('Réunion'), findsOneWidget);
+  });
+
+  testWidgets('with no stop the map does not name a most heard country', (
+    tester,
+  ) async {
+    final (diary, _, _) = await openRadio(tester, empty: true);
+    await diary.startListen(
+      chile,
+      startedAt: DateTime.now().toUtc(),
+      seconds: 180,
+    );
+    await openDiaryPage(tester);
+    expect(
+      find.bySemanticsLabel('Mappa spenta: ancora nessun paese'),
+      findsOneWidget,
+    );
   });
 }

@@ -182,6 +182,9 @@ abstract class _StationTime implements StationTime {
 /// @nodoc
 mixin _$CountryTime {
   String get code => throw _privateConstructorUsedError;
+
+  /// Radio Browser's name, for countries the atlas does not know.
+  String get name => throw _privateConstructorUsedError;
   int get seconds => throw _privateConstructorUsedError;
 
   /// Most heard first.
@@ -207,6 +210,7 @@ abstract class $CountryTimeCopyWith<$Res> {
   @useResult
   $Res call({
     String code,
+    String name,
     int seconds,
     List<StationTime> stations,
     DateTime lastListen,
@@ -230,6 +234,7 @@ class _$CountryTimeCopyWithImpl<$Res, $Val extends CountryTime>
   @override
   $Res call({
     Object? code = null,
+    Object? name = null,
     Object? seconds = null,
     Object? stations = null,
     Object? lastListen = null,
@@ -240,6 +245,10 @@ class _$CountryTimeCopyWithImpl<$Res, $Val extends CountryTime>
             code: null == code
                 ? _value.code
                 : code // ignore: cast_nullable_to_non_nullable
+                      as String,
+            name: null == name
+                ? _value.name
+                : name // ignore: cast_nullable_to_non_nullable
                       as String,
             seconds: null == seconds
                 ? _value.seconds
@@ -274,6 +283,7 @@ abstract class _$$CountryTimeImplCopyWith<$Res>
   @useResult
   $Res call({
     String code,
+    String name,
     int seconds,
     List<StationTime> stations,
     DateTime lastListen,
@@ -296,6 +306,7 @@ class __$$CountryTimeImplCopyWithImpl<$Res>
   @override
   $Res call({
     Object? code = null,
+    Object? name = null,
     Object? seconds = null,
     Object? stations = null,
     Object? lastListen = null,
@@ -306,6 +317,10 @@ class __$$CountryTimeImplCopyWithImpl<$Res>
         code: null == code
             ? _value.code
             : code // ignore: cast_nullable_to_non_nullable
+                  as String,
+        name: null == name
+            ? _value.name
+            : name // ignore: cast_nullable_to_non_nullable
                   as String,
         seconds: null == seconds
             ? _value.seconds
@@ -333,6 +348,7 @@ class __$$CountryTimeImplCopyWithImpl<$Res>
 class _$CountryTimeImpl implements _CountryTime {
   const _$CountryTimeImpl({
     required this.code,
+    required this.name,
     required this.seconds,
     required final List<StationTime> stations,
     required this.lastListen,
@@ -341,6 +357,10 @@ class _$CountryTimeImpl implements _CountryTime {
 
   @override
   final String code;
+
+  /// Radio Browser's name, for countries the atlas does not know.
+  @override
+  final String name;
   @override
   final int seconds;
 
@@ -364,7 +384,7 @@ class _$CountryTimeImpl implements _CountryTime {
 
   @override
   String toString() {
-    return 'CountryTime(code: $code, seconds: $seconds, stations: $stations, lastListen: $lastListen, level: $level)';
+    return 'CountryTime(code: $code, name: $name, seconds: $seconds, stations: $stations, lastListen: $lastListen, level: $level)';
   }
 
   @override
@@ -373,6 +393,7 @@ class _$CountryTimeImpl implements _CountryTime {
         (other.runtimeType == runtimeType &&
             other is _$CountryTimeImpl &&
             (identical(other.code, code) || other.code == code) &&
+            (identical(other.name, name) || other.name == name) &&
             (identical(other.seconds, seconds) || other.seconds == seconds) &&
             const DeepCollectionEquality().equals(other._stations, _stations) &&
             (identical(other.lastListen, lastListen) ||
@@ -384,6 +405,7 @@ class _$CountryTimeImpl implements _CountryTime {
   int get hashCode => Object.hash(
     runtimeType,
     code,
+    name,
     seconds,
     const DeepCollectionEquality().hash(_stations),
     lastListen,
@@ -402,6 +424,7 @@ class _$CountryTimeImpl implements _CountryTime {
 abstract class _CountryTime implements CountryTime {
   const factory _CountryTime({
     required final String code,
+    required final String name,
     required final int seconds,
     required final List<StationTime> stations,
     required final DateTime lastListen,
@@ -410,6 +433,10 @@ abstract class _CountryTime implements CountryTime {
 
   @override
   String get code;
+
+  /// Radio Browser's name, for countries the atlas does not know.
+  @override
+  String get name;
   @override
   int get seconds;
 

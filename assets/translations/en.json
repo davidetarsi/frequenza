@@ -136,5 +136,6 @@
   "diaryFlyTo": "Fly to {}",
   "diaryRandomIn": "A random station from this country.",
   "diaryLastListen": "Last listen: {}",
-  "diaryCloseSheet": "Close"
+  "diaryCloseSheet": "Close",
+  "diaryUnderAMinute": "under 1 min"
 }

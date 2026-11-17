@@ -153,6 +153,7 @@ class CodegenLoader extends AssetLoader {
     "diaryRandomIn": "A random station from this country.",
     "diaryLastListen": "Last listen: {}",
     "diaryCloseSheet": "Close",
+    "diaryUnderAMinute": "under 1 min",
   };
   static const Map<String, dynamic> _it = {
     "welcomeTitle": "Gira la manopola.\nAtterra da qualche parte nel mondo.",
@@ -294,6 +295,7 @@ class CodegenLoader extends AssetLoader {
     "diaryRandomIn": "Una stazione a caso tra quelle di questo paese.",
     "diaryLastListen": "Ultimo ascolto: {}",
     "diaryCloseSheet": "Chiudi",
+    "diaryUnderAMinute": "meno di 1 min",
   };
   static const Map<String, Map<String, dynamic>> mapLocales = {
     "en": _en,
