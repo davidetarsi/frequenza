@@ -62,6 +62,12 @@ class MemoryDiary implements DiaryRepository {
 
   @override
   Future<List<RadioStation>> stations() async => saved.values.toList();
+
+  @override
+  Stream<List<Listen>> watchListensSince(DateTime? since) => Stream.value([
+    for (final listen in rows.values)
+      if (since == null || !listen.startedAt.isBefore(since)) listen,
+  ]);
 }
 
 /// A radio whose state the test sets by hand.
