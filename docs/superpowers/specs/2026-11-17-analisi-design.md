@@ -72,7 +72,7 @@ Nomi in inglese, `oggetto_azione`, al passato. Le proprietà hanno valori chiusi
 
 ## Come si costruisce
 
-- **`lib/app/analytics/`**:
+- **Una feature `lib/features/analytics/`**, con i livelli dello starter (contratto e eventi nel domain, tgram nel data, provider e osservatore nell'application):
   - un'interfaccia `Analytics` con `track(name, properties)`;
   - due versioni: `TgramAnalytics` e `NoAnalytics`;
   - un provider che sceglie in base a chiave e interruttore.
