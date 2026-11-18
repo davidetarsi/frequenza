@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -114,8 +116,14 @@ void main() {
             .transformationController!;
         controller.value = Matrix4.identity()
           ..translateByDouble(
-            (map.width / 2 - point.dx).clamp(map.width - paint.width, 0),
-            (map.height / 2 - point.dy).clamp(map.height - paint.height, 0),
+            (map.width / 2 - point.dx).clamp(
+              math.min(0, map.width - paint.width),
+              0,
+            ),
+            (map.height / 2 - point.dy).clamp(
+              math.min(0, map.height - paint.height),
+              0,
+            ),
             0,
             1,
           );

@@ -336,6 +336,11 @@ abstract final class DiaryDesign {
   static const playerBackdropTint = 0.88;
   static const barInset = EdgeInsets.fromLTRB(12, 12, 12, 14);
   static const pagePadding = EdgeInsets.fromLTRB(16, 14, 16, 10);
+  static const periodGap = 8.0;
+  static const periodPadding = EdgeInsets.symmetric(
+    horizontal: 14,
+    vertical: 10,
+  );
   static const titleText = TextStyle(
     fontSize: 13,
     letterSpacing: 2.4,

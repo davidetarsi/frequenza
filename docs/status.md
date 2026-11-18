@@ -66,6 +66,16 @@ Il punto di ripresa di ogni sessione: si legge questo, poi solo il piano attivo.
 - La fascia è creata solo quando lo stato radio prevede il player. Con radio spenta il diario non riserva né disegna una fascia filtrata. Con scheda paese aperta il player e la sfumatura sono nascosti insieme.
 - Verificati 31 test con Flutter 3.38.5, inclusa la verifica pixel su fondo ad alto contrasto della continuità della sfumatura. Regressioni per diario senza player, allineamento al bordo superiore e navigazione. Analisi senza segnalazioni. Riscontro visivo su telefono aperto.
 
+## Intestazione, filtri e apertura del diario — 18 novembre 2026
+
+- Riepilogo paesi/tempo spostato sotto il titolo e allineato al margine sinistro dei filtri e della lista. Il totale usa minuti localizzati, includendo il tempo nei paesi di passaggio, e conserva l'indicazione sotto il minuto.
+- Apertura da 420 a 520 ms con `easeInOutCubic`; chiusura a 340 ms con `easeInCubic`.
+- Interpretati i pulsanti da ingrandire come i filtri periodo del diario mostrati nello screenshot: padding da 12/8 a 14/10 punti, spazio fra pulsanti da 6 a 8 punti. Token in `DiaryDesign`.
+- Misurate le icone home: simboli da 24 punti, area di tocco 48×48 e nessuna spaziatura aggiuntiva nella riga. Proposta discussa per le icone: 26 punti e gap 4, in attesa di indicazioni.
+- Per «Prossima fermata», proposta di riga dedicata sopra la radio se «Ovunque» diventa un selettore. Scelta del selettore da confermare con Davide.
+- Verificati 41 test di diario, schede paese e home con Flutter 3.38.5. Analisi senza segnalazioni. Screenshot aggiornati. Corretto nel test helper il limite di clamp per un errore di arrotondamento floating-point del viewport.
+- Riscontro visivo su telefono aperto per la nuova apertura e la tappabilità dei filtri.
+
 ## Prossimi passi, in ordine
 
 1. **Cartolina del luogo:** sagoma e cartolina sulla radio, con l'animazione da definire con Davide; poi la collezione nel diario e le foto. Design in `superpowers/specs/2026-11-16-cartolina-design.md`.

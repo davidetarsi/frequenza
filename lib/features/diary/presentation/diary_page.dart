@@ -241,6 +241,13 @@ class _DiaryPageState extends ConsumerState<DiaryPage> {
       countries,
       context: context,
     );
+    final listeningTime = total < 60
+        ? diaryDuration(context, total)
+        : t(LocaleKeys.diaryMinutes, [
+            NumberFormat.decimalPattern(
+              context.locale.toLanguageTag(),
+            ).format((total / 60).round()),
+          ]);
     final mapLabel = switch (summary) {
       DiaryFilled(:final topStop?) => t(LocaleKeys.diaryMapSummary, [
         countryCount,
@@ -277,25 +284,27 @@ class _DiaryPageState extends ConsumerState<DiaryPage> {
                           style: DiaryDesign.titleText,
                         ),
                       ),
-                      Flexible(
-                        child: Text(
-                          total == 0
-                              ? countryCount
-                              : '$countryCount · ${diaryDuration(context, total)}',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: DiaryDesign.numbersText,
-                        ),
-                      ),
                     ],
                   ),
                   Padding(
                     padding: EdgeInsets.only(
                       left: DiaryDesign.pagePadding.left,
                     ),
+                    child: Text(
+                      total == 0
+                          ? countryCount
+                          : '$countryCount · $listeningTime',
+                      key: const ValueKey('diary-summary'),
+                      style: DiaryDesign.numbersText,
+                    ),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.only(
+                      left: DiaryDesign.pagePadding.left,
+                    ),
                     child: Wrap(
-                      spacing: 6,
-                      runSpacing: 6,
+                      spacing: DiaryDesign.periodGap,
+                      runSpacing: DiaryDesign.periodGap,
                       children: [
                         for (final (period, key) in const [
                           (DiaryPeriod.week, LocaleKeys.diaryWeek),
@@ -546,7 +555,7 @@ class _PeriodPill extends StatelessWidget {
           customBorder: const StadiumBorder(),
           onTap: onTap,
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            padding: DiaryDesign.periodPadding,
             child: Text(
               label,
               style: TextStyle(

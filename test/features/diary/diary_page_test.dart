@@ -188,7 +188,14 @@ void main() {
     final (_, analytics, _) = await openRadio(tester);
     await openDiaryPage(tester);
     expect(find.byType(DiaryPage), findsOneWidget);
-    expect(find.text('2 paesi · 14 h'), findsOneWidget);
+    expect(find.text('2 paesi · 843 min'), findsOneWidget);
+    final firstFilter = find
+        .ancestor(of: find.text('7 giorni'), matching: find.byType(InkWell))
+        .first;
+    expect(
+      tester.getTopLeft(find.byKey(const ValueKey('diary-summary'))).dx,
+      tester.getTopLeft(firstFilter).dx,
+    );
     final topStation = find.textContaining('Station 1 · Brasile · 9 h');
     expect(topStation, findsOneWidget);
     expect(
@@ -209,7 +216,7 @@ void main() {
     await openDiaryPage(tester);
     await tester.tap(find.text('7 giorni'));
     await tester.pumpAndSettle();
-    expect(find.text('1 paese · 9 h'), findsOneWidget);
+    expect(find.text('1 paese · 543 min'), findsOneWidget);
     expect(analytics.events.last, AppEvent.diaryPeriodChosen(DiaryPeriod.week));
   });
 
@@ -368,7 +375,7 @@ void main() {
     log.hold = true;
     await tester.tap(find.text('7 giorni'));
     await tester.pumpAndSettle();
-    expect(find.text('2 paesi · 14 h'), findsOneWidget);
+    expect(find.text('2 paesi · 843 min'), findsOneWidget);
     expect(find.textContaining('Il diario si riempie'), findsNothing);
   });
 
