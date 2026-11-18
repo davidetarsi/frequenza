@@ -316,7 +316,7 @@ void main() {
     },
   );
   testWidgets(
-    'favorites button is a list with the count in the primary colour',
+    'favorites button shows a list and keeps its count in the tooltip',
     (tester) async {
       tester.view.physicalSize = const Size(390, 844);
       tester.view.devicePixelRatio = 1;
@@ -338,10 +338,6 @@ void main() {
       );
       await tester.pumpAndSettle();
       final button = find.byKey(const ValueKey('favorites-open'));
-      final badge = tester.widget<Badge>(
-        find.descendant(of: button, matching: find.byType(Badge)),
-      );
-      final scheme = Theme.of(tester.element(button)).colorScheme;
       // The heart belongs to the save key alone: the list is where it saves.
       expect(
         find.descendant(
@@ -357,32 +353,15 @@ void main() {
         ),
         findsNothing,
       );
-      expect(badge.backgroundColor, scheme.primary);
-      expect(badge.textColor, scheme.onPrimary);
-      expect(badge.isLabelVisible, isTrue);
       expect(
-        find.descendant(of: button, matching: find.text('1')),
-        findsOneWidget,
+        find.descendant(of: button, matching: find.byType(Badge)),
+        findsNothing,
       );
-      // The count sits on the button's rim, outside the icon, not over it.
-      final icon = tester.getRect(
-        find.descendant(
-          of: button,
-          matching: find.byIcon(Icons.queue_music_outlined),
-        ),
-      );
-      final label = tester.getRect(
-        find.descendant(of: button, matching: find.text('1')),
-      );
-      expect(label.center.dx, greaterThan(icon.right));
-      expect(label.center.dy, lessThan(icon.top));
       expect(find.text('Preferiti · 1'), findsNothing);
       expect(find.byTooltip('Preferiti · 1'), findsOneWidget);
     },
   );
-  testWidgets('saving a station makes the favorites count pulse', (
-    tester,
-  ) async {
+  testWidgets('saving a station updates the favorites tooltip', (tester) async {
     final audio = FakeAudioService();
     addTearDown(audio.dispose);
     await tester.pumpWidget(
@@ -398,23 +377,16 @@ void main() {
       ),
     );
     await tester.pump(const Duration(seconds: 1));
-    final pulse = find.descendant(
-      of: find.byKey(const ValueKey('favorites-open')),
-      matching: find.byType(ScaleTransition),
-    );
-    double scale() => tester.widget<ScaleTransition>(pulse).scale.value;
-    expect(scale(), 1);
+    expect(find.byTooltip('Preferiti · 0'), findsOneWidget);
     await tester.tap(find.byKey(const ValueKey('tune-knob')));
     await tester.pump();
     await tester.pump(const Duration(seconds: 1));
     await tester.pump(const Duration(seconds: 3));
-    expect(scale(), 1);
     await tester.tap(find.byKey(const ValueKey('radio-key-save')));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 150));
-    expect(scale(), greaterThan(1));
+    expect(find.byTooltip('Preferiti · 1'), findsOneWidget);
     await tester.pump(const Duration(seconds: 1));
-    expect(scale(), 1);
   });
   testWidgets('radio keys do nothing before the first station', (tester) async {
     final favorites = MemoryFavorites();
@@ -498,10 +470,10 @@ void main() {
       containsSemantics(label: 'Riprendi', hasToggledState: false),
     );
   });
-  for (final (width, expected, gutter) in [
-    (390.0, 343.0, 12.0),
-    (320.0, 281.0, 12.0),
-    (430.0, 378.0, 12.0),
+  for (final (width, expected) in [
+    (390.0, 343.0),
+    (320.0, 281.0),
+    (430.0, 378.0),
   ]) {
     testWidgets('at $width points the radio and the header follow the screen', (
       tester,
@@ -527,10 +499,16 @@ void main() {
       expect(radio.width, moreOrLessEquals(expected, epsilon: .5));
       expect(radio.center.dx, moreOrLessEquals(width / 2, epsilon: .5));
       final heading = tester.getRect(find.text('frequenza'));
-      expect(heading.left, moreOrLessEquals(gutter, epsilon: .5));
-      // The icon button keeps 4 points of its own touch padding.
+      expect(heading.left, moreOrLessEquals(radio.left, epsilon: .5));
+      final favorites = tester.getRect(
+        find.byKey(const ValueKey('favorites-open')),
+      );
+      final diary = tester.getRect(find.byKey(const ValueKey('diary-open')));
+      expect(favorites.width, moreOrLessEquals(48, epsilon: .01));
+      expect(favorites.height, moreOrLessEquals(48, epsilon: .01));
+      expect(diary.left - favorites.right, moreOrLessEquals(4, epsilon: .5));
       final settings = tester.getRect(find.byTooltip('Impostazioni'));
-      expect(settings.right, moreOrLessEquals(width - gutter - 4, epsilon: .5));
+      expect(settings.right, moreOrLessEquals(radio.right, epsilon: .5));
     });
   }
 }

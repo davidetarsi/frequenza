@@ -14,15 +14,28 @@ import '../../../ui/widgets/travel_sheet.dart';
 import '../../../ui/theme/travel_radio_palette.dart';
 import '../../radio/application/radio_controller.dart';
 import '../../radio/domain/radio_session.dart';
+import '../../songs/presentation/songs_tab.dart';
 import '../application/favorites_controller.dart';
 
 Future<void> showFavorites(BuildContext context) =>
     showTravelSheet(context, builder: (_) => const FavoritesSheet());
 
-class FavoritesSheet extends ConsumerWidget {
+/// The stations to come back to and the songs found on the road, in two
+/// tabs. It opens on the stations.
+class FavoritesSheet extends ConsumerStatefulWidget {
   const FavoritesSheet({super.key});
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<FavoritesSheet> createState() => _FavoritesSheetState();
+}
+
+enum _Tab { stations, songs }
+
+class _FavoritesSheetState extends ConsumerState<FavoritesSheet> {
+  var _tab = _Tab.stations;
+
+  @override
+  Widget build(BuildContext context) {
     final favorites = ref.watch(favoritesProvider);
     // The station that plays now, to mark its preset.
     final playing = switch (ref.watch(radioControllerProvider)) {
@@ -32,76 +45,102 @@ class FavoritesSheet extends ConsumerWidget {
     final p = TravelRadioPalette.of(context);
     return TravelSheet(
       title: LocaleKeys.favoritesTitle.tr(context: context),
-      subtitle: LocaleKeys.favoritesSubtitle.tr(context: context),
+      subtitle: switch (_tab) {
+        _Tab.stations => LocaleKeys.favoritesSubtitle.tr(context: context),
+        _Tab.songs => LocaleKeys.songsSubtitle.tr(context: context),
+      },
       children: [
-        ...favorites.when(
-          skipLoadingOnRefresh: false,
-          loading: () => [
-            if (!favorites.hasValue)
-              AppLoading(label: LocaleKeys.loading.tr(context: context)),
-          ],
-          error: (_, _) => [
-            Text(
-              LocaleKeys.favoritesError.tr(context: context),
-              style: TextStyle(color: Theme.of(context).colorScheme.error),
+        SegmentedButton<_Tab>(
+          showSelectedIcon: false,
+          segments: [
+            ButtonSegment(
+              value: _Tab.stations,
+              icon: const Icon(Icons.radio_outlined),
+              label: Text(LocaleKeys.tabStations.tr(context: context)),
             ),
-            AppButton(
-              variant: AppButtonVariant.text,
-              onPressed: ref.read(favoritesProvider.notifier).load,
-              label: LocaleKeys.retry.tr(context: context),
+            ButtonSegment(
+              value: _Tab.songs,
+              icon: const Icon(Icons.bookmarks_outlined),
+              label: Text(LocaleKeys.tabSongs.tr(context: context)),
             ),
           ],
-          data: (data) => [
-            if (data.stations.isEmpty)
-              Container(
-                padding: const EdgeInsets.all(AppSpacing.large),
-                decoration: BoxDecoration(
-                  color: p.paperRaised,
-                  borderRadius: AppShape.panelRadius,
-                ),
-                child: AppMessage.empty(
-                  leading: Icon(
-                    Icons.favorite_border,
-                    color: p.muted,
-                    size: RadioFavoritesDesign.emptyIconSize,
-                  ),
-                  message: LocaleKeys.favoritesEmpty.tr(context: context),
-                  messageStyle: TextStyle(color: p.ink),
-                ),
-              ),
-          ],
+          selected: {_tab},
+          onSelectionChanged: (selected) =>
+              setState(() => _tab = selected.single),
         ),
-        // Saved in order: the newest one comes first.
-        for (final station
-            in favorites.valueOrNull?.stations.reversed ?? <RadioStation>[])
-          Padding(
-            padding: const EdgeInsets.only(bottom: AppSpacing.standard),
-            child: _StationPreset(
-              id: station.id,
-              name: station.name,
-              code: station.countryCode,
-              subtitle: [
-                if (station.country.isEmpty)
-                  LocaleKeys.unknownCountry.tr(context: context)
-                else
-                  station.country,
-                if (playing == station.id)
-                  LocaleKeys.playing.tr(context: context)
-                else
-                  LocaleKeys.tapToListen.tr(context: context),
-              ].where((s) => s.isNotEmpty).join(' · '),
-              active: playing == station.id,
-              removeLabel: LocaleKeys.removeFavorite.tr(context: context),
-              onPlay: () {
-                final controller = ref.read(radioControllerProvider.notifier);
-                Navigator.pop(context);
-                controller.tuneTo(station);
-              },
-              onRemove: favorites.isLoading
-                  ? null
-                  : () => ref.read(favoritesProvider.notifier).toggle(station),
-            ),
+        const SizedBox(height: RadioFavoritesDesign.contentGap),
+        if (_tab == _Tab.songs) const SongsTab(),
+        if (_tab == _Tab.stations)
+          ...favorites.when(
+            skipLoadingOnRefresh: false,
+            loading: () => [
+              if (!favorites.hasValue)
+                AppLoading(label: LocaleKeys.loading.tr(context: context)),
+            ],
+            error: (_, _) => [
+              Text(
+                LocaleKeys.favoritesError.tr(context: context),
+                style: TextStyle(color: Theme.of(context).colorScheme.error),
+              ),
+              AppButton(
+                variant: AppButtonVariant.text,
+                onPressed: ref.read(favoritesProvider.notifier).load,
+                label: LocaleKeys.retry.tr(context: context),
+              ),
+            ],
+            data: (data) => [
+              if (data.stations.isEmpty)
+                Container(
+                  padding: const EdgeInsets.all(AppSpacing.large),
+                  decoration: BoxDecoration(
+                    color: p.paperRaised,
+                    borderRadius: AppShape.panelRadius,
+                  ),
+                  child: AppMessage.empty(
+                    leading: Icon(
+                      Icons.favorite_border,
+                      color: p.muted,
+                      size: RadioFavoritesDesign.emptyIconSize,
+                    ),
+                    message: LocaleKeys.favoritesEmpty.tr(context: context),
+                    messageStyle: TextStyle(color: p.ink),
+                  ),
+                ),
+            ],
           ),
+        // Saved in order: the newest one comes first.
+        if (_tab == _Tab.stations)
+          for (final station
+              in favorites.valueOrNull?.stations.reversed ?? <RadioStation>[])
+            Padding(
+              padding: const EdgeInsets.only(bottom: AppSpacing.standard),
+              child: _StationPreset(
+                id: station.id,
+                name: station.name,
+                code: station.countryCode,
+                subtitle: [
+                  if (station.country.isEmpty)
+                    LocaleKeys.unknownCountry.tr(context: context)
+                  else
+                    station.country,
+                  if (playing == station.id)
+                    LocaleKeys.playing.tr(context: context)
+                  else
+                    LocaleKeys.tapToListen.tr(context: context),
+                ].where((s) => s.isNotEmpty).join(' · '),
+                active: playing == station.id,
+                removeLabel: LocaleKeys.removeFavorite.tr(context: context),
+                onPlay: () {
+                  final controller = ref.read(radioControllerProvider.notifier);
+                  Navigator.pop(context);
+                  controller.tuneTo(station);
+                },
+                onRemove: favorites.isLoading
+                    ? null
+                    : () =>
+                          ref.read(favoritesProvider.notifier).toggle(station),
+              ),
+            ),
         const SizedBox(height: RadioFavoritesDesign.footerGap),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,

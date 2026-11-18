@@ -1,20 +1,25 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../../l10n/locale_keys.g.dart';
 import '../../../ui/theme/app_spacing.dart';
 import '../../../ui/theme/travel_radio_design.dart';
 import '../../../ui/widgets/app_icon_button.dart';
-import '../../../ui/widgets/count_pulse.dart';
+import '../../diary/presentation/diary_route.dart';
 import '../../favorites/application/favorites_controller.dart';
 import '../../favorites/presentation/favorites_sheet.dart';
 import '../../journey/presentation/journey_texts.dart';
 import '../../journey/presentation/route_map.dart';
+import '../../songs/presentation/save_song.dart';
 import '../application/radio_controller.dart';
 import 'radio_display.dart';
 import 'copy_track_title.dart';
 import 'radio_cabinet.dart';
 import 'radio_keys.dart';
+
+/// The radio's screen: the diary grows out of it.
+final radioScreenKey = GlobalKey(debugLabel: 'radio-screen');
 
 class RadioPage extends ConsumerWidget {
   const RadioPage({
@@ -35,6 +40,7 @@ class RadioPage extends ConsumerWidget {
     final controller = ref.read(radioControllerProvider.notifier);
     final station = display.station;
     final song = display.song;
+    final track = display.track;
     final saved = station != null && favorites?.contains(station.id) == true;
     final theme = Theme.of(context);
     ref.listen(favoritesProvider, (before, after) {
@@ -93,29 +99,36 @@ class RadioPage extends ConsumerWidget {
             final favoritesLabel =
                 '${LocaleKeys.favorites.tr(context: context)} · $favoritesCount';
             final favoritesButton = AppIconButton(
-              variant: AppIconButtonVariant.outlined,
               key: const ValueKey('favorites-open'),
               tooltip: favoritesLabel,
-              foregroundColor: theme.colorScheme.primary,
               onPressed: () => showFavorites(context),
-              // The heart is the save key's alone: this is where it saves.
-              icon: CountPulse(
-                count: favorites?.stations.length,
-                child: Badge.count(
-                  count: favoritesCount,
-                  isLabelVisible: favoritesCount > 0,
-                  largeSize: RadioFavoritesDesign.countSize,
-                  offset: RadioFavoritesDesign.countOffset,
-                  padding: RadioFavoritesDesign.countPadding,
-                  textStyle: RadioFavoritesDesign.countText,
-                  backgroundColor: theme.colorScheme.primary,
-                  textColor: theme.colorScheme.onPrimary,
-                  child: const Icon(Icons.queue_music_outlined),
+              icon: const Icon(Icons.queue_music_outlined),
+            );
+            final diaryButton = AppIconButton(
+              key: const ValueKey('diary-open'),
+              tooltip: LocaleKeys.diaryOpen.tr(context: context),
+              onPressed: () => openDiary(context, radioScreenKey),
+              icon: const Icon(Icons.map_outlined),
+            );
+            final actions = IconButtonTheme(
+              data: IconButtonThemeData(
+                style: IconButton.styleFrom(
+                  iconSize: TravelRadioLayout.headerIconSize,
+                  fixedSize: const Size.square(
+                    TravelRadioLayout.headerActionSize,
+                  ),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                spacing: TravelRadioLayout.headerActionGap,
+                children: [favoritesButton, diaryButton, settingsAction],
               ),
             );
             final cabinet = RadioCabinetHero(
               child: RadioCabinet(
+                screenKey: radioScreenKey,
                 compact: compact,
                 horizontal: wide,
                 country: text(display.country),
@@ -126,9 +139,15 @@ class RadioPage extends ConsumerWidget {
                     : song ??
                           station?.tags.take(2).join(' · ') ??
                           LocaleKeys.firstTrip.tr(context: context),
+                onDetailTap: track == null || station == null
+                    ? null
+                    : () => saveSong(context, ref, track, station),
                 onDetailLongPress: song == null
                     ? null
                     : () => copyTrackTitle(context, song),
+                detailAction: track == null || station == null
+                    ? null
+                    : SongBookmark(track: track, station: station),
                 status: display.statusKey.tr(context: context),
                 flying: display.flying,
                 landings: journey.trips,
@@ -231,15 +250,7 @@ class RadioPage extends ConsumerWidget {
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceEvenly,
                                 crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
-                                  Row(
-                                    children: [
-                                      Expanded(child: heading),
-                                      favoritesButton,
-                                      settingsAction,
-                                    ],
-                                  ),
-                                ],
+                                children: [heading, actions],
                               ),
                             ),
                             const SizedBox(width: AppSpacing.standard),
@@ -253,27 +264,35 @@ class RadioPage extends ConsumerWidget {
                 ),
               );
             }
-            // The header spans the screen; the radio takes its share of it.
-            return Column(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                Row(
-                  children: [
-                    Expanded(child: heading),
-                    favoritesButton,
-                    settingsAction,
-                  ],
-                ),
-                nextStop,
-                SizedBox(
-                  width: TravelRadioLayout.cabinetWidth(
-                    screenWidth,
-                    constraints.maxWidth,
+            // The header follows the cabinet width.
+            return SizedBox(
+              width: constraints.maxWidth,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  SizedBox(
+                    width: TravelRadioLayout.cabinetWidth(
+                      screenWidth,
+                      constraints.maxWidth,
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(child: heading),
+                        actions,
+                      ],
+                    ),
                   ),
-                  child: cabinet,
-                ),
-                credits,
-              ],
+                  nextStop,
+                  SizedBox(
+                    width: TravelRadioLayout.cabinetWidth(
+                      screenWidth,
+                      constraints.maxWidth,
+                    ),
+                    child: cabinet,
+                  ),
+                  credits,
+                ],
+              ),
             );
           },
         ),

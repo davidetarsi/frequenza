@@ -2,6 +2,8 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../app/state/latest_save.dart';
 import '../../radio/domain/radio_station.dart';
+import '../../analytics/application/analytics_providers.dart';
+import '../../analytics/domain/app_event.dart';
 import '../domain/favorites_state.dart';
 import 'favorites_providers.dart';
 
@@ -29,13 +31,22 @@ class Favorites extends _$Favorites {
   Future<void> toggle(RadioStation station) async {
     final current = state.valueOrNull;
     if (current == null || state.isLoading) return;
-    final next = current.contains(station.id)
+    final removing = current.contains(station.id);
+    final next = removing
         ? current.stations.where((s) => s.id != station.id).toList()
         : [...current.stations, station];
     await _update(() async {
       await ref.read(favoritesRepositoryProvider).save(next);
       return FavoritesState(next);
     });
+    if (state.hasError) return;
+    ref
+        .read(analyticsProvider)
+        .track(
+          removing
+              ? AppEvent.favoriteRemoved(station)
+              : AppEvent.favoriteAdded(station),
+        );
   }
 
   Future<void> _update(Future<FavoritesState> Function() action) =>

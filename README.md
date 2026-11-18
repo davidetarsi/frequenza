@@ -29,7 +29,8 @@ of static, and you land on a live station somewhere on the planet. The map
 draws the route of your trip, tells you how far you travelled and what time
 it is over there. Then you turn again.
 
-No account, no ads, no algorithm deciding what you should like. Just the
+No account, no ads, no algorithm deciding what you should like, and only
+anonymous usage statistics, which you can turn off. Just the
 pleasure of getting lost on the airwaves.
 
 ## 📻 On air

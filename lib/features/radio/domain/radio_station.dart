@@ -18,6 +18,9 @@ class RadioStation with _$RadioStation {
     @JsonKey(name: 'url') required String streamUrl,
     required String country,
     @JsonKey(name: 'code') required String countryCode,
+
+    /// The state or region, as Radio Browser writes it: often missing.
+    String? region,
     String? faviconUrl,
     @Default([]) List<String> tags,
     String? codec,

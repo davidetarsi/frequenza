@@ -121,7 +121,7 @@ Su https://play.google.com/console.
   | Annunci | no |
   | Classificazione dei contenuti | questionario: «Tutti gli altri tipi di app», no a violenza, sesso, gioco d'azzardo e simili |
   | Pubblico di destinazione | solo 18+: così non valgono le regole per i bambini |
-  | Sicurezza dei dati | nessun dato raccolto né condiviso |
+  | Sicurezza dei dati | vedi il punto 8: dalla versione con le statistiche anonime, non più «nessun dato raccolto» |
   | App governative, finanziarie, sanitarie, di notizie | no |
   | Impostazioni dello Store | categoria Musica e audio, email di contatto |
 
@@ -187,6 +187,21 @@ Su https://play.google.com/console.
 - [ ] Dopo l'approvazione: Actions, poi «Promuovi in produzione», poi Run workflow.
   - `version_code`: il numero dopo il `+` (`1` per `0.2.0+1`).
   - `rollout`: `100`, o meno per partire piano.
+
+## 8. Statistiche anonime (tgram-analytics)
+
+Prima del primo rilascio con le statistiche. Senza questi passi la build di produzione esce con le statistiche spente.
+
+- [ ] Server pronto su `https://analytics.davidetarsi.com` (guida per Coolify, inviata a parte) e progetto `frequenza` creato dal bot, con conservazione a 90 giorni.
+- [ ] GitHub → Settings → Secrets and variables → Actions:
+  - segreto `TGA_API_KEY` con la chiave `proj_…`;
+  - variabile `TGA_SERVER_URL` con `https://analytics.davidetarsi.com`.
+- [ ] Play Console → Contenuti dell'app → **Sicurezza dei dati**:
+  - dati raccolti: «Attività nell'app → Interazioni con l'app» e «Informazioni e prestazioni dell'app → Diagnostica»;
+  - non condivisi con terze parti; cifrati in transito; raccolta facoltativa (si spegne nelle Impostazioni); scopo «Analisi»;
+  - nessun dato collegato all'identità.
+- [ ] Sul bot: avvisi su `flight_failed` e `playback_broken`, e il `/digest` settimanale.
+- La chiave `proj_…` finisce dentro l'app pubblicata, come per ogni chiave di invio: chiunque potrebbe mandare eventi falsi. Se succede, dal bot: `/projects` → Frequenza → Settings → ruota la chiave, poi aggiorna il segreto su GitHub e fai una nuova release.
 
 ## Dopo
 

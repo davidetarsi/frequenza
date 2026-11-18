@@ -18,5 +18,5 @@ Obiettivo: contenere token, tempo e lavoro duplicato senza sacrificare correttez
 - Stati a strati: un flusso con stati che hanno un nome nel prodotto e cambiano per eventi è un tipo sealed Freezed nel dominio, con transizioni pure (`next(stato, evento)`) e la tabella delle transizioni accanto; il controller esegue solo gli effetti. Un valore letto o salvato in modo asincrono usa `AsyncValue` nel livello application. Esempio: `features/radio/domain/radio_session.dart`.
 - Usare e mantenere i componenti e i token comuni in lib/ui. Tenere i controlli specifici del prodotto nelle feature.
 - Leggere docs/status.md per il punto di ripresa, poi solo il piano attivo.
-- Non aggiungere integrazioni esterne senza necessità concreta.
+- Non aggiungere integrazioni esterne senza necessità concreta. Ognuna è una feature: il contratto nel domain, senza Flutter né Riverpod; il servizio esterno nel data.
 - Non commettere segreti, chiavi di firma o percorsi locali di SDK.

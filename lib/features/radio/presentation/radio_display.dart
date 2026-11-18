@@ -2,6 +2,7 @@ import '../../journey/domain/travel_leg.dart';
 import '../../../l10n/locale_keys.g.dart';
 import '../domain/radio_session.dart';
 import '../domain/radio_station.dart';
+import '../domain/track_title.dart';
 
 /// The journey on the map: the flight hides the destination until landing.
 enum FlightPhase { grounded, flying, signalLost }
@@ -45,7 +46,7 @@ class RadioDisplay {
     required this.phase,
     this.station,
     this.leg,
-    this.song,
+    this.track,
     this.busy = false,
     this.flying = false,
     this.playing = false,
@@ -97,10 +98,11 @@ class RadioDisplay {
         phase: FlightPhase.grounded,
         station: station,
         leg: journey.leg,
-        song:
-            playback == OnAirPlayback.playing ||
-                playback == OnAirPlayback.paused
-            ? trackTitle
+        track:
+            trackTitle != null &&
+                (playback == OnAirPlayback.playing ||
+                    playback == OnAirPlayback.paused)
+            ? TrackTitle.parse(trackTitle, stationName: station.name)
             : null,
         busy: playback == OnAirPlayback.buffering,
         playing: playback == OnAirPlayback.playing,
@@ -128,8 +130,11 @@ class RadioDisplay {
   final RadioStation? station;
   final TravelLeg? leg;
 
-  /// The track title, while the station plays or rests.
-  final String? song;
+  /// The song, cleaned, while the station plays or rests.
+  final TrackTitle? track;
+
+  /// The song as the radio writes it.
+  String? get song => track?.display;
 
   /// A flight, or a station refilling its stream: no song, no local time.
   final bool busy;

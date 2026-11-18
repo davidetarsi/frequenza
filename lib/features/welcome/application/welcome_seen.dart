@@ -1,6 +1,9 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../analytics/application/analytics_providers.dart';
+import '../../analytics/domain/app_event.dart';
+
 part 'welcome_seen.g.dart';
 
 /// Whether the welcome page has been seen: it shows only on the first launch.
@@ -24,6 +27,7 @@ class WelcomeSeen extends _$WelcomeSeen {
   /// next launch, never that the radio stays out of reach.
   Future<void> markSeen() async {
     state = const AsyncData(true);
+    ref.read(analyticsProvider).track(const AppEvent.welcomeCompleted());
     try {
       final preferences = await SharedPreferences.getInstance();
       await preferences.setBool(_key, true);

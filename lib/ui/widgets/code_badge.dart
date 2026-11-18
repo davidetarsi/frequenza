@@ -7,9 +7,10 @@ import '../theme/travel_radio_palette.dart';
 /// A short code on a plate, like the favorites' country codes: it stands
 /// where an icon would and takes the icon's colour, selection included.
 class CodeBadge extends StatelessWidget {
-  const CodeBadge(this.code, {super.key});
+  const CodeBadge(this.code, {super.key, this.backgroundColor});
 
   final String code;
+  final Color? backgroundColor;
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +21,7 @@ class CodeBadge extends StatelessWidget {
         height: CodeBadgeDesign.size.height,
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: TravelRadioPalette.of(context).paper,
+          color: backgroundColor ?? TravelRadioPalette.of(context).paper,
           borderRadius: AppShape.controlRadius,
           border: Border.all(
             color: (ink ?? TravelRadioPalette.of(context).trim).withValues(

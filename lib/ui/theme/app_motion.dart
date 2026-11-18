@@ -14,6 +14,14 @@ abstract final class AppMotion {
   /// The favorites count swelling when a station is saved.
   static const countPulse = Duration(milliseconds: 400);
 
+  /// The diary growing out of the radio's screen, and back.
+  static const diaryOpen = Duration(milliseconds: 520);
+  static const diaryClose = Duration(milliseconds: 340);
+
+  /// The player bar rises in the last part of the opening, from below.
+  static const diaryBarStart = 0.55;
+  static const diaryBarFrom = Offset(0, 1.5);
+
   static Duration standard(BuildContext context) =>
       enabled(context) ? const Duration(milliseconds: 200) : Duration.zero;
 }
