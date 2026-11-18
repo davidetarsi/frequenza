@@ -1,4 +1,4 @@
-# Frequenza — stato verificato al 17 novembre 2026
+# Frequenza — stato verificato al 18 novembre 2026
 
 Il punto di ripresa di ogni sessione: si legge questo, poi solo il piano attivo. Le regole per le idee nuove sono in [principi.md](principi.md).
 
@@ -16,11 +16,32 @@ Il punto di ripresa di ogni sessione: si legge questo, poi solo il piano attivo.
 - **Diario di viaggio, parte 2: la pagina e la barra** (branch `feat/diario-pagina`, sopra `feat/diario-registro`). Design `superpowers/specs/2026-11-17-diario-pagina-design.md`, piano `superpowers/plans/2026-11-17-diario-pagina.md`, mock-up https://claude.ai/artifact/HUKaij9foXqCQnQyxvqbUQ.
   - L'atlante sa di quale paese è ogni puntino e i nomi IT/EN; riassunto del periodo puro (`DiarySummary`, `CountryCard`, soglia max(5 min, 1%)); barra `RadioBar` (stato da `radioBarOf`); pagina con mappa che si ingrandisce, classifica e scheda del paese nei tre casi; tre eventi anonimi nuovi.
 - **Prove sul telefono:**
-  - apertura toccando lo schermo della radio (o «DIARIO ›» nell'angolo della mappa) e chiusura con Indietro o con la barra: il pannello cresce e rientra nello schermo, la barra sale e scende; mai due diari impilati;
+  - apertura dalla mappa ripiegata nella barra superiore e chiusura con Indietro o con la barra: il pannello cresce e rientra nello schermo, la barra sale e scende; mai due diari impilati;
   - pizzico, trascinamento e tasti + e − sulla mappa; tocco su un paese acceso, di passaggio e mai ascoltato;
   - «Volaci» e «Vola in …» restano nel diario e la barra mostra il volo;
   - cuore, segnalibro e pausa dalla barra; testo grande e tema scuro.
 - **Prima:** diario parte 1 (`feat/diario-registro`), statistiche (`feat/analisi`).
+
+## Rifiniture radio e diario — 18 novembre 2026
+
+- Branch `fix/gerarchia-radio-diario`, da `develop`. Barra superiore allineata alla scocca con Preferiti, Diario e Impostazioni. Preferiti senza cerchio e badge, conteggio nel tooltip. Diario aperto dalla mappa ripiegata (`map_outlined`, scelta da Davide), pausa più larga del cuore.
+- Freccia del diario allineata al margine dei contenuti. Invito «Tocca un paese» rimosso definitivamente. Spazio prima di «Volaci» nella stazione più ascoltata e nelle righe paese.
+- Scheda paese nel verde chiaro `screenInk`, testo `screen`, targhetta coordinata nei due temi.
+- Mappa aggiornata per riempire il viewport mantenendo le proporzioni. In verticale si esplora lateralmente il mondo, inizialmente centrato. L'intera superficie riceve pinch e trascinamento. Zoom 1–6, tasti animati con `AppMotion.standard`, interrompibili dal gesto e immediati con riduzione movimento. Il ritorno a 1 e il cambio di dimensioni ricentrano la vista.
+- Verifiche mappa: 34 test di mappa/pagina/schede passati, poi 11 test mappa inclusi pinch progressivo, trascinamento dalla metà inferiore, selezione nel viewport alto, interruzione e riduzione movimento. Analisi del componente pulita. Fluidità reale da collaudare su telefono.
+- Verificati 118 test mirati di diario, home e viaggio. Bundle debug compilato. Analisi con tre avvisi preesistenti `containsSemantics` nei test, nessun errore.
+- Prossimo passo: collaudo visivo su telefono, nei due temi e con testo grande. Prima verifica con Flutter 3.47.4, poi controllo completo con Flutter 3.38.5 come la CI.
+
+## Diario con player sospeso — 18 novembre 2026
+
+- Richiesta di Davide: mappa e statistiche scorrono insieme sotto il player. Intestazione e filtri restano fissi.
+- `Scaffold.extendBody` e un'unica `CustomScrollView`; player sovrapposto con margini laterali/inferiori, sfumatura e sfocatura limitata alla fascia inferiore. Padding finale ricavato dall'altezza effettiva della barra, anche con testo grande.
+- Aprendo un paese il player scompare da vista, tocchi e accessibilità. La scheda usa la parte bassa della pagina. Chiudendola o avviando un volo ricompare la barra. L'ascolto segue lo stato radio esistente.
+- Durante un pinch o un trascinamento della mappa ingrandita, lo scorrimento della pagina cede il gesto alla mappa. A scala iniziale il trascinamento verticale scorre la pagina.
+- Verificati scorrimento con player fermo, ultima riga raggiungibile, navigazione dopo chiusura della scheda, layout piccoli/orizzontali e testo grande. Screenshot locali del diario e della scheda aggiornati con dati di esempio.
+- Player aggiornato al verde chiaro `screenInk`, testo e icone `screen`, play/pausa verde scuro con icona chiara. Cuore salvato nel colore accent. Sfocatura laterale/inferiore leggera (sigma 4), tinta al 22% per lasciare visibili i dati sottostanti. Test mirati e analisi verificati, screenshot aggiornati.
+- Revisione screenshot: corretto il contrasto della stazione più ascoltata in tema chiaro impostando esplicitamente il colore del testo sulla superficie scura. Regressione aggiunta al test pagina, 18 test superati.
+- Resta il collaudo visivo e dei gesti su telefono.
 
 ## Prossimi passi, in ordine
 

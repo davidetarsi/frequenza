@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frequenza/app/app.dart';
+import 'package:frequenza/ui/theme/travel_radio_palette.dart';
 import 'package:frequenza/features/analytics/application/analytics_providers.dart';
 import 'package:frequenza/features/analytics/domain/app_event.dart';
 import 'package:frequenza/features/diary/application/diary_providers.dart';
@@ -103,13 +104,58 @@ void main() {
   }
 
   Future<void> openDiaryPage(WidgetTester tester) async {
-    await tester.tap(find.bySemanticsLabel('Apri il diario di viaggio'));
+    await tester.tap(find.byTooltip('Apri il diario di viaggio'));
     await tester.pumpAndSettle();
   }
 
   bool onlyRadio(WidgetTester tester) =>
       find.byType(DiaryPage).evaluate().isEmpty &&
       !Navigator.of(tester.element(find.byType(RadioPage))).canPop();
+
+  testWidgets('the map and stats scroll under the stationary player', (
+    tester,
+  ) async {
+    await openRadio(tester);
+    await openDiaryPage(tester);
+    final map = find.byKey(const ValueKey('diary-map'));
+    final player = find.bySemanticsLabel(RegExp('^Torna alla radio:'));
+    final before = tester.getRect(map);
+    final barBefore = tester.getRect(player);
+    await tester.dragFrom(before.center, const Offset(0, -140));
+    await tester.pumpAndSettle();
+    expect(tester.getRect(map).top, lessThan(before.top));
+    expect(tester.getRect(player), barBefore);
+    await tester.ensureVisible(find.text('Germania').last);
+    await tester.pumpAndSettle();
+    expect(
+      tester.getRect(find.text('Germania').last).bottom,
+      lessThan(barBefore.top),
+    );
+  });
+
+  testWidgets('a zoomed map pans vertically without scrolling the page', (
+    tester,
+  ) async {
+    await openRadio(tester);
+    await openDiaryPage(tester);
+    final map = find.byKey(const ValueKey('diary-map'));
+    final controller = tester
+        .widget<DiaryMap>(find.byType(DiaryMap))
+        .controller;
+    final mapTop = tester.getTopLeft(map).dy;
+    controller.value = controller.value.clone()..scaleByDouble(2, 2, 1, 1);
+    await tester.pump();
+    final oldY = controller.value.getTranslation().y;
+    final gesture = await tester.startGesture(tester.getCenter(map));
+    await tester.pump();
+    await gesture.moveBy(const Offset(0, -30));
+    await tester.pump();
+    await gesture.moveBy(const Offset(0, -50));
+    await gesture.up();
+    await tester.pumpAndSettle();
+    expect(controller.value.getTranslation().y, lessThan(oldY));
+    expect(tester.getTopLeft(map).dy, mapTop);
+  });
 
   testWidgets('the diary opens from the radio and counts the stops', (
     tester,
@@ -118,7 +164,12 @@ void main() {
     await openDiaryPage(tester);
     expect(find.byType(DiaryPage), findsOneWidget);
     expect(find.text('2 paesi · 14 h'), findsOneWidget);
-    expect(find.textContaining('Station 1 · Brasile · 9 h'), findsOneWidget);
+    final topStation = find.textContaining('Station 1 · Brasile · 9 h');
+    expect(topStation, findsOneWidget);
+    expect(
+      DefaultTextStyle.of(tester.element(topStation)).style.color,
+      TravelRadioPalette.screenInk,
+    );
     double top(String text) => tester.getTopLeft(find.text(text).last).dy;
     expect(top('Brasile'), lessThan(top('Germania')));
     expect(
@@ -184,7 +235,7 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
     addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
     await openRadio(tester);
-    await tester.tap(find.bySemanticsLabel('Apri il diario di viaggio'));
+    await tester.tap(find.byTooltip('Apri il diario di viaggio'));
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
     final map = tester.getSize(find.byKey(const ValueKey('diary-map')));
@@ -192,7 +243,7 @@ void main() {
     expect(find.byKey(const ValueKey('diary-list')), findsOneWidget);
   });
 
-  testWidgets('on a tall phone the label sits in the map corner', (
+  testWidgets('on a tall phone the header icon opens the diary', (
     tester,
   ) async {
     tester.view.physicalSize = const Size(412, 915);
@@ -200,9 +251,10 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
     await openRadio(tester);
-    await tester.tap(find.text('DIARIO ›'));
+    await tester.tap(find.byKey(const ValueKey('diary-open')));
     await tester.pumpAndSettle();
     expect(find.byType(DiaryPage), findsOneWidget);
+    expect(find.text('Tocca un paese'), findsNothing);
   });
 
   testWidgets("a country the atlas does not name shows Radio Browser's name", (
@@ -268,12 +320,12 @@ void main() {
     expect(notice.bottom, lessThanOrEqualTo(bar.top));
   });
 
-  testWidgets('the map invites a tap until a country is picked', (
-    tester,
-  ) async {
+  testWidgets('the map stays free of the tap invitation', (tester) async {
     await openRadio(tester);
     await openDiaryPage(tester);
-    expect(find.text('Tocca un paese'), findsOneWidget);
+    expect(find.text('Tocca un paese'), findsNothing);
+    await tester.ensureVisible(find.text('Brasile').last);
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Brasile').last);
     await tester.pumpAndSettle();
     await tester.binding.handlePopRoute();
@@ -307,7 +359,7 @@ void main() {
 
   testWidgets('with reduced motion the bar does not slide in', (tester) async {
     await openRadio(tester);
-    await tester.tap(find.bySemanticsLabel('Apri il diario di viaggio'));
+    await tester.tap(find.byTooltip('Apri il diario di viaggio'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 16));
     final bar = find.bySemanticsLabel(RegExp('^Torna alla radio:'));

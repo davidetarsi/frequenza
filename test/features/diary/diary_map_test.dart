@@ -14,8 +14,9 @@ void main() {
   );
 
   Future<(List<String>, TransformationController)> show(
-    WidgetTester tester,
-  ) async {
+    WidgetTester tester, {
+    double? height,
+  }) async {
     final tapped = <String>[];
     final controller = TransformationController();
     await tester.pumpWidget(
@@ -24,7 +25,7 @@ void main() {
           alignment: Alignment.topLeft,
           child: SizedBox(
             width: width,
-            height: worldDotRows.length * cell,
+            height: height ?? worldDotRows.length * cell,
             child: DiaryMap(
               summary: const DiarySummary.empty(),
               selected: null,
@@ -38,8 +39,105 @@ void main() {
         ),
       ),
     );
+    await tester.pump();
     return (tapped, controller);
   }
+
+  testWidgets('a tall viewport is filled without stretching the world', (
+    tester,
+  ) async {
+    final (tapped, controller) = await show(tester, height: 480);
+    final map = tester.getSize(find.byKey(const ValueKey('diary-map-paint')));
+    expect(map.height, closeTo(480, 0.01));
+    expect(
+      map.width / map.height,
+      closeTo(worldDotRows.first.length / worldDotRows.length, 0.001),
+    );
+    final paintBox = tester.renderObject<RenderBox>(
+      find.byKey(const ValueKey('diary-map-paint')),
+    );
+    final point = brasilia * (map.width / width);
+    controller.value = Matrix4.identity()
+      ..translateByDouble(
+        (width / 2 - point.dx).clamp(width - map.width, 0),
+        0,
+        0,
+        1,
+      );
+    await tester.pump();
+    await tester.tapAt(paintBox.localToGlobal(point));
+    expect(tapped, ['BR']);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('button zoom interpolates and a gesture interrupts it', (
+    tester,
+  ) async {
+    final (_, controller) = await show(tester);
+    await tester.tap(find.byTooltip('Ingrandisci'));
+    await tester.pump();
+    expect(controller.value.getMaxScaleOnAxis(), 1);
+    await tester.pump(const Duration(milliseconds: 80));
+    final scale = controller.value.getMaxScaleOnAxis();
+    expect(scale, greaterThan(1));
+    expect(scale, lessThan(2));
+    await tester.dragFrom(const Offset(150, 80), const Offset(-25, -10));
+    final stopped = controller.value.getMaxScaleOnAxis();
+    await tester.pumpAndSettle();
+    expect(controller.value.getMaxScaleOnAxis(), closeTo(stopped, 0.001));
+  });
+
+  testWidgets('the tall viewport can be dragged from its lower half', (
+    tester,
+  ) async {
+    final (tapped, controller) = await show(tester, height: 480);
+    final before = controller.value.getTranslation().x;
+    await tester.dragFrom(const Offset(160, 380), const Offset(70, 0));
+    await tester.pumpAndSettle();
+    expect(controller.value.getTranslation().x, greaterThan(before));
+    expect(tapped, isEmpty);
+  });
+
+  testWidgets('pinch scales continuously without selecting a country', (
+    tester,
+  ) async {
+    final (tapped, controller) = await show(tester, height: 480);
+    final first = await tester.startGesture(const Offset(140, 250), pointer: 1);
+    final second = await tester.startGesture(
+      const Offset(220, 250),
+      pointer: 2,
+    );
+    await tester.pump();
+    await first.moveTo(const Offset(130, 250));
+    await second.moveTo(const Offset(230, 250));
+    await tester.pump();
+    final start = controller.value.getMaxScaleOnAxis();
+    await first.moveTo(const Offset(120, 250));
+    await second.moveTo(const Offset(240, 250));
+    await tester.pump();
+    final middle = controller.value.getMaxScaleOnAxis();
+    await first.moveTo(const Offset(110, 250));
+    await second.moveTo(const Offset(250, 250));
+    await tester.pump();
+    final end = controller.value.getMaxScaleOnAxis();
+    expect(middle, greaterThan(start));
+    expect(end, greaterThan(middle));
+    await first.up();
+    await second.up();
+    await tester.pumpAndSettle();
+    expect(tapped, isEmpty);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('button zoom respects reduced motion', (tester) async {
+    tester.platformDispatcher.accessibilityFeaturesTestValue =
+        const FakeAccessibilityFeatures(disableAnimations: true);
+    addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
+    final (_, controller) = await show(tester);
+    await tester.tap(find.byTooltip('Ingrandisci'));
+    expect(controller.value.getMaxScaleOnAxis(), 2);
+    await tester.pumpAndSettle();
+  });
 
   testWidgets('a tap on Brasilia picks Brazil', (tester) async {
     final (tapped, _) = await show(tester);
