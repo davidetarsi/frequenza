@@ -1,7 +1,7 @@
 name: frequenza
 description: "Ascolto e scoperta di web radio nel mondo."
 publish_to: 'none'
-version: 0.3.0+4
+version: 0.4.0+5
 
 environment:
   sdk: ^3.10.4
