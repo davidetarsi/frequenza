@@ -31,7 +31,10 @@ GoRouter appRouter(Ref ref, String appName) {
         ? AppRoutes.welcome
         : null,
     routes: [
-      GoRoute(path: AppRoutes.welcome, builder: (_, _) => const WelcomePage()),
+      GoRoute(
+        path: AppRoutes.welcome,
+        builder: (_, _) => WelcomePage(appName: appName),
+      ),
       GoRoute(
         path: AppRoutes.home,
         builder: (context, _) => RadioPage(

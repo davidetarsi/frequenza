@@ -66,6 +66,7 @@ class RadioCabinet extends StatelessWidget {
     this.dialTurns = 0,
     this.dialGlow = 0,
     this.screenKey,
+    this.dialKey,
     this.onScreenTap,
     this.screenLabel,
     this.screenLabelSemantics,
@@ -73,6 +74,7 @@ class RadioCabinet extends StatelessWidget {
 
   /// Marks the screen, so a page can grow out of it.
   final GlobalKey? screenKey;
+  final GlobalKey? dialKey;
 
   /// A tap on the screen outside the song: it opens the diary.
   final VoidCallback? onScreenTap;
@@ -388,6 +390,7 @@ class RadioCabinet extends StatelessWidget {
           child: const CustomPaint(painter: _SpeakerPainter()),
         ),
         SizedBox(
+          key: dialKey,
           width: diameter,
           child: Column(
             children: [

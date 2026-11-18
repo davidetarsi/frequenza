@@ -331,3 +331,18 @@ Branch `feat/informazioni-e-vite`, sopra `feat/suono-sintonia`.
 - **Se il link non si apre:** compare «Impossibile aprire il link», come per GitHub.
 - **Da provare sul telefono:** la voce apre il modulo con telefono e versione già compilati.
 
+
+## Onboarding nella home — 18 novembre 2026
+
+- Branch `feat/onboarding-guidato`, da `develop` dopo il rilascio 0.4.0+5. La guida usa `RadioPage` e `RadioCabinet` reali. Suggerimenti nel display con freccia e componente evidenziato, nell'ordine manopola, preferiti, diario. Nessun pulsante Avanti o Salta visibile.
+- Primo titolo approvato «Accendi la radio». Corpo esatto da `welcomeBody`: «Ogni giro è una radio in diretta da qualche parte nel mondo. Quelle che ami le tieni con il cuore.»
+- Fascia EN/IT disponibile nei tre step. Primo passo attivato solo dalla manopola, che avvia davvero il primo viaggio. Negli altri due basta un tocco sulla pagina. Le azioni della radio restano protette durante la guida. Indietro Android chiude la guida.
+- Completamento salvato all'uscita, senza far interrompere l'ascolto. Dissolvenza della guida e della fascia, poi transizione esistente alla home con Hero della radio. Con movimento ridotto la dissolvenza e il volo Hero sono disabilitati.
+- Copy scorrevole nel display su schermi piccoli, in orizzontale e con testo ingrandito. Azioni semantiche per proseguire con lettore di schermo. Traduzioni IT/EN rigenerate.
+- Screenshot nativi controllati nei tre step. Rigenerazione, schema database, formato, analisi statica e controlli Node/Python superati con Flutter 3.38.5. Suite Flutter finale: 444 test superati, inclusi cambio lingua durante la guida, avvio viaggio, completamento persistente, Indietro Android, testo grande, orizzontale, movimento ridotto e azioni del lettore di schermo. Resta il collaudo su telefono di lettura, tocco e passaggio finale alla home.
+
+### Guida dopo l'aggiornamento
+
+- La revisione della guida è ora salvata in `app.welcomeRevision` (attuale: 2), separata dalla versione dell'app. Chi ha visto solo il vecchio onboarding vede la nuova guida una volta. Nuove installazioni mostrano direttamente la nuova guida, senza passare da quella precedente. Dopo completamento o chiusura con Indietro, i successivi avvii e aggiornamenti ordinari aprono la home.
+- Il vecchio flag resta per compatibilità e per distinguere i nuovi utenti nelle statistiche: rivedere la guida dopo l'aggiornamento non conta come prima installazione. Per riproporla in futuro bisogna incrementare esplicitamente la revisione.
+- Verificate tutte le stringhe IT/EN della guida e rigenerato il provider. Analisi statica pulita, 24 test mirati superati (installazione nuova, vecchio onboarding, revisione corrente/futura, riavvio, migrazione nella pagina, analytics e bootstrap).

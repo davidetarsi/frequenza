@@ -6,10 +6,14 @@ import '../../analytics/domain/app_event.dart';
 
 part 'welcome_seen.g.dart';
 
-/// Whether the welcome page has been seen: it shows only on the first launch.
+/// Whether this revision of the guide has been seen, including after an update.
 @Riverpod(keepAlive: true)
 class WelcomeSeen extends _$WelcomeSeen {
   static const _key = 'app.welcomeSeen';
+  static const revisionKey = 'app.welcomeRevision';
+
+  // Increment only when a changed guide should be shown again, not per release.
+  static const currentRevision = 2;
 
   /// Unreadable preferences count as seen: bootstrap waits for this value,
   /// and the radio must open whatever happens.
@@ -17,7 +21,18 @@ class WelcomeSeen extends _$WelcomeSeen {
   Future<bool> build() async {
     try {
       final preferences = await SharedPreferences.getInstance();
-      return preferences.getBool(_key) ?? false;
+      return (preferences.getInt(revisionKey) ?? 0) >= currentRevision;
+    } catch (_) {
+      return true;
+    }
+  }
+
+  /// Used for launch analytics: seeing a revised guide is not a first install.
+  Future<bool> hasSeenAnyGuide() async {
+    try {
+      final preferences = await SharedPreferences.getInstance();
+      return (preferences.getBool(_key) ?? false) ||
+          (preferences.getInt(revisionKey) ?? 0) > 0;
     } catch (_) {
       return true;
     }
@@ -30,6 +45,7 @@ class WelcomeSeen extends _$WelcomeSeen {
     ref.read(analyticsProvider).track(const AppEvent.welcomeCompleted());
     try {
       final preferences = await SharedPreferences.getInstance();
+      await preferences.setInt(revisionKey, currentRevision);
       await preferences.setBool(_key, true);
     } catch (_) {}
   }
