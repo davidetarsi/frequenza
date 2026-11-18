@@ -212,6 +212,8 @@ abstract final class RadioFavoritesDesign {
   static const titleGap = 5.0;
   static const closeIconSize = 20.0;
   static const contentGap = 20.0;
+  static const pullToClose = 24.0;
+  static const mutedOpacity = 0.78;
   static const emptyIconSize = 28.0;
   static const footerGap = 10.0;
   static const footerIconSize = 14.0;
@@ -350,8 +352,6 @@ abstract final class DiaryDesign {
   static const barHeight = 6.0;
   static const rankNameWidth = 96.0;
   static const rankTimeWidth = 52.0;
-  static const sheetRadius = Radius.circular(20);
-  static const sheetPadding = EdgeInsets.fromLTRB(16, 8, 16, 16);
   static const sheetRow = 54.0;
   static const sheetButton = 48.0;
   static const sheetMaxShare = 0.62;
@@ -365,9 +365,6 @@ abstract final class DiaryDesign {
   /// than [mapMinHeight] unless the list would drop under [listMinHeight].
   static const mapShare = 0.6;
   static const listMinHeight = 64.0;
-
-  /// How far down a scrolled sheet must be pulled past its top to close.
-  static const sheetPullToClose = 24.0;
 
   /// The corner of the diary's panel while it grows out of the screen.
   static const growRadius = 16.0;

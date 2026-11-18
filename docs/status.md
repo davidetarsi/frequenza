@@ -51,6 +51,14 @@ Il punto di ripresa di ogni sessione: si legge questo, poi solo il piano attivo.
 - Rimossa la freccia dalla CTA «Vola in …».
 - Verificati 44 test mirati con Flutter 3.38.5, inclusi allineamento del filtro, chiusura dei tre tipi di scheda paese, testo grande e layout orizzontale. Aperto il riscontro visivo su telefono.
 
+## Bottom sheet unico — 18 novembre 2026
+
+- Preferiti, Impostazioni e paese usano `TravelSheet`: superficie, raggi, padding, titolo, maniglia, X, lista e chiusura sono definiti nel componente comune. `CountrySheet` prepara soltanto i contenuti del paese.
+- `TravelSheetPresentation` seleziona l'apertura ridimensionabile nella route modale oppure il foglio integrato nel diario, che adatta l'altezza ai contenuti entro il limite disponibile. Il callback del paese chiude la scheda nel diario.
+- La chiusura trascinando verso il basso del foglio integrato è gestita da `TravelSheet`. Per le route modali il componente conserva `DraggableScrollableSheet` e il messenger dei messaggi con Annulla. Le liste integrate hanno uno scorrimento indipendente dalla pagina.
+- Token di superficie e spaziature condivisi anche per il paese; intestazione resa privata al componente. Eliminati contenitore, intestazione e gestione del trascinamento duplicati nella feature diario.
+- Verificati 52 test mirati con Flutter 3.38.5, inclusi i tre tipi di paese, Preferiti, Impostazioni, canzoni e messaggi. Screenshot Flutter del paese aggiornati con la superficie standard. Riscontro visivo su telefono aperto.
+
 ## Prossimi passi, in ordine
 
 1. **Cartolina del luogo:** sagoma e cartolina sulla radio, con l'animazione da definire con Davide; poi la collezione nel diario e le foto. Design in `superpowers/specs/2026-11-16-cartolina-design.md`.
