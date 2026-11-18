@@ -59,6 +59,24 @@ Il punto di ripresa di ogni sessione: si legge questo, poi solo il piano attivo.
 - Token di superficie e spaziature condivisi anche per il paese; intestazione resa privata al componente. Eliminati contenitore, intestazione e gestione del trascinamento duplicati nella feature diario.
 - Verificati 52 test mirati con Flutter 3.38.5, inclusi i tre tipi di paese, Preferiti, Impostazioni, canzoni e messaggi. Screenshot Flutter del paese aggiornati con la superficie standard. Riscontro visivo su telefono aperto.
 
+## Offuscamento graduale del diario — 18 novembre 2026
+
+- Branch `fix/sfocatura-graduale`, da `develop` dopo il merge della PR #41.
+- Sostituito il filtro uniforme con `BottomFade`: sfumatura continua di opacità verso il verde della pagina, trasparente al bordo superiore del player e più coprente verso il fondo. Player e comandi rimangono nitidi.
+- La fascia è creata solo quando lo stato radio prevede il player. Con radio spenta il diario non riserva né disegna una fascia filtrata. Con scheda paese aperta il player e la sfumatura sono nascosti insieme.
+- Verificati 31 test con Flutter 3.38.5, inclusa la verifica pixel su fondo ad alto contrasto della continuità della sfumatura. Regressioni per diario senza player, allineamento al bordo superiore e navigazione. Analisi senza segnalazioni. Riscontro visivo su telefono aperto.
+
+## Intestazione, filtri e apertura del diario — 18 novembre 2026
+
+- Riepilogo paesi/tempo sulla stessa riga del titolo e allineato al margine destro dei contenuti, come richiesto da Davide. Larghezza limitata per gestire schermi stretti e testo ingrandito. Il totale usa minuti localizzati, includendo il tempo nei paesi di passaggio, e conserva l'indicazione sotto il minuto.
+- Apertura da 420 a 520 ms con `easeInOutCubic`; chiusura a 340 ms con `easeInCubic`.
+- Interpretati i pulsanti da ingrandire come i filtri periodo del diario mostrati nello screenshot: padding da 12/8 a 14/10 punti, spazio fra pulsanti da 6 a 8 punti. Token in `DiaryDesign`.
+- Davide ha chiarito che i pulsanti da ingrandire sono quelli della home. Applicati simboli da 26 punti (prima 24), area di tocco 48×48 e gap 4 punti (prima 0), tramite tema locale della riga. In orizzontale titolo e azioni su righe distinte. Filtri del diario conservati per la revisione visiva richiesta.
+- Per «Prossima fermata», proposta di riga dedicata sopra la radio se «Ovunque» diventa un selettore. Scelta del selettore da confermare con Davide.
+- Verificati 41 test di diario, schede paese e home con Flutter 3.38.5. Analisi senza segnalazioni. Screenshot aggiornati. Corretto nel test helper il limite di clamp per un errore di arrotondamento floating-point del viewport.
+- Ultima verifica dell’intestazione: 30 test di diario e schede paese superati, analisi pulita. Controllati stessa riga del titolo e margine destro. Screenshot aggiornati con icone home a 26 punti e riepilogo sulla riga del titolo.
+- Riscontro visivo su telefono aperto per la nuova apertura e la tappabilità dei pulsanti.
+
 ## Prossimi passi, in ordine
 
 1. **Cartolina del luogo:** sagoma e cartolina sulla radio, con l'animazione da definire con Davide; poi la collezione nel diario e le foto. Design in `superpowers/specs/2026-11-16-cartolina-design.md`.

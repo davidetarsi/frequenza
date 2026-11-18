@@ -500,9 +500,15 @@ void main() {
       expect(radio.center.dx, moreOrLessEquals(width / 2, epsilon: .5));
       final heading = tester.getRect(find.text('frequenza'));
       expect(heading.left, moreOrLessEquals(radio.left, epsilon: .5));
-      // The icon button keeps 4 points of its own touch padding.
+      final favorites = tester.getRect(
+        find.byKey(const ValueKey('favorites-open')),
+      );
+      final diary = tester.getRect(find.byKey(const ValueKey('diary-open')));
+      expect(favorites.width, moreOrLessEquals(48, epsilon: .01));
+      expect(favorites.height, moreOrLessEquals(48, epsilon: .01));
+      expect(diary.left - favorites.right, moreOrLessEquals(4, epsilon: .5));
       final settings = tester.getRect(find.byTooltip('Impostazioni'));
-      expect(settings.right, moreOrLessEquals(radio.right - 4, epsilon: .5));
+      expect(settings.right, moreOrLessEquals(radio.right, epsilon: .5));
     });
   }
 }

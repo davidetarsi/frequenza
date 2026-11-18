@@ -15,7 +15,7 @@ abstract final class AppMotion {
   static const countPulse = Duration(milliseconds: 400);
 
   /// The diary growing out of the radio's screen, and back.
-  static const diaryOpen = Duration(milliseconds: 420);
+  static const diaryOpen = Duration(milliseconds: 520);
   static const diaryClose = Duration(milliseconds: 340);
 
   /// The player bar rises in the last part of the opening, from below.

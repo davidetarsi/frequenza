@@ -47,6 +47,7 @@ void main() {
   Future<(MemoryDiary, RecordingAnalytics, MemorySongs)> openRadio(
     WidgetTester tester, {
     bool empty = false,
+    bool radioOff = false,
     String? title,
     MemoryDiary? log,
     bool reducedMotion = true,
@@ -82,12 +83,14 @@ void main() {
         overrides: [
           radioControllerProvider.overrideWith(
             () => BarRadio(
-              RadioSession.onAir(
-                const Journey(landed: kexp, trips: 1),
-                kexp,
-                playback: OnAirPlayback.playing,
-                trackTitle: title,
-              ),
+              radioOff
+                  ? const RadioSession.off(Journey())
+                  : RadioSession.onAir(
+                      const Journey(landed: kexp, trips: 1),
+                      kexp,
+                      playback: OnAirPlayback.playing,
+                      trackTitle: title,
+                    ),
             ),
           ),
           radioRepositoryProvider.overrideWithValue(FakeRadioRepository()),
@@ -113,10 +116,20 @@ void main() {
       find.byType(DiaryPage).evaluate().isEmpty &&
       !Navigator.of(tester.element(find.byType(RadioPage))).canPop();
 
-  testWidgets('the backdrop blur starts at the player top', (tester) async {
+  testWidgets('a diary without a player has no filtered strip', (tester) async {
+    await openRadio(tester, radioOff: true);
+    await openDiaryPage(tester);
+    expect(find.byType(BackdropFilter), findsNothing);
+    expect(find.byKey(const ValueKey('player-backdrop')), findsNothing);
+    expect(find.byType(DiaryPage), findsOneWidget);
+  });
+
+  testWidgets('the bottom fade starts at the player top', (tester) async {
     await openRadio(tester);
     await openDiaryPage(tester);
-    final filter = tester.getRect(find.byType(BackdropFilter));
+    final filter = tester.getRect(
+      find.byKey(const ValueKey('player-backdrop')),
+    );
     final player = tester.getRect(find.byType(RadioBar));
     expect(filter.top, closeTo(player.top, 0.01));
     expect(filter.left, lessThan(player.left));
@@ -175,8 +188,19 @@ void main() {
     final (_, analytics, _) = await openRadio(tester);
     await openDiaryPage(tester);
     expect(find.byType(DiaryPage), findsOneWidget);
-    expect(find.text('2 paesi · 14 h'), findsOneWidget);
+    expect(find.text('2 paesi · 843 min'), findsOneWidget);
+    expect(
+      tester.getCenter(find.byKey(const ValueKey('diary-summary'))).dy,
+      tester.getCenter(find.text('DIARIO DI VIAGGIO')).dy,
+    );
     final topStation = find.textContaining('Station 1 · Brasile · 9 h');
+    final stationCard = find
+        .ancestor(of: topStation, matching: find.byType(InkWell))
+        .first;
+    expect(
+      tester.getBottomRight(find.byKey(const ValueKey('diary-summary'))).dx,
+      tester.getBottomRight(stationCard).dx,
+    );
     expect(topStation, findsOneWidget);
     expect(
       DefaultTextStyle.of(tester.element(topStation)).style.color,
@@ -196,7 +220,7 @@ void main() {
     await openDiaryPage(tester);
     await tester.tap(find.text('7 giorni'));
     await tester.pumpAndSettle();
-    expect(find.text('1 paese · 9 h'), findsOneWidget);
+    expect(find.text('1 paese · 543 min'), findsOneWidget);
     expect(analytics.events.last, AppEvent.diaryPeriodChosen(DiaryPeriod.week));
   });
 
@@ -355,7 +379,7 @@ void main() {
     log.hold = true;
     await tester.tap(find.text('7 giorni'));
     await tester.pumpAndSettle();
-    expect(find.text('2 paesi · 14 h'), findsOneWidget);
+    expect(find.text('2 paesi · 843 min'), findsOneWidget);
     expect(find.textContaining('Il diario si riempie'), findsNothing);
   });
 

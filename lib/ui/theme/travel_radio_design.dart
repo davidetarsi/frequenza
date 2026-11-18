@@ -34,6 +34,9 @@ abstract final class TravelRadioLayout {
   static const referenceTextSize = 16.0;
   static const largeTextThreshold = 20.0;
   static const headingTracking = -1.0;
+  static const headerIconSize = 26.0;
+  static const headerActionSize = 48.0;
+  static const headerActionGap = 4.0;
   static const captionLineHeight = 1.1;
   static const captionTracking = 0.0;
 }
@@ -333,10 +336,14 @@ abstract final class DiaryDesign {
   static const mapMaxShare = 0.45;
   static const panelRadius = Radius.circular(22);
   static const panelBorder = 3.0;
-  static const playerBackdropBlur = 4.0;
-  static const playerBackdropTint = 0.22;
+  static const playerBackdropTint = 0.88;
   static const barInset = EdgeInsets.fromLTRB(12, 12, 12, 14);
   static const pagePadding = EdgeInsets.fromLTRB(16, 14, 16, 10);
+  static const periodGap = 8.0;
+  static const periodPadding = EdgeInsets.symmetric(
+    horizontal: 14,
+    vertical: 10,
+  );
   static const titleText = TextStyle(
     fontSize: 13,
     letterSpacing: 2.4,
