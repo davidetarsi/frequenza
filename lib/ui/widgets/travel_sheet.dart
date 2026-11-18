@@ -71,58 +71,29 @@ class TravelSheet extends StatelessWidget {
                   controller: scroll,
                   padding: RadioFavoritesDesign.sheetPadding,
                   children: [
-                    Center(
-                      child: Container(
-                        width: RadioFavoritesDesign.handleSize.width,
-                        height: RadioFavoritesDesign.handleSize.height,
-                        decoration: BoxDecoration(
-                          color: p.trim,
-                          borderRadius: RadioFavoritesDesign.handleRadius,
-                        ),
+                    TravelSheetHeader(
+                      onClose: () => Navigator.pop(context),
+                      title: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            title,
+                            style: Theme.of(context).textTheme.headlineSmall
+                                ?.copyWith(
+                                  color: p.ink,
+                                  fontWeight: FontWeight.w600,
+                                  letterSpacing:
+                                      RadioFavoritesDesign.titleTracking,
+                                ),
+                          ),
+                          if (subtitle case final subtitle?) ...[
+                            const SizedBox(
+                              height: RadioFavoritesDesign.titleGap,
+                            ),
+                            Text(subtitle, style: TextStyle(color: p.muted)),
+                          ],
+                        ],
                       ),
-                    ),
-                    const SizedBox(height: RadioFavoritesDesign.headerGap),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                title,
-                                style: Theme.of(context).textTheme.headlineSmall
-                                    ?.copyWith(
-                                      color: p.ink,
-                                      fontWeight: FontWeight.w600,
-                                      letterSpacing:
-                                          RadioFavoritesDesign.titleTracking,
-                                    ),
-                              ),
-                              if (subtitle case final subtitle?) ...[
-                                const SizedBox(
-                                  height: RadioFavoritesDesign.titleGap,
-                                ),
-                                Text(
-                                  subtitle,
-                                  style: TextStyle(color: p.muted),
-                                ),
-                              ],
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: AppSpacing.standard),
-                        AppIconButton(
-                          variant: AppIconButtonVariant.tonal,
-                          backgroundColor: p.paperRaised,
-                          foregroundColor: p.ink,
-                          tooltip: LocaleKeys.close.tr(context: context),
-                          onPressed: () => Navigator.pop(context),
-                          icon: const Icon(
-                            Icons.close,
-                            size: RadioFavoritesDesign.closeIconSize,
-                          ),
-                        ),
-                      ],
                     ),
                     const SizedBox(height: RadioFavoritesDesign.contentGap),
                     ...children,
@@ -133,6 +104,73 @@ class TravelSheet extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Shared handle, heading and accessible close action for the app's sheets.
+class TravelSheetHeader extends StatelessWidget {
+  const TravelSheetHeader({
+    super.key,
+    required this.title,
+    required this.onClose,
+    this.foregroundColor,
+    this.closeBackgroundColor,
+  });
+
+  final Widget title;
+  final VoidCallback onClose;
+  final Color? foregroundColor, closeBackgroundColor;
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = TravelRadioPalette.of(context);
+    final ink = foregroundColor ?? palette.ink;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Center(
+          child: ExcludeSemantics(
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: onClose,
+              child: SizedBox.square(
+                dimension: kMinInteractiveDimension,
+                child: Center(
+                  child: Container(
+                    width: RadioFavoritesDesign.handleSize.width,
+                    height: RadioFavoritesDesign.handleSize.height,
+                    decoration: BoxDecoration(
+                      color: ink.withValues(alpha: 0.6),
+                      borderRadius: RadioFavoritesDesign.handleRadius,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+        Row(
+          children: [
+            Expanded(child: title),
+            const SizedBox(width: AppSpacing.standard),
+            SizedBox.square(
+              dimension: kMinInteractiveDimension,
+              child: AppIconButton(
+                variant: AppIconButtonVariant.tonal,
+                backgroundColor: closeBackgroundColor ?? palette.paperRaised,
+                foregroundColor: ink,
+                tooltip: LocaleKeys.close.tr(context: context),
+                onPressed: onClose,
+                icon: const Icon(
+                  Icons.close,
+                  size: RadioFavoritesDesign.closeIconSize,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 }

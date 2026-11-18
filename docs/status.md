@@ -43,6 +43,14 @@ Il punto di ripresa di ogni sessione: si legge questo, poi solo il piano attivo.
 - Revisione screenshot: corretto il contrasto della stazione più ascoltata in tema chiaro impostando esplicitamente il colore del testo sulla superficie scura. Regressione aggiunta al test pagina, 18 test superati.
 - Resta il collaudo visivo e dei gesti su telefono.
 
+## Allineamento sfocatura e chiusura dei fogli — 18 novembre 2026
+
+- Branch `fix/chiusura-fogli-e-sfocatura`, da `develop` dopo il merge della PR #40.
+- Margine superiore del player spostato fuori dal filtro. La sfocatura parte dal bordo superiore della barra e si muove con essa durante la transizione.
+- Intestazione condivisa `TravelSheetHeader` in `lib/ui/widgets/travel_sheet.dart`: maniglia, titolo e X a destra con area di tocco da 48 punti. Usata da Preferiti, Impostazioni e schede paese. La chiusura del paese passa al callback del diario.
+- Rimossa la freccia dalla CTA «Vola in …».
+- Verificati 44 test mirati con Flutter 3.38.5, inclusi allineamento del filtro, chiusura dei tre tipi di scheda paese, testo grande e layout orizzontale. Aperto il riscontro visivo su telefono.
+
 ## Prossimi passi, in ordine
 
 1. **Cartolina del luogo:** sagoma e cartolina sulla radio, con l'animazione da definire con Davide; poi la collezione nel diario e le foto. Design in `superpowers/specs/2026-11-16-cartolina-design.md`.

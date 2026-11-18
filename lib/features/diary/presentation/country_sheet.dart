@@ -6,6 +6,7 @@ import '../../../ui/theme/app_spacing.dart';
 import '../../../ui/theme/travel_radio_design.dart';
 import '../../../ui/theme/travel_radio_palette.dart';
 import '../../../ui/widgets/code_badge.dart';
+import '../../../ui/widgets/travel_sheet.dart';
 import '../../radio/domain/radio_station.dart';
 import '../domain/diary_summary.dart';
 import 'country_name.dart';
@@ -117,15 +118,14 @@ class CountrySheet extends StatelessWidget {
           style: theme.textTheme.bodyMedium?.copyWith(color: ink),
         ),
         const SizedBox(height: 14),
-        FilledButton.icon(
+        FilledButton(
           style: FilledButton.styleFrom(
             backgroundColor: TravelRadioPalette.accent,
             foregroundColor: TravelRadioPalette.screenInk,
             minimumSize: const Size.fromHeight(DiaryDesign.sheetButton),
           ),
           onPressed: () => onFlyRandom(code),
-          icon: const Icon(Icons.arrow_forward),
-          label: Text(t(LocaleKeys.diaryFlyTo, [name])),
+          child: Text(t(LocaleKeys.diaryFlyTo, [name])),
         ),
         const SizedBox(height: 8),
         Text(
@@ -171,69 +171,46 @@ class CountrySheet extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Center(
-                      child: Semantics(
-                        button: true,
-                        label: t(LocaleKeys.diaryCloseSheet),
-                        onTap: onClose,
-                        excludeSemantics: true,
-                        child: GestureDetector(
-                          behavior: HitTestBehavior.opaque,
-                          onTap: onClose,
-                          // A thin bar, in an area big enough to touch.
-                          child: SizedBox.square(
-                            dimension: DiaryDesign.handleTouch,
-                            child: Center(
-                              child: Container(
-                                width: DiaryDesign.handleWidth,
-                                height: DiaryDesign.handleHeight,
-                                decoration: BoxDecoration(
-                                  color: muted,
-                                  borderRadius: BorderRadius.circular(
-                                    DiaryDesign.handleHeight / 2,
-                                  ),
+                    TravelSheetHeader(
+                      onClose: onClose,
+                      foregroundColor: ink,
+                      closeBackgroundColor: ink.withValues(alpha: 0.08),
+                      title: Row(
+                        spacing: 10,
+                        children: [
+                          IconTheme(
+                            data: const IconThemeData(
+                              color: TravelRadioPalette.screenInk,
+                            ),
+                            child: CodeBadge(
+                              _code,
+                              backgroundColor: TravelRadioPalette.screen,
+                            ),
+                          ),
+                          Expanded(
+                            child: Text(
+                              name,
+                              style: theme.textTheme.titleLarge?.copyWith(
+                                color: ink,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                          if (summary case final summary?)
+                            Flexible(
+                              child: Text(
+                                summary,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                textAlign: TextAlign.end,
+                                style: DiaryDesign.numbersText.copyWith(
+                                  color: ink,
+                                  fontSize: 14,
                                 ),
                               ),
                             ),
-                          ),
-                        ),
+                        ],
                       ),
-                    ),
-                    Row(
-                      spacing: 10,
-                      children: [
-                        IconTheme(
-                          data: const IconThemeData(
-                            color: TravelRadioPalette.screenInk,
-                          ),
-                          child: CodeBadge(
-                            _code,
-                            backgroundColor: TravelRadioPalette.screen,
-                          ),
-                        ),
-                        Expanded(
-                          child: Text(
-                            name,
-                            style: theme.textTheme.titleLarge?.copyWith(
-                              color: ink,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ),
-                        if (summary case final summary?)
-                          Flexible(
-                            child: Text(
-                              summary,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              textAlign: TextAlign.end,
-                              style: DiaryDesign.numbersText.copyWith(
-                                color: ink,
-                                fontSize: 14,
-                              ),
-                            ),
-                          ),
-                      ],
                     ),
                     const SizedBox(height: 10),
                     ...body,

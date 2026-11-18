@@ -208,7 +208,6 @@ abstract final class RadioFavoritesDesign {
   static const shadowOffset = Offset(0, -5);
   static const handleSize = Size(36, 4);
   static const handleRadius = BorderRadius.all(Radius.circular(4));
-  static const headerGap = 22.0;
   static const titleTracking = -.6;
   static const titleGap = 5.0;
   static const closeIconSize = 20.0;
@@ -366,11 +365,6 @@ abstract final class DiaryDesign {
   /// than [mapMinHeight] unless the list would drop under [listMinHeight].
   static const mapShare = 0.6;
   static const listMinHeight = 64.0;
-
-  /// The close handle of the country sheet: a thin bar in a touch area.
-  static const handleTouch = 48.0;
-  static const handleWidth = 40.0;
-  static const handleHeight = 4.0;
 
   /// How far down a scrolled sheet must be pulled past its top to close.
   static const sheetPullToClose = 24.0;

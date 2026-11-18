@@ -298,13 +298,45 @@ void main() {
     );
   });
 
-  testWidgets('the close handle is big enough to touch', (tester) async {
+  testWidgets('every country sheet closes with the right-hand X', (
+    tester,
+  ) async {
+    await openDiaryPage(tester);
+    for (final code in ['BR', 'CL', 'EC']) {
+      await tapCountry(tester, code);
+      final sheet = find.byKey(const ValueKey('country-sheet'));
+      final close = find.descendant(
+        of: sheet,
+        matching: find.byTooltip('Chiudi'),
+      );
+      expect(close, findsOneWidget);
+      expect(
+        tester.getCenter(close).dx,
+        greaterThan(tester.getCenter(sheet).dx),
+      );
+      if (code == 'EC') {
+        expect(
+          find.descendant(
+            of: sheet,
+            matching: find.byIcon(Icons.arrow_forward),
+          ),
+          findsNothing,
+        );
+      }
+      await tester.tap(close);
+      await tester.pumpAndSettle();
+      expect(sheet, findsNothing);
+      expect(find.byType(DiaryPage), findsOneWidget);
+    }
+  });
+
+  testWidgets('the close button is big enough to touch', (tester) async {
     await openDiaryPage(tester);
     await tester.ensureVisible(find.text('Brasile').last);
     await tester.pumpAndSettle();
     await tester.tap(find.text('Brasile').last);
     await tester.pumpAndSettle();
-    final handle = tester.getSize(find.bySemanticsLabel('Chiudi'));
+    final handle = tester.getSize(find.byTooltip('Chiudi'));
     expect(handle.height, greaterThanOrEqualTo(44));
     expect(handle.width, greaterThanOrEqualTo(44));
   });
