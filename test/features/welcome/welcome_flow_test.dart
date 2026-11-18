@@ -18,7 +18,11 @@ Future<ProviderContainer> launch(
   WidgetTester tester, {
   Map<String, Object> preferences = const {},
   bool animations = false,
+  Size size = const Size(390, 844),
 }) async {
+  tester.view.physicalSize = size;
+  tester.view.devicePixelRatio = 1;
+  addTearDown(tester.view.reset);
   SharedPreferences.setMockInitialValues(preferences);
   tester.platformDispatcher.accessibilityFeaturesTestValue =
       FakeAccessibilityFeatures(disableAnimations: !animations);
@@ -55,46 +59,111 @@ void main() {
     await EasyLocalization.ensureInitialized();
   });
 
-  testWidgets('a first launch opens the welcome; the dial turns the radio on', (
+  testWidgets('the dial starts audio, then two taps complete the guide', (
     tester,
   ) async {
     final container = await launch(tester);
-    expect(find.text('Tap the dial to turn it on'), findsOneWidget);
-    await tester.tap(find.byKey(const ValueKey('welcome-radio')));
-    // Through the passage from the small radio to the real one.
+    expect(find.text('Turn on the radio'), findsOneWidget);
+    await tester.tapAt(const Offset(10, 200));
+    await tester.pump();
+    expect(find.text('Turn on the radio'), findsOneWidget);
+    expect(container.read(radioControllerProvider), isA<Off>());
+    await tester.tapAt(
+      tester.getCenter(find.byKey(const ValueKey('tune-knob'))),
+    );
+    await tester.pump();
+    await tester.pump();
+    expect(find.text('Your favorites'), findsOneWidget);
+    expect(container.read(radioControllerProvider), isA<Flying>());
+    var preferences = await tester.runAsync(SharedPreferences.getInstance);
+    expect(preferences!.getInt(WelcomeSeen.revisionKey), isNull);
+    await tester.tap(find.byKey(const ValueKey('welcome-guide')));
+    await tester.pump();
+    await tester.pump();
+    expect(find.text('Your travel diary'), findsOneWidget);
+    expect(find.text('EN'), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('welcome-guide')));
     for (var i = 0; i < 20; i++) {
       await tester.pump(const Duration(milliseconds: 50));
     }
     expect(tester.takeException(), isNull);
-    expect(find.text('Tap the dial to turn it on'), findsNothing);
-    expect(container.read(radioControllerProvider), isA<Flying>());
-    final preferences = await tester.runAsync(SharedPreferences.getInstance);
-    expect(preferences!.getBool('app.welcomeSeen'), isTrue);
-    // The flight's own timers end with it.
+    expect(find.byKey(const ValueKey('welcome-guide')), findsNothing);
+    expect(find.text('EN'), findsNothing);
+    preferences = await tester.runAsync(SharedPreferences.getInstance);
+    expect(
+      preferences!.getInt(WelcomeSeen.revisionKey),
+      WelcomeSeen.currentRevision,
+    );
     await container.read(radioControllerProvider.notifier).stop();
     await tester.pump(const Duration(minutes: 1));
   });
 
-  testWidgets('the radio keeps its text style while it travels', (
+  testWidgets('the final animated passage preserves the radio text style', (
     tester,
   ) async {
     final container = await launch(tester, animations: true);
-    await tester.tap(find.byKey(const ValueKey('welcome-radio')));
     await tester.pump();
-    await tester.pump(const Duration(milliseconds: 120));
-    // Text without a Material above it falls back to Flutter's error style:
-    // yellow double underline.
+    await tester.tapAt(
+      tester.getCenter(find.byKey(const ValueKey('tune-knob'))),
+    );
+    await tester.pump();
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('welcome-guide')));
+    await tester.pump();
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('welcome-guide')));
+    for (var i = 0; i < 16; i++) {
+      await tester.pump(const Duration(milliseconds: 50));
+    }
     final broken = tester
         .widgetList<RichText>(find.byType(RichText))
         .where((t) => t.text.style?.decorationColor == const Color(0xFFFFFF00));
     expect(broken, isEmpty);
+    expect(find.byKey(const ValueKey('welcome-guide')), findsNothing);
+    expect(tester.takeException(), isNull);
     await container.read(radioControllerProvider.notifier).stop();
     await tester.pump(const Duration(minutes: 1));
   });
 
-  testWidgets('a later launch opens the radio', (tester) async {
+  testWidgets('Android back dismisses the guide without starting a flight', (
+    tester,
+  ) async {
+    final container = await launch(tester);
+    await tester.binding.handlePopRoute();
+    for (var i = 0; i < 10; i++) {
+      await tester.pump(const Duration(milliseconds: 50));
+    }
+    expect(find.byKey(const ValueKey('welcome-guide')), findsNothing);
+    expect(container.read(radioControllerProvider), isA<Off>());
+    expect(container.read(welcomeSeenProvider).valueOrNull, isTrue);
+  });
+
+  testWidgets('an update from the old guide opens the new guide once', (
+    tester,
+  ) async {
     await launch(tester, preferences: {'app.welcomeSeen': true});
-    expect(find.text('Tap the dial to turn it on'), findsNothing);
+    expect(find.text('Turn on the radio'), findsOneWidget);
+    await tester.binding.handlePopRoute();
+    for (var i = 0; i < 10; i++) {
+      await tester.pump(const Duration(milliseconds: 50));
+    }
+    final preferences = await tester.runAsync(SharedPreferences.getInstance);
+    expect(
+      preferences!.getInt(WelcomeSeen.revisionKey),
+      WelcomeSeen.currentRevision,
+    );
+    expect(find.byKey(const ValueKey('welcome-guide')), findsNothing);
+  });
+
+  testWidgets('a later launch opens the radio', (tester) async {
+    await launch(
+      tester,
+      preferences: {
+        'app.welcomeSeen': true,
+        WelcomeSeen.revisionKey: WelcomeSeen.currentRevision,
+      },
+    );
+    expect(find.byKey(const ValueKey('welcome-guide')), findsNothing);
     expect(find.text('Where shall we go?'), findsOneWidget);
   });
 }

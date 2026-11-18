@@ -21,12 +21,22 @@ import 'radio_keys.dart';
 /// The radio's screen: the diary grows out of it.
 final radioScreenKey = GlobalKey(debugLabel: 'radio-screen');
 
+/// Anchors belong to this page, including while its cabinet flies to the home.
+class RadioPageAnchors {
+  final screen = GlobalKey(debugLabel: 'radio-guide-screen');
+  final dial = GlobalKey(debugLabel: 'radio-guide-dial');
+  final favorites = GlobalKey(debugLabel: 'radio-guide-favorites');
+  final diary = GlobalKey(debugLabel: 'radio-guide-diary');
+}
+
 class RadioPage extends ConsumerWidget {
   const RadioPage({
     super.key,
     required this.appName,
     required this.settingsAction,
+    this.tourTargets,
   });
+  final RadioPageAnchors? tourTargets;
   final String appName;
   final Widget settingsAction;
   @override
@@ -99,13 +109,13 @@ class RadioPage extends ConsumerWidget {
             final favoritesLabel =
                 '${LocaleKeys.favorites.tr(context: context)} · $favoritesCount';
             final favoritesButton = AppIconButton(
-              key: const ValueKey('favorites-open'),
+              key: tourTargets?.favorites ?? const ValueKey('favorites-open'),
               tooltip: favoritesLabel,
               onPressed: () => showFavorites(context),
               icon: const Icon(Icons.queue_music_outlined),
             );
             final diaryButton = AppIconButton(
-              key: const ValueKey('diary-open'),
+              key: tourTargets?.diary ?? const ValueKey('diary-open'),
               tooltip: LocaleKeys.diaryOpen.tr(context: context),
               onPressed: () => openDiary(context, radioScreenKey),
               icon: const Icon(Icons.map_outlined),
@@ -128,7 +138,8 @@ class RadioPage extends ConsumerWidget {
             );
             final cabinet = RadioCabinetHero(
               child: RadioCabinet(
-                screenKey: radioScreenKey,
+                screenKey: tourTargets?.screen ?? radioScreenKey,
+                dialKey: tourTargets?.dial,
                 compact: compact,
                 horizontal: wide,
                 country: text(display.country),

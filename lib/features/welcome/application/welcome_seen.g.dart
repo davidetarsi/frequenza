@@ -6,9 +6,9 @@ part of 'welcome_seen.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$welcomeSeenHash() => r'3f22631f9617793c297d50dc71bc46f4614e90ff';
+String _$welcomeSeenHash() => r'189389ce03737185d5ca145bce5af0c2b8976b80';
 
-/// Whether the welcome page has been seen: it shows only on the first launch.
+/// Whether this revision of the guide has been seen, including after an update.
 ///
 /// Copied from [WelcomeSeen].
 @ProviderFor(WelcomeSeen)

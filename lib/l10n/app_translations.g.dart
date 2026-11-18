@@ -155,6 +155,15 @@ class CodegenLoader extends AssetLoader {
     "diaryCloseSheet": "Close",
     "diaryUnderAMinute": "under 1 min",
     "diaryError": "The diary could not be read.",
+    "tourStartTitle": "Turn on the radio",
+    "tourFavoritesTitle": "Your favorites",
+    "tourFavoritesBody": "Find the radio stations and songs you saved here.",
+    "tourDiaryTitle": "Your travel diary",
+    "tourDiaryBody":
+        "Find the countries and radio stations you have listened to here. It grows as you listen.",
+    "tourProgress": "{} OF 3",
+    "tourContinue": "Tap to continue",
+    "tourClose": "Tap to close",
   };
   static const Map<String, dynamic> _it = {
     "welcomeTitle": "Gira la manopola.\nAtterra da qualche parte nel mondo.",
@@ -298,6 +307,15 @@ class CodegenLoader extends AssetLoader {
     "diaryCloseSheet": "Chiudi",
     "diaryUnderAMinute": "meno di 1 min",
     "diaryError": "Non è stato possibile leggere il diario.",
+    "tourStartTitle": "Accendi la radio",
+    "tourFavoritesTitle": "I tuoi preferiti",
+    "tourFavoritesBody": "Qui ritrovi le radio e le canzoni che hai salvato.",
+    "tourDiaryTitle": "Il diario di viaggio",
+    "tourDiaryBody":
+        "Qui ritrovi i paesi e le radio ascoltate. Si riempie mentre ascolti.",
+    "tourProgress": "{} DI 3",
+    "tourContinue": "Tocca per continuare",
+    "tourClose": "Tocca per chiudere",
   };
   static const Map<String, Map<String, dynamic>> mapLocales = {
     "en": _en,
