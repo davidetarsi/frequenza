@@ -333,8 +333,7 @@ abstract final class DiaryDesign {
   static const mapMaxShare = 0.45;
   static const panelRadius = Radius.circular(22);
   static const panelBorder = 3.0;
-  static const playerBackdropBlur = 4.0;
-  static const playerBackdropTint = 0.22;
+  static const playerBackdropTint = 0.88;
   static const barInset = EdgeInsets.fromLTRB(12, 12, 12, 14);
   static const pagePadding = EdgeInsets.fromLTRB(16, 14, 16, 10);
   static const titleText = TextStyle(

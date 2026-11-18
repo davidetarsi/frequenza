@@ -47,6 +47,7 @@ void main() {
   Future<(MemoryDiary, RecordingAnalytics, MemorySongs)> openRadio(
     WidgetTester tester, {
     bool empty = false,
+    bool radioOff = false,
     String? title,
     MemoryDiary? log,
     bool reducedMotion = true,
@@ -82,12 +83,14 @@ void main() {
         overrides: [
           radioControllerProvider.overrideWith(
             () => BarRadio(
-              RadioSession.onAir(
-                const Journey(landed: kexp, trips: 1),
-                kexp,
-                playback: OnAirPlayback.playing,
-                trackTitle: title,
-              ),
+              radioOff
+                  ? const RadioSession.off(Journey())
+                  : RadioSession.onAir(
+                      const Journey(landed: kexp, trips: 1),
+                      kexp,
+                      playback: OnAirPlayback.playing,
+                      trackTitle: title,
+                    ),
             ),
           ),
           radioRepositoryProvider.overrideWithValue(FakeRadioRepository()),
@@ -113,10 +116,20 @@ void main() {
       find.byType(DiaryPage).evaluate().isEmpty &&
       !Navigator.of(tester.element(find.byType(RadioPage))).canPop();
 
-  testWidgets('the backdrop blur starts at the player top', (tester) async {
+  testWidgets('a diary without a player has no filtered strip', (tester) async {
+    await openRadio(tester, radioOff: true);
+    await openDiaryPage(tester);
+    expect(find.byType(BackdropFilter), findsNothing);
+    expect(find.byKey(const ValueKey('player-backdrop')), findsNothing);
+    expect(find.byType(DiaryPage), findsOneWidget);
+  });
+
+  testWidgets('the bottom fade starts at the player top', (tester) async {
     await openRadio(tester);
     await openDiaryPage(tester);
-    final filter = tester.getRect(find.byType(BackdropFilter));
+    final filter = tester.getRect(
+      find.byKey(const ValueKey('player-backdrop')),
+    );
     final player = tester.getRect(find.byType(RadioBar));
     expect(filter.top, closeTo(player.top, 0.01));
     expect(filter.left, lessThan(player.left));

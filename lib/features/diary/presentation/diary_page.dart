@@ -1,5 +1,4 @@
 import 'dart:math' as math;
-import 'dart:ui' show ImageFilter;
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -10,9 +9,11 @@ import '../../../ui/theme/app_motion.dart';
 import '../../../ui/theme/app_spacing.dart';
 import '../../../ui/theme/travel_radio_design.dart';
 import '../../../ui/theme/travel_radio_palette.dart';
+import '../../../ui/widgets/bottom_fade.dart';
 import '../../analytics/application/analytics_providers.dart';
 import '../../analytics/domain/app_event.dart';
 import '../../radio/application/radio_controller.dart';
+import '../../radio/domain/radio_bar_state.dart';
 import '../../radio/presentation/radio_bar.dart';
 import '../application/diary_summary_provider.dart';
 import '../domain/diary_flight.dart';
@@ -120,33 +121,22 @@ class _DiaryPageState extends ConsumerState<DiaryPage> {
       (final summary?, final code?) => cardFor(summary, code),
       _ => null,
     };
+    final hasPlayer = ref.watch(
+      radioControllerProvider.select(
+        (session) => radioBarOf(session) is! BarHidden,
+      ),
+    );
     final route = ModalRoute.of(context)?.animation;
-    final bar = ClipRect(
-      child: BackdropFilter(
-        filter: ImageFilter.blur(
-          sigmaX: DiaryDesign.playerBackdropBlur,
-          sigmaY: DiaryDesign.playerBackdropBlur,
-        ),
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                TravelRadioPalette.screen.withValues(alpha: 0),
-                TravelRadioPalette.screen.withValues(
-                  alpha: DiaryDesign.playerBackdropTint,
-                ),
-              ],
-            ),
-          ),
-          child: SafeArea(
-            top: false,
-            child: Padding(
-              padding: DiaryDesign.barInset.copyWith(top: 0),
-              child: RadioBar(onBackToRadio: _backToRadio),
-            ),
-          ),
+    final bar = BottomFade(
+      key: const ValueKey('player-backdrop'),
+      tint: TravelRadioPalette.screen.withValues(
+        alpha: DiaryDesign.playerBackdropTint,
+      ),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: DiaryDesign.barInset.copyWith(top: 0),
+          child: RadioBar(onBackToRadio: _backToRadio),
         ),
       ),
     );
@@ -159,31 +149,36 @@ class _DiaryPageState extends ConsumerState<DiaryPage> {
         backgroundColor: TravelRadioPalette.screen,
         extendBody: true,
         // Keep the measured inset while the country card hides the player.
-        bottomNavigationBar: Visibility(
-          visible: card == null,
-          maintainState: true,
-          maintainAnimation: true,
-          maintainSize: true,
-          child: Padding(
-            // The clear gap sits outside the filter, which starts at the player.
-            padding: EdgeInsets.only(top: DiaryDesign.barInset.top),
-            child: route == null || !AppMotion.enabled(context)
-                ? bar
-                : SlideTransition(
-                    position:
-                        Tween(
-                          begin: AppMotion.diaryBarFrom,
-                          end: Offset.zero,
-                        ).animate(
-                          CurvedAnimation(
-                            parent: route,
-                            curve: const Interval(AppMotion.diaryBarStart, 1),
-                          ),
+        bottomNavigationBar: hasPlayer
+            ? Visibility(
+                visible: card == null,
+                maintainState: true,
+                maintainAnimation: true,
+                maintainSize: true,
+                child: Padding(
+                  // The clear gap sits outside the fade, which starts at the player.
+                  padding: EdgeInsets.only(top: DiaryDesign.barInset.top),
+                  child: route == null || !AppMotion.enabled(context)
+                      ? bar
+                      : SlideTransition(
+                          position:
+                              Tween(
+                                begin: AppMotion.diaryBarFrom,
+                                end: Offset.zero,
+                              ).animate(
+                                CurvedAnimation(
+                                  parent: route,
+                                  curve: const Interval(
+                                    AppMotion.diaryBarStart,
+                                    1,
+                                  ),
+                                ),
+                              ),
+                          child: bar,
                         ),
-                    child: bar,
-                  ),
-          ),
-        ),
+                ),
+              )
+            : null,
         body: SafeArea(
           bottom: false,
           child: LayoutBuilder(

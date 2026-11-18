@@ -59,6 +59,13 @@ Il punto di ripresa di ogni sessione: si legge questo, poi solo il piano attivo.
 - Token di superficie e spaziature condivisi anche per il paese; intestazione resa privata al componente. Eliminati contenitore, intestazione e gestione del trascinamento duplicati nella feature diario.
 - Verificati 52 test mirati con Flutter 3.38.5, inclusi i tre tipi di paese, Preferiti, Impostazioni, canzoni e messaggi. Screenshot Flutter del paese aggiornati con la superficie standard. Riscontro visivo su telefono aperto.
 
+## Offuscamento graduale del diario — 18 novembre 2026
+
+- Branch `fix/sfocatura-graduale`, da `develop` dopo il merge della PR #41.
+- Sostituito il filtro uniforme con `BottomFade`: sfumatura continua di opacità verso il verde della pagina, trasparente al bordo superiore del player e più coprente verso il fondo. Player e comandi rimangono nitidi.
+- La fascia è creata solo quando lo stato radio prevede il player. Con radio spenta il diario non riserva né disegna una fascia filtrata. Con scheda paese aperta il player e la sfumatura sono nascosti insieme.
+- Verificati 31 test con Flutter 3.38.5, inclusa la verifica pixel su fondo ad alto contrasto della continuità della sfumatura. Regressioni per diario senza player, allineamento al bordo superiore e navigazione. Analisi senza segnalazioni. Riscontro visivo su telefono aperto.
+
 ## Prossimi passi, in ordine
 
 1. **Cartolina del luogo:** sagoma e cartolina sulla radio, con l'animazione da definire con Davide; poi la collezione nel diario e le foto. Design in `superpowers/specs/2026-11-16-cartolina-design.md`.
