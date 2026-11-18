@@ -6,13 +6,13 @@ import '../../../ui/theme/app_spacing.dart';
 import '../../../ui/theme/travel_radio_design.dart';
 import '../../../ui/theme/travel_radio_palette.dart';
 import '../../../ui/widgets/code_badge.dart';
+import '../../../ui/widgets/travel_sheet.dart';
 import '../../radio/domain/radio_station.dart';
 import '../domain/diary_summary.dart';
 import 'country_name.dart';
 import 'diary_duration.dart';
 
-/// The sheet of a touched country, inside the diary's panel and above the
-/// player bar: its stations if it was heard, an invitation if not.
+/// Country-specific content for the shared bottom sheet in the diary.
 class CountrySheet extends StatelessWidget {
   const CountrySheet({
     super.key,
@@ -117,15 +117,14 @@ class CountrySheet extends StatelessWidget {
           style: theme.textTheme.bodyMedium?.copyWith(color: ink),
         ),
         const SizedBox(height: 14),
-        FilledButton.icon(
+        FilledButton(
           style: FilledButton.styleFrom(
             backgroundColor: TravelRadioPalette.accent,
             foregroundColor: TravelRadioPalette.screenInk,
             minimumSize: const Size.fromHeight(DiaryDesign.sheetButton),
           ),
           onPressed: () => onFlyRandom(code),
-          icon: const Icon(Icons.arrow_forward),
-          label: Text(t(LocaleKeys.diaryFlyTo, [name])),
+          child: Text(t(LocaleKeys.diaryFlyTo, [name])),
         ),
         const SizedBox(height: 8),
         Text(
@@ -143,146 +142,27 @@ class CountrySheet extends StatelessWidget {
       UnvisitedCountry() => null,
     };
 
-    return GestureDetector(
+    return TravelSheet(
       key: const ValueKey('country-sheet'),
-      // A drag down closes the sheet.
-      onVerticalDragEnd: (details) {
-        if ((details.primaryVelocity ?? 0) > 0) onClose();
-      },
-      child: Material(
-        color: TravelRadioPalette.screenInk,
-        borderRadius: const BorderRadius.vertical(
-          top: DiaryDesign.sheetRadius,
-          bottom: DiaryDesign.panelRadius,
-        ),
-        child: SafeArea(
-          top: false,
-          bottom: false,
-          child: Semantics(
-            scopesRoute: true,
-            namesRoute: true,
-            explicitChildNodes: true,
-            label: name,
-            child: _PullToClose(
-              onClose: onClose,
-              child: SingleChildScrollView(
-                padding: DiaryDesign.sheetPadding.copyWith(top: 0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Center(
-                      child: Semantics(
-                        button: true,
-                        label: t(LocaleKeys.diaryCloseSheet),
-                        onTap: onClose,
-                        excludeSemantics: true,
-                        child: GestureDetector(
-                          behavior: HitTestBehavior.opaque,
-                          onTap: onClose,
-                          // A thin bar, in an area big enough to touch.
-                          child: SizedBox.square(
-                            dimension: DiaryDesign.handleTouch,
-                            child: Center(
-                              child: Container(
-                                width: DiaryDesign.handleWidth,
-                                height: DiaryDesign.handleHeight,
-                                decoration: BoxDecoration(
-                                  color: muted,
-                                  borderRadius: BorderRadius.circular(
-                                    DiaryDesign.handleHeight / 2,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    Row(
-                      spacing: 10,
-                      children: [
-                        IconTheme(
-                          data: const IconThemeData(
-                            color: TravelRadioPalette.screenInk,
-                          ),
-                          child: CodeBadge(
-                            _code,
-                            backgroundColor: TravelRadioPalette.screen,
-                          ),
-                        ),
-                        Expanded(
-                          child: Text(
-                            name,
-                            style: theme.textTheme.titleLarge?.copyWith(
-                              color: ink,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ),
-                        if (summary case final summary?)
-                          Flexible(
-                            child: Text(
-                              summary,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              textAlign: TextAlign.end,
-                              style: DiaryDesign.numbersText.copyWith(
-                                color: ink,
-                                fontSize: 14,
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    ...body,
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
+      title: name,
+      presentation: TravelSheetPresentation.embedded,
+      backgroundColor: TravelRadioPalette.screenInk,
+      foregroundColor: ink,
+      onClose: onClose,
+      leading: IconTheme(
+        data: const IconThemeData(color: TravelRadioPalette.screenInk),
+        child: CodeBadge(_code, backgroundColor: TravelRadioPalette.screen),
       ),
+      trailing: summary == null
+          ? null
+          : Text(
+              summary,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.end,
+              style: DiaryDesign.numbersText.copyWith(color: ink, fontSize: 14),
+            ),
+      children: body,
     );
   }
-}
-
-/// Closes the sheet when its content, already at the top, is pulled down
-/// far enough: a drag down closes it even when it scrolls.
-class _PullToClose extends StatefulWidget {
-  const _PullToClose({required this.onClose, required this.child});
-
-  final VoidCallback onClose;
-  final Widget child;
-
-  @override
-  State<_PullToClose> createState() => _PullToCloseState();
-}
-
-class _PullToCloseState extends State<_PullToClose> {
-  var _pulled = 0.0;
-
-  bool _onScroll(ScrollNotification event) {
-    switch (event) {
-      case OverscrollNotification(:final overscroll, dragDetails: _?)
-          when overscroll < 0:
-        _pulled -= overscroll;
-        if (_pulled >= DiaryDesign.sheetPullToClose) {
-          _pulled = 0;
-          widget.onClose();
-        }
-      case ScrollEndNotification() || ScrollStartNotification():
-        _pulled = 0;
-      default:
-    }
-    return false;
-  }
-
-  @override
-  Widget build(BuildContext context) =>
-      NotificationListener<ScrollNotification>(
-        onNotification: _onScroll,
-        child: widget.child,
-      );
 }

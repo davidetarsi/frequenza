@@ -121,11 +121,33 @@ class _DiaryPageState extends ConsumerState<DiaryPage> {
       _ => null,
     };
     final route = ModalRoute.of(context)?.animation;
-    final bar = SafeArea(
-      top: false,
-      child: Padding(
-        padding: DiaryDesign.barInset,
-        child: RadioBar(onBackToRadio: _backToRadio),
+    final bar = ClipRect(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(
+          sigmaX: DiaryDesign.playerBackdropBlur,
+          sigmaY: DiaryDesign.playerBackdropBlur,
+        ),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                TravelRadioPalette.screen.withValues(alpha: 0),
+                TravelRadioPalette.screen.withValues(
+                  alpha: DiaryDesign.playerBackdropTint,
+                ),
+              ],
+            ),
+          ),
+          child: SafeArea(
+            top: false,
+            child: Padding(
+              padding: DiaryDesign.barInset.copyWith(top: 0),
+              child: RadioBar(onBackToRadio: _backToRadio),
+            ),
+          ),
+        ),
       ),
     );
     return PopScope(
@@ -142,45 +164,24 @@ class _DiaryPageState extends ConsumerState<DiaryPage> {
           maintainState: true,
           maintainAnimation: true,
           maintainSize: true,
-          child: ClipRect(
-            child: BackdropFilter(
-              filter: ImageFilter.blur(
-                sigmaX: DiaryDesign.playerBackdropBlur,
-                sigmaY: DiaryDesign.playerBackdropBlur,
-              ),
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      TravelRadioPalette.screen.withValues(alpha: 0),
-                      TravelRadioPalette.screen.withValues(
-                        alpha: DiaryDesign.playerBackdropTint,
-                      ),
-                    ],
+          child: Padding(
+            // The clear gap sits outside the filter, which starts at the player.
+            padding: EdgeInsets.only(top: DiaryDesign.barInset.top),
+            child: route == null || !AppMotion.enabled(context)
+                ? bar
+                : SlideTransition(
+                    position:
+                        Tween(
+                          begin: AppMotion.diaryBarFrom,
+                          end: Offset.zero,
+                        ).animate(
+                          CurvedAnimation(
+                            parent: route,
+                            curve: const Interval(AppMotion.diaryBarStart, 1),
+                          ),
+                        ),
+                    child: bar,
                   ),
-                ),
-                child: route == null || !AppMotion.enabled(context)
-                    ? bar
-                    : SlideTransition(
-                        position:
-                            Tween(
-                              begin: AppMotion.diaryBarFrom,
-                              end: Offset.zero,
-                            ).animate(
-                              CurvedAnimation(
-                                parent: route,
-                                curve: const Interval(
-                                  AppMotion.diaryBarStart,
-                                  1,
-                                ),
-                              ),
-                            ),
-                        child: bar,
-                      ),
-              ),
-            ),
           ),
         ),
         body: SafeArea(

@@ -21,6 +21,7 @@ import 'package:frequenza/features/radio/domain/journey.dart';
 import 'package:frequenza/features/radio/domain/radio_session.dart';
 import 'package:frequenza/features/radio/domain/radio_station.dart';
 import 'package:frequenza/features/radio/presentation/radio_page.dart';
+import 'package:frequenza/features/radio/presentation/radio_bar.dart';
 import 'package:frequenza/features/songs/application/saved_songs.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -111,6 +112,17 @@ void main() {
   bool onlyRadio(WidgetTester tester) =>
       find.byType(DiaryPage).evaluate().isEmpty &&
       !Navigator.of(tester.element(find.byType(RadioPage))).canPop();
+
+  testWidgets('the backdrop blur starts at the player top', (tester) async {
+    await openRadio(tester);
+    await openDiaryPage(tester);
+    final filter = tester.getRect(find.byType(BackdropFilter));
+    final player = tester.getRect(find.byType(RadioBar));
+    expect(filter.top, closeTo(player.top, 0.01));
+    expect(filter.left, lessThan(player.left));
+    expect(filter.right, greaterThan(player.right));
+    expect(filter.bottom, greaterThan(player.bottom));
+  });
 
   testWidgets('the map and stats scroll under the stationary player', (
     tester,

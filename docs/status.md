@@ -43,6 +43,22 @@ Il punto di ripresa di ogni sessione: si legge questo, poi solo il piano attivo.
 - Revisione screenshot: corretto il contrasto della stazione più ascoltata in tema chiaro impostando esplicitamente il colore del testo sulla superficie scura. Regressione aggiunta al test pagina, 18 test superati.
 - Resta il collaudo visivo e dei gesti su telefono.
 
+## Allineamento sfocatura e chiusura dei fogli — 18 novembre 2026
+
+- Branch `fix/chiusura-fogli-e-sfocatura`, da `develop` dopo il merge della PR #40.
+- Margine superiore del player spostato fuori dal filtro. La sfocatura parte dal bordo superiore della barra e si muove con essa durante la transizione.
+- Intestazione condivisa `TravelSheetHeader` in `lib/ui/widgets/travel_sheet.dart`: maniglia, titolo e X a destra con area di tocco da 48 punti. Usata da Preferiti, Impostazioni e schede paese. La chiusura del paese passa al callback del diario.
+- Rimossa la freccia dalla CTA «Vola in …».
+- Verificati 44 test mirati con Flutter 3.38.5, inclusi allineamento del filtro, chiusura dei tre tipi di scheda paese, testo grande e layout orizzontale. Aperto il riscontro visivo su telefono.
+
+## Bottom sheet unico — 18 novembre 2026
+
+- Preferiti, Impostazioni e paese usano `TravelSheet`: superficie, raggi, padding, titolo, maniglia, X, lista e chiusura sono definiti nel componente comune. `CountrySheet` prepara soltanto i contenuti del paese.
+- `TravelSheetPresentation` seleziona l'apertura ridimensionabile nella route modale oppure il foglio integrato nel diario, che adatta l'altezza ai contenuti entro il limite disponibile. Il callback del paese chiude la scheda nel diario.
+- La chiusura trascinando verso il basso del foglio integrato è gestita da `TravelSheet`. Per le route modali il componente conserva `DraggableScrollableSheet` e il messenger dei messaggi con Annulla. Le liste integrate hanno uno scorrimento indipendente dalla pagina.
+- Token di superficie e spaziature condivisi anche per il paese; intestazione resa privata al componente. Eliminati contenitore, intestazione e gestione del trascinamento duplicati nella feature diario.
+- Verificati 52 test mirati con Flutter 3.38.5, inclusi i tre tipi di paese, Preferiti, Impostazioni, canzoni e messaggi. Screenshot Flutter del paese aggiornati con la superficie standard. Riscontro visivo su telefono aperto.
+
 ## Prossimi passi, in ordine
 
 1. **Cartolina del luogo:** sagoma e cartolina sulla radio, con l'animazione da definire con Davide; poi la collezione nel diario e le foto. Design in `superpowers/specs/2026-11-16-cartolina-design.md`.
