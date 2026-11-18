@@ -189,14 +189,14 @@ void main() {
     await openDiaryPage(tester);
     expect(find.byType(DiaryPage), findsOneWidget);
     expect(find.text('2 paesi · 843 min'), findsOneWidget);
-    final firstFilter = find
-        .ancestor(of: find.text('7 giorni'), matching: find.byType(InkWell))
+    final topStation = find.textContaining('Station 1 · Brasile · 9 h');
+    final stationCard = find
+        .ancestor(of: topStation, matching: find.byType(InkWell))
         .first;
     expect(
-      tester.getTopLeft(find.byKey(const ValueKey('diary-summary'))).dx,
-      tester.getTopLeft(firstFilter).dx,
+      tester.getBottomRight(find.byKey(const ValueKey('diary-summary'))).dx,
+      tester.getBottomRight(stationCard).dx,
     );
-    final topStation = find.textContaining('Station 1 · Brasile · 9 h');
     expect(topStation, findsOneWidget);
     expect(
       DefaultTextStyle.of(tester.element(topStation)).style.color,

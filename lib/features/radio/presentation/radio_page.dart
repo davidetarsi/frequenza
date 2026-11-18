@@ -110,6 +110,22 @@ class RadioPage extends ConsumerWidget {
               onPressed: () => openDiary(context, radioScreenKey),
               icon: const Icon(Icons.map_outlined),
             );
+            final actions = IconButtonTheme(
+              data: IconButtonThemeData(
+                style: IconButton.styleFrom(
+                  iconSize: TravelRadioLayout.headerIconSize,
+                  fixedSize: const Size.square(
+                    TravelRadioLayout.headerActionSize,
+                  ),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                spacing: TravelRadioLayout.headerActionGap,
+                children: [favoritesButton, diaryButton, settingsAction],
+              ),
+            );
             final cabinet = RadioCabinetHero(
               child: RadioCabinet(
                 screenKey: radioScreenKey,
@@ -234,16 +250,7 @@ class RadioPage extends ConsumerWidget {
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceEvenly,
                                 crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
-                                  Row(
-                                    children: [
-                                      Expanded(child: heading),
-                                      favoritesButton,
-                                      diaryButton,
-                                      settingsAction,
-                                    ],
-                                  ),
-                                ],
+                                children: [heading, actions],
                               ),
                             ),
                             const SizedBox(width: AppSpacing.standard),
@@ -271,9 +278,7 @@ class RadioPage extends ConsumerWidget {
                     child: Row(
                       children: [
                         Expanded(child: heading),
-                        favoritesButton,
-                        diaryButton,
-                        settingsAction,
+                        actions,
                       ],
                     ),
                   ),

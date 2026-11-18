@@ -34,6 +34,9 @@ abstract final class TravelRadioLayout {
   static const referenceTextSize = 16.0;
   static const largeTextThreshold = 20.0;
   static const headingTracking = -1.0;
+  static const headerIconSize = 26.0;
+  static const headerActionSize = 48.0;
+  static const headerActionGap = 4.0;
   static const captionLineHeight = 1.1;
   static const captionTracking = 0.0;
 }

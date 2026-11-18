@@ -290,12 +290,15 @@ class _DiaryPageState extends ConsumerState<DiaryPage> {
                     padding: EdgeInsets.only(
                       left: DiaryDesign.pagePadding.left,
                     ),
-                    child: Text(
-                      total == 0
-                          ? countryCount
-                          : '$countryCount · $listeningTime',
-                      key: const ValueKey('diary-summary'),
-                      style: DiaryDesign.numbersText,
+                    child: Align(
+                      alignment: Alignment.centerRight,
+                      child: Text(
+                        total == 0
+                            ? countryCount
+                            : '$countryCount · $listeningTime',
+                        key: const ValueKey('diary-summary'),
+                        style: DiaryDesign.numbersText,
+                      ),
                     ),
                   ),
                   Padding(
