@@ -192,10 +192,10 @@ Su https://play.google.com/console.
 
 Prima del primo rilascio con le statistiche. Senza questi passi la build di produzione esce con le statistiche spente.
 
-- [ ] Server pronto su `https://analytics.davidetarsi.com` (guida per Coolify, inviata a parte) e progetto `frequenza` creato dal bot, con conservazione a 90 giorni.
+- [ ] Progetto `frequenza` sul servizio gratuito gestito tgram-analytics, creato tramite il bot del fornitore. Controllare la conservazione impostata nel progetto (il servizio dichiara 90 giorni come valore predefinito). Nessun server proprio da configurare.
 - [ ] GitHub → Settings → Secrets and variables → Actions:
   - segreto `TGA_API_KEY` con la chiave `proj_…`;
-  - variabile `TGA_SERVER_URL` con `https://analytics.davidetarsi.com`.
+  - variabile `TGA_SERVER_URL` con `https://api.tgram-analytics.com`.
 - [ ] Play Console → Contenuti dell'app → **Sicurezza dei dati**:
   - dati raccolti: «Attività nell'app → Interazioni con l'app» e «Informazioni e prestazioni dell'app → Diagnostica»;
   - non condivisi con terze parti; cifrati in transito; raccolta facoltativa (si spegne nelle Impostazioni); scopo «Analisi»;

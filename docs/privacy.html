@@ -42,34 +42,40 @@
 
 <section id="it" lang="it">
 <h1>Frequenza — Informativa sulla privacy</h1>
-<p class="date">Ultimo aggiornamento: 17 novembre 2026</p>
+<p class="date">Ultimo aggiornamento: 19 novembre 2026</p>
 
-<p>Frequenza è una radio: giri la manopola e ascolti stazioni in diretta da tutto il mondo. L'app non ha account né pubblicità. Manda solo statistiche anonime d'uso, che puoi spegnere: nessun dato che dica chi sei, e niente viene condiviso con altri.</p>
+<p>Frequenza è una radio: giri la manopola e ascolti stazioni in diretta da tutto il mondo. L'app non ha account né pubblicità. Include un sistema di logging degli eventi d'uso, per capire come viene utilizzata e migliorare il funzionamento della radio. Puoi disattivare queste statistiche dalle Impostazioni. Gli eventi non contengono nome, email o identificativi pubblicitari.</p>
 
 <h2>Cosa resta sul telefono</h2>
-<p>Le stazioni preferite, le canzoni salvate, il tema scelto (chiaro o scuro) e gli ascolti per il diario di viaggio (stazione, paese, inizio e durata) sono salvati solo sul tuo dispositivo. Non lasciano mai il telefono e si cancellano disinstallando l'app.</p>
+<p>Le stazioni preferite, le canzoni salvate, il tema scelto (chiaro o scuro) e gli ascolti per il diario di viaggio (stazione, paese, inizio e durata) sono conservati negli archivi locali dell'app. Questi archivi non vengono caricati sul server delle statistiche. Alcune azioni, come salvare un preferito o terminare un ascolto, generano gli eventi descritti sotto. Le impostazioni locali comprendono anche la lingua, la scelta sulle statistiche e la versione della guida iniziale già vista.</p>
 
 <h2>Con chi si collega l'app</h2>
 <ul>
   <li><strong>Radio Browser</strong> (<a href="https://www.radio-browser.info">radio-browser.info</a>), l'archivio libero da cui arrivano le stazioni. L'app chiede l'elenco delle stazioni indicando solo il proprio nome e la versione.</li>
   <li><strong>Le stazioni radio</strong>: l'audio e i loghi arrivano direttamente dai server di ciascuna stazione.</li>
+  <li><strong>Il servizio di statistiche</strong>: gli eventi d'uso sono inviati tramite HTTPS al servizio gestito <a href="https://tgram-analytics.com/">tgram-analytics</a> (<code>api.tgram-analytics.com</code>), ospitato dal fornitore.</li>
 </ul>
-<p>Come per qualsiasi collegamento a internet, questi server vedono l'indirizzo IP del tuo dispositivo. Lo sviluppatore non ha accesso a queste informazioni; vale l'informativa di ciascun servizio.</p>
+<p>Come per qualsiasi collegamento a internet, i server raggiunti ricevono l'indirizzo IP del dispositivo necessario alla connessione. Per Radio Browser e le stazioni radio valgono le rispettive informative. Il trattamento dell'IP da parte del servizio di statistiche è descritto sotto.</p>
 
-<h2>Statistiche anonime</h2>
-<p>Per capire cosa non funziona e cosa si ascolta, l'app manda questi eventi: l'apertura dell'app (e se è la prima), il benvenuto completato, l'inizio di un volo, l'atterraggio o il volo fallito (con il tipo di volo e i tentativi), le stazioni che si interrompono, la fine di un ascolto (con la durata a fasce, per esempio «2-10 minuti»), l'apertura del diario di viaggio, il periodo scelto nel diario (7 giorni, 30 giorni, anno, sempre), il paese toccato nel diario (se ascoltato, di passaggio o mai ascoltato), i voli partiti dal diario (da dove), i preferiti e le canzoni salvate o tolte, e dal menu delle canzoni la ricerca aperta (solo il servizio, mai il testo), la copia del titolo e «Riaccendi». Quando riguarda una stazione, l'evento porta il paese, il nome pubblico e il formato della stazione. Ogni evento porta anche l'ora, il codice casuale dell'avvio e i dati dell'avvio: versione dell'app, lingua, tema e versione di Android.</p>
+<h2>Statistiche d'uso e logging</h2>
+<p>Le statistiche sono attive per impostazione predefinita nelle versioni dell'app in cui il servizio è configurato. Servono a capire quali funzioni vengono usate, quali paesi e radio vengono ascoltati e dove si verificano problemi di riproduzione. Non vengono usate per mostrare pubblicità.</p>
+<p>Gli eventi registrati sono: l'apertura dell'app (e se è la prima), il benvenuto completato, l'inizio di un volo, l'atterraggio o il volo fallito (con il tipo di volo e i tentativi), le stazioni che si interrompono, la fine di un ascolto (con la durata a fasce, per esempio «2-10 minuti»), l'apertura del diario di viaggio, il periodo scelto nel diario (7 giorni, 30 giorni, anno, sempre), il paese toccato nel diario (se ascoltato, di passaggio o mai ascoltato), i voli partiti dal diario (da dove), i preferiti e le canzoni salvate o tolte, e dal menu delle canzoni la ricerca aperta (solo il servizio, mai il testo), la copia del titolo e «Riaccendi». Quando riguarda una stazione, l'evento porta il paese, il nome pubblico e il formato della stazione. Ogni evento porta anche l'ora, il codice casuale dell'avvio e i dati dell'avvio: versione dell'app, lingua, tema e versione di Android.</p>
 <ul>
-  <li><strong>Nessun identificativo:</strong> ogni avvio, e ogni volta che riaccendi le statistiche, ha un codice casuale nuovo che vive solo in memoria. Il telefono non conserva nulla che ti riconosca da un giorno all'altro.</li>
-  <li><strong>Niente indirizzo IP salvato:</strong> il server lo usa solo in memoria, per un'impronta che cambia ogni giorno, e poi lo scarta.</li>
-  <li><strong>Dove:</strong> sul server dello sviluppatore nell'Unione europea (<code>analytics.davidetarsi.com</code>, con il software tgram-analytics). I dati si cancellano dopo 90 giorni.</li>
-  <li><strong>Come spegnerle:</strong> Impostazioni → Privacy → «Statistiche anonime». Da spente, l'app non manda più nulla.</li>
+  <li><strong>Codice temporaneo:</strong> ogni avvio, e ogni volta che riaccendi le statistiche, ha un codice casuale nuovo che vive solo in memoria. Serve a raggruppare gli eventi dello stesso avvio; non viene salvato un identificativo statistico persistente sul dispositivo.</li>
+  <li><strong>Indirizzo IP:</strong> secondo l'informativa del fornitore, IP e User-Agent sono elaborati in memoria e non conservati in forma originale. Il servizio conserva un hash visitatore giornaliero, specifico del progetto, e ricava informazioni generiche su sistema operativo e tipo di dispositivo.</li>
+  <li><strong>Dove e per quanto tempo:</strong> sull'infrastruttura di tgram-analytics nell'Unione europea. Il fornitore dichiara una conservazione predefinita degli eventi di 90 giorni, riducibile nelle impostazioni del progetto, con cancellazione automatica.</li>
+  <li><strong>Come spegnerle:</strong> Impostazioni → Privacy → «Statistiche anonime». La disattivazione impedisce la registrazione di nuovi eventi statistici; non cancella quelli già ricevuti dal server. L'ascolto delle radio e i collegamenti necessari alla riproduzione continuano a funzionare.</li>
 </ul>
+
+<p>Lo sviluppatore consulta report e statistiche tramite il bot Telegram del servizio. Per il trattamento effettuato dal fornitore, consulta la sua <a href="https://tgram-analytics.com/privacy.html">informativa sulla privacy</a> e l'<a href="https://tgram-analytics.com/dpa.html">accordo sul trattamento dei dati</a>.</p>
+
+<p>Negli eventi non vengono inviati titoli delle canzoni, testi di ricerca, nome, email, posizione precisa o identificativi pubblicitari. Il logging descritto registra azioni predefinite dell'app; non registra schermate, audio o il contenuto dei tuoi archivi locali.</p>
 
 <h2>Cosa l'app non usa</h2>
-<p>Niente posizione, contatti, fotocamera, microfono o file. La «rotta» sulla mappa è calcolata sul telefono dalle coordinate pubbliche delle stazioni. La notifica serve solo a mostrare i comandi della riproduzione.</p>
+<p>L'app non richiede accesso alla tua posizione, ai contatti, alla fotocamera, al microfono o ai tuoi file personali. La «rotta» sulla mappa è calcolata sul telefono dalle coordinate pubbliche delle stazioni. La notifica serve solo a mostrare i comandi della riproduzione.</p>
 
 <h2>Minori</h2>
-<p>L'app non è rivolta ai minori di 13 anni e non raccoglie dati personali di nessuno, minori compresi.</p>
+<p>L'app non è rivolta ai minori di 13 anni. Il sistema di statistiche descritto sopra non richiede informazioni anagrafiche e non raccoglie l'età degli utenti.</p>
 
 <h2>Modifiche e contatti</h2>
 <p>Se l'informativa cambia, la nuova versione sarà pubblicata su questa pagina con la data aggiornata. Per domande: <a href="mailto:davidetarsi.dev@gmail.com">davidetarsi.dev@gmail.com</a>.</p>
@@ -79,34 +85,40 @@
 
 <section id="en" lang="en">
 <h1>Frequenza — Privacy Policy</h1>
-<p class="date">Last updated: 17 November 2026</p>
+<p class="date">Last updated: 19 November 2026</p>
 
-<p>Frequenza is a radio: turn the dial and listen to live stations from all over the world. The app has no accounts and no ads. It only sends anonymous usage statistics, which you can turn off: nothing that tells who you are, and nothing is shared with anyone.</p>
+<p>Frequenza is a radio: turn the dial and listen to live stations from all over the world. The app has no accounts and no ads. It includes usage event logging to understand how the app is used and improve the radio's operation. You can turn these statistics off in Settings. Events do not contain names, email addresses or advertising identifiers.</p>
 
 <h2>What stays on your phone</h2>
-<p>Your favourite stations, saved songs, the chosen theme (light or dark) and your listening for the travel diary (station, country, start and duration) are stored only on your device. They never leave the phone and are deleted when you uninstall the app.</p>
+<p>Your favourite stations, saved songs, the chosen theme (light or dark) and your listening for the travel diary (station, country, start and duration) are kept in the app's local records. These records are not uploaded to the statistics server. Some actions, such as saving a favourite or ending a listen, generate the events described below. Local settings also include your language, statistics preference and the revision of the introductory guide you have already seen.</p>
 
 <h2>What the app connects to</h2>
 <ul>
   <li><strong>Radio Browser</strong> (<a href="https://www.radio-browser.info">radio-browser.info</a>), the free directory the stations come from. The app requests the station list, identifying itself only by its name and version.</li>
   <li><strong>The radio stations</strong>: audio and logos come directly from each station's servers.</li>
+  <li><strong>The statistics service</strong>: usage events are sent over HTTPS to the managed <a href="https://tgram-analytics.com/">tgram-analytics</a> service (<code>api.tgram-analytics.com</code>), hosted by the provider.</li>
 </ul>
-<p>As with any internet connection, these servers see your device's IP address. The developer has no access to this information; each service's own policy applies.</p>
+<p>As with any internet connection, the servers contacted receive the device's IP address needed for the connection. Radio Browser and radio stations have their own privacy policies. How the statistics service handles IP addresses is described below.</p>
 
-<h2>Anonymous statistics</h2>
-<p>To learn what breaks and what people listen to, the app sends these events: opening the app (and whether it is the first time), finishing the welcome, starting a flight, landing or failing (with the kind of flight and the attempts), stations that stop playing, the end of a listen (with its duration in bands, such as "2-10 minutes"), opening the travel diary, the period chosen in the diary (7 days, 30 days, year, always), the country touched in the diary (heard, passed through or never heard), flights started from the diary (from where), favourites and saved songs added or removed, and from the songs menu a search opened (only the service, never the text), copying the title and "Tune in again". When it concerns a station, the event carries the station's country, public name and format. Every event also carries the time, the launch's random code and the launch details: app version, language, theme and Android version.</p>
+<h2>Usage statistics and logging</h2>
+<p>Statistics are on by default in app versions where the service is configured. They help understand which features are used, which countries and stations are listened to, and where playback problems occur. They are not used to display advertising.</p>
+<p>The recorded events are: opening the app (and whether it is the first time), finishing the welcome, starting a flight, landing or failing (with the kind of flight and the attempts), stations that stop playing, the end of a listen (with its duration in bands, such as "2-10 minutes"), opening the travel diary, the period chosen in the diary (7 days, 30 days, year, always), the country touched in the diary (heard, passed through or never heard), flights started from the diary (from where), favourites and saved songs added or removed, and from the songs menu a search opened (only the service, never the text), copying the title and "Tune in again". When it concerns a station, the event carries the station's country, public name and format. Every event also carries the time, the launch's random code and the launch details: app version, language, theme and Android version.</p>
 <ul>
-  <li><strong>No identifier:</strong> every launch, and every time you turn the statistics back on, gets a new random code that lives only in memory. The phone keeps nothing that recognises you from one day to the next.</li>
-  <li><strong>No IP address stored:</strong> the server uses it only in memory, for a fingerprint that changes every day, then drops it.</li>
-  <li><strong>Where:</strong> on the developer's server in the European Union (<code>analytics.davidetarsi.com</code>, running tgram-analytics). Data is deleted after 90 days.</li>
-  <li><strong>How to turn them off:</strong> Settings → Privacy → "Anonymous statistics". Once off, the app sends nothing.</li>
+  <li><strong>Temporary code:</strong> every launch, and every time you turn statistics back on, gets a new random code that lives only in memory. It groups events from the same launch; no persistent statistics identifier is stored on the device.</li>
+  <li><strong>IP address:</strong> according to the provider's policy, IP addresses and User-Agent strings are processed in memory and not stored in their original form. The service stores a project-specific daily visitor hash and derives general operating-system and device-type information.</li>
+  <li><strong>Where and for how long:</strong> on tgram-analytics infrastructure in the European Union. The provider states that events have a default retention of 90 days, which can be shortened in project settings, with automatic deletion.</li>
+  <li><strong>How to turn them off:</strong> Settings → Privacy → "Anonymous statistics". Turning them off stops new statistical events from being recorded; it does not delete events already received by the server. Listening to radio stations and the connections needed for playback continue to work.</li>
 </ul>
+
+<p>The developer views reports and statistics through the service's Telegram bot. For processing performed by the provider, see its <a href="https://tgram-analytics.com/privacy.html">privacy policy</a> and <a href="https://tgram-analytics.com/dpa.html">Data Processing Agreement</a>.</p>
+
+<p>Events do not include song titles, search text, names, email addresses, precise location or advertising identifiers. This logging records predefined app actions; it does not record screens, audio or the contents of your local records.</p>
 
 <h2>What the app does not use</h2>
-<p>No location, contacts, camera, microphone or files. The "route" on the map is computed on the phone from the stations' public coordinates. The notification only shows playback controls.</p>
+<p>The app does not request access to your location, contacts, camera, microphone or personal files. The "route" on the map is computed on the phone from the stations' public coordinates. The notification only shows playback controls.</p>
 
 <h2>Children</h2>
-<p>The app is not directed at children under 13 and collects no personal data from anyone, children included.</p>
+<p>The app is not directed at children under 13. The statistics system described above does not request personal details or collect users' ages.</p>
 
 <h2>Changes and contact</h2>
 <p>If this policy changes, the new version will be published on this page with an updated date. Questions: <a href="mailto:davidetarsi.dev@gmail.com">davidetarsi.dev@gmail.com</a>.</p>
