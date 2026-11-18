@@ -268,37 +268,40 @@ class _DiaryPageState extends ConsumerState<DiaryPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 spacing: 8,
                 children: [
-                  Row(
-                    children: [
-                      IconButton(
-                        tooltip: t(LocaleKeys.backToRadio),
-                        onPressed: _back,
-                        color: ink,
-                        icon: const Icon(Icons.chevron_left),
-                      ),
-                      Expanded(
-                        child: Text(
-                          t(LocaleKeys.diaryTitle).toUpperCase(),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: DiaryDesign.titleText,
+                  LayoutBuilder(
+                    builder: (context, box) => Row(
+                      children: [
+                        IconButton(
+                          tooltip: t(LocaleKeys.backToRadio),
+                          onPressed: _back,
+                          color: ink,
+                          icon: const Icon(Icons.chevron_left),
                         ),
-                      ),
-                    ],
-                  ),
-                  Padding(
-                    padding: EdgeInsets.only(
-                      left: DiaryDesign.pagePadding.left,
-                    ),
-                    child: Align(
-                      alignment: Alignment.centerRight,
-                      child: Text(
-                        total == 0
-                            ? countryCount
-                            : '$countryCount · $listeningTime',
-                        key: const ValueKey('diary-summary'),
-                        style: DiaryDesign.numbersText,
-                      ),
+                        Expanded(
+                          child: Text(
+                            t(LocaleKeys.diaryTitle).toUpperCase(),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: DiaryDesign.titleText,
+                          ),
+                        ),
+                        const SizedBox(width: AppSpacing.small),
+                        ConstrainedBox(
+                          constraints: BoxConstraints(
+                            maxWidth: box.maxWidth / 2,
+                          ),
+                          child: Text(
+                            total == 0
+                                ? countryCount
+                                : '$countryCount · $listeningTime',
+                            key: const ValueKey('diary-summary'),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.end,
+                            style: DiaryDesign.numbersText,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                   Padding(

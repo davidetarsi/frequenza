@@ -189,6 +189,10 @@ void main() {
     await openDiaryPage(tester);
     expect(find.byType(DiaryPage), findsOneWidget);
     expect(find.text('2 paesi · 843 min'), findsOneWidget);
+    expect(
+      tester.getCenter(find.byKey(const ValueKey('diary-summary'))).dy,
+      tester.getCenter(find.text('DIARIO DI VIAGGIO')).dy,
+    );
     final topStation = find.textContaining('Station 1 · Brasile · 9 h');
     final stationCard = find
         .ancestor(of: topStation, matching: find.byType(InkWell))

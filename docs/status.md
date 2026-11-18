@@ -68,13 +68,13 @@ Il punto di ripresa di ogni sessione: si legge questo, poi solo il piano attivo.
 
 ## Intestazione, filtri e apertura del diario — 18 novembre 2026
 
-- Riepilogo paesi/tempo spostato sotto il titolo e allineato al margine destro dei contenuti, come chiarito da Davide. Il totale usa minuti localizzati, includendo il tempo nei paesi di passaggio, e conserva l'indicazione sotto il minuto.
+- Riepilogo paesi/tempo sulla stessa riga del titolo e allineato al margine destro dei contenuti, come richiesto da Davide. Larghezza limitata per gestire schermi stretti e testo ingrandito. Il totale usa minuti localizzati, includendo il tempo nei paesi di passaggio, e conserva l'indicazione sotto il minuto.
 - Apertura da 420 a 520 ms con `easeInOutCubic`; chiusura a 340 ms con `easeInCubic`.
 - Interpretati i pulsanti da ingrandire come i filtri periodo del diario mostrati nello screenshot: padding da 12/8 a 14/10 punti, spazio fra pulsanti da 6 a 8 punti. Token in `DiaryDesign`.
 - Davide ha chiarito che i pulsanti da ingrandire sono quelli della home. Applicati simboli da 26 punti (prima 24), area di tocco 48×48 e gap 4 punti (prima 0), tramite tema locale della riga. In orizzontale titolo e azioni su righe distinte. Filtri del diario conservati per la revisione visiva richiesta.
 - Per «Prossima fermata», proposta di riga dedicata sopra la radio se «Ovunque» diventa un selettore. Scelta del selettore da confermare con Davide.
 - Verificati 41 test di diario, schede paese e home con Flutter 3.38.5. Analisi senza segnalazioni. Screenshot aggiornati. Corretto nel test helper il limite di clamp per un errore di arrotondamento floating-point del viewport.
-- Ultima verifica dopo i chiarimenti: 31 test di home e pagina diario superati, analisi pulita. Screenshot aggiornati con icone home a 26 punti e riepilogo allineato a destra.
+- Ultima verifica dell’intestazione: 30 test di diario e schede paese superati, analisi pulita. Controllati stessa riga del titolo e margine destro. Screenshot aggiornati con icone home a 26 punti e riepilogo sulla riga del titolo.
 - Riscontro visivo su telefono aperto per la nuova apertura e la tappabilità dei pulsanti.
 
 ## Prossimi passi, in ordine
