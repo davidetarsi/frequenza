@@ -95,7 +95,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.bySemanticsLabel('Apri il diario di viaggio'));
+    await tester.tap(find.byTooltip('Apri il diario di viaggio'));
     await tester.pumpAndSettle();
     analytics.events.clear();
   }
@@ -103,12 +103,25 @@ void main() {
   /// Taps the middle of the first dot of [code] on the map at 1×.
   Future<void> tapCountry(WidgetTester tester, String code) async {
     final map = tester.getRect(find.byKey(const ValueKey('diary-map')));
-    final cell = map.width / worldDotRows.first.length;
+    final paint = tester.getSize(find.byKey(const ValueKey('diary-map-paint')));
+    final cell = paint.width / worldDotRows.first.length;
     for (var row = 0; row < worldDotCountries.length; row++) {
       final at = worldDotCountries[row].indexOf(code);
       if (at.isEven && at >= 0) {
+        final point = Offset((at ~/ 2 + 0.5) * cell, (row + 0.5) * cell);
+        final controller = tester
+            .widget<InteractiveViewer>(find.byType(InteractiveViewer))
+            .transformationController!;
+        controller.value = Matrix4.identity()
+          ..translateByDouble(
+            (map.width / 2 - point.dx).clamp(map.width - paint.width, 0),
+            (map.height / 2 - point.dy).clamp(map.height - paint.height, 0),
+            0,
+            1,
+          );
+        await tester.pump();
         await tester.tapAt(
-          map.topLeft + Offset((at ~/ 2 + 0.5) * cell, (row + 0.5) * cell),
+          map.topLeft + MatrixUtils.transformPoint(controller.value, point),
         );
         await tester.pumpAndSettle();
         return;
@@ -121,6 +134,8 @@ void main() {
     tester,
   ) async {
     await openDiaryPage(tester);
+    await tester.ensureVisible(find.text('Brasile').last);
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Brasile').last);
     await tester.pumpAndSettle();
     final sheet = find.byKey(const ValueKey('country-sheet'));
@@ -157,6 +172,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(controller.calls, ['tuneTo:paraiso']);
     expect(find.byKey(const ValueKey('country-sheet')), findsNothing);
+    expect(find.bySemanticsLabel(RegExp('^Torna alla radio:')), findsOneWidget);
     expect(find.byType(DiaryPage), findsOneWidget);
     expect(find.text('In volo…'), findsOneWidget);
     expect(
@@ -209,26 +225,29 @@ void main() {
     );
   });
 
-  testWidgets('the bar stays; back closes the sheet, then the diary', (
-    tester,
-  ) async {
-    await openDiaryPage(tester);
-    await tester.tap(find.text('Brasile').last);
-    await tester.pumpAndSettle();
-    final sheet = tester.getRect(find.byKey(const ValueKey('country-sheet')));
-    final bar = tester.getRect(
-      find.bySemanticsLabel(RegExp('^Torna alla radio:')),
-    );
-    expect(sheet.bottom, lessThanOrEqualTo(bar.top));
+  testWidgets(
+    'the country sheet hides the bar; back restores it before leaving',
+    (tester) async {
+      await openDiaryPage(tester);
+      await tester.ensureVisible(find.text('Brasile').last);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Brasile').last);
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('country-sheet')), findsOneWidget);
+      expect(
+        find.bySemanticsLabel(RegExp('^Torna alla radio:')).hitTestable(),
+        findsNothing,
+      );
 
-    await tester.binding.handlePopRoute();
-    await tester.pumpAndSettle();
-    expect(find.byKey(const ValueKey('country-sheet')), findsNothing);
-    expect(find.byType(DiaryPage), findsOneWidget);
-    await tester.binding.handlePopRoute();
-    await tester.pumpAndSettle();
-    expect(find.byType(DiaryPage), findsNothing);
-  });
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('country-sheet')), findsNothing);
+      expect(find.byType(DiaryPage), findsOneWidget);
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+      expect(find.byType(DiaryPage), findsNothing);
+    },
+  );
 
   testWidgets('the most heard station flies from the top of the list', (
     tester,
@@ -243,11 +262,15 @@ void main() {
     );
   });
 
-  testWidgets('with a sheet open, one tap on the bar goes back to the radio', (
+  testWidgets('closing a country sheet restores the bar and its navigation', (
     tester,
   ) async {
     await openDiaryPage(tester);
+    await tester.ensureVisible(find.text('Brasile').last);
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Brasile').last);
+    await tester.pumpAndSettle();
+    await tester.binding.handlePopRoute();
     await tester.pumpAndSettle();
     await tester.tap(find.bySemanticsLabel(RegExp('^Torna alla radio:')));
     await tester.pumpAndSettle();
@@ -256,6 +279,8 @@ void main() {
 
   testWidgets('the open sheet follows new listens', (tester) async {
     await openDiaryPage(tester);
+    await tester.ensureVisible(find.text('Brasile').last);
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Brasile').last);
     await tester.pumpAndSettle();
     await diary.startListen(
@@ -275,6 +300,8 @@ void main() {
 
   testWidgets('the close handle is big enough to touch', (tester) async {
     await openDiaryPage(tester);
+    await tester.ensureVisible(find.text('Brasile').last);
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Brasile').last);
     await tester.pumpAndSettle();
     final handle = tester.getSize(find.bySemanticsLabel('Chiudi'));
@@ -292,14 +319,21 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
     addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
     await openDiaryPage(tester);
+    for (var index = 0; index < 8; index++) {
+      await diary.startListen(
+        radio('extra$index', 'BR'),
+        startedAt: DateTime.now().toUtc(),
+        seconds: 600,
+      );
+    }
+    await tester.pumpAndSettle();
     await tapCountry(tester, 'BR');
     expect(find.byKey(const ValueKey('country-sheet')), findsOneWidget);
     final sheet = find.byKey(const ValueKey('country-sheet'));
-    // The content is taller than the sheet: it scrolls.
-    expect(
-      tester.getRect(find.text('Radio paraiso').last).bottom,
-      greaterThan(tester.getRect(sheet).bottom),
+    final scroll = tester.state<ScrollableState>(
+      find.descendant(of: sheet, matching: find.byType(Scrollable)),
     );
+    expect(scroll.position.maxScrollExtent, greaterThan(0));
     await tester.flingFrom(tester.getCenter(sheet), const Offset(0, 300), 1500);
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('country-sheet')), findsNothing);

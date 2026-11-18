@@ -80,7 +80,7 @@ class RadioBar extends ConsumerWidget {
         constraints: const BoxConstraints(minHeight: RadioBarDesign.height),
         padding: RadioBarDesign.padding,
         decoration: BoxDecoration(
-          color: TravelRadioPalette.screen,
+          color: TravelRadioPalette.screenInk,
           borderRadius: BorderRadius.circular(RadioBarDesign.radius),
           border: Border.all(
             color: TravelRadioPalette.screenBorder,
@@ -110,7 +110,7 @@ class RadioBar extends ConsumerWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: RadioBarDesign.titleText.copyWith(
-                          color: TravelRadioPalette.screenInk,
+                          color: TravelRadioPalette.screen,
                         ),
                       ),
                       Text(
@@ -118,7 +118,7 @@ class RadioBar extends ConsumerWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: RadioBarDesign.detailText.copyWith(
-                          color: TravelRadioPalette.screenInk.withValues(
+                          color: TravelRadioPalette.screen.withValues(
                             alpha: RadioBarDesign.detailOpacity,
                           ),
                         ),
@@ -175,8 +175,8 @@ class RadioBar extends ConsumerWidget {
     tooltip: tooltip,
     onPressed: onPressed,
     iconSize: RadioBarDesign.iconSize,
-    color: color ?? TravelRadioPalette.screenInk,
-    disabledColor: color ?? TravelRadioPalette.screenInk,
+    color: color ?? TravelRadioPalette.screen,
+    disabledColor: color ?? TravelRadioPalette.screen,
     constraints: const BoxConstraints.tightFor(
       width: RadioBarDesign.key,
       height: RadioBarDesign.key,
@@ -197,12 +197,12 @@ class RadioBar extends ConsumerWidget {
       height: RadioBarDesign.key,
     ),
     style: IconButton.styleFrom(
-      backgroundColor: TravelRadioPalette.screenInk,
-      foregroundColor: TravelRadioPalette.screen,
-      disabledBackgroundColor: TravelRadioPalette.screenInk.withValues(
+      backgroundColor: TravelRadioPalette.screen,
+      foregroundColor: TravelRadioPalette.screenInk,
+      disabledBackgroundColor: TravelRadioPalette.screen.withValues(
         alpha: 0.45,
       ),
-      disabledForegroundColor: TravelRadioPalette.screen,
+      disabledForegroundColor: TravelRadioPalette.screenInk,
     ),
     icon: Icon(icon),
   );

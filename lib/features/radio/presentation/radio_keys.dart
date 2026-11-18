@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../../ui/theme/travel_radio_design.dart';
 import '../../../ui/theme/travel_radio_palette.dart';
 
@@ -129,7 +130,7 @@ class RadioKeys extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Expanded(child: play),
+            Expanded(flex: 2, child: play),
             const SizedBox(width: RadioKeyDesign.slotPadding),
             Expanded(child: save),
           ],

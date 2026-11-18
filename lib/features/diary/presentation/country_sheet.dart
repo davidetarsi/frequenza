@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 import '../../../l10n/locale_keys.g.dart';
+import '../../../ui/theme/app_spacing.dart';
 import '../../../ui/theme/travel_radio_design.dart';
 import '../../../ui/theme/travel_radio_palette.dart';
 import '../../../ui/widgets/code_badge.dart';
@@ -34,7 +35,6 @@ class CountrySheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final p = TravelRadioPalette.of(context);
     final theme = Theme.of(context);
     String t(String key, [List<String>? args]) =>
         key.tr(context: context, args: args);
@@ -43,8 +43,8 @@ class CountrySheet extends StatelessWidget {
         countryName(context, country.code, fallback: country.name),
       UnvisitedCountry(:final code) => countryName(context, code),
     };
-    final muted = p.muted;
-    final ink = p.ink;
+    const ink = TravelRadioPalette.screen;
+    final muted = ink.withValues(alpha: DiaryDesign.mutedOpacity);
 
     Widget station(StationTime heard) => InkWell(
       onTap: () => onFly(heard.station),
@@ -71,6 +71,7 @@ class CountrySheet extends StatelessWidget {
                 ],
               ),
             ),
+            const SizedBox(width: AppSpacing.medium),
             Text(
               t(LocaleKeys.flyThere),
               style: theme.textTheme.labelLarge?.copyWith(
@@ -119,7 +120,7 @@ class CountrySheet extends StatelessWidget {
         FilledButton.icon(
           style: FilledButton.styleFrom(
             backgroundColor: TravelRadioPalette.accent,
-            foregroundColor: p.paper,
+            foregroundColor: TravelRadioPalette.screenInk,
             minimumSize: const Size.fromHeight(DiaryDesign.sheetButton),
           ),
           onPressed: () => onFlyRandom(code),
@@ -149,7 +150,7 @@ class CountrySheet extends StatelessWidget {
         if ((details.primaryVelocity ?? 0) > 0) onClose();
       },
       child: Material(
-        color: p.paper,
+        color: TravelRadioPalette.screenInk,
         borderRadius: const BorderRadius.vertical(
           top: DiaryDesign.sheetRadius,
           bottom: DiaryDesign.panelRadius,
@@ -187,7 +188,7 @@ class CountrySheet extends StatelessWidget {
                                 width: DiaryDesign.handleWidth,
                                 height: DiaryDesign.handleHeight,
                                 decoration: BoxDecoration(
-                                  color: p.trim,
+                                  color: muted,
                                   borderRadius: BorderRadius.circular(
                                     DiaryDesign.handleHeight / 2,
                                   ),
@@ -201,7 +202,15 @@ class CountrySheet extends StatelessWidget {
                     Row(
                       spacing: 10,
                       children: [
-                        CodeBadge(_code),
+                        IconTheme(
+                          data: const IconThemeData(
+                            color: TravelRadioPalette.screenInk,
+                          ),
+                          child: CodeBadge(
+                            _code,
+                            backgroundColor: TravelRadioPalette.screen,
+                          ),
+                        ),
                         Expanded(
                           child: Text(
                             name,

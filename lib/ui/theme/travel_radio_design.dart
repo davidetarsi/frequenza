@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'app_spacing.dart';
+import 'travel_radio_palette.dart';
 
 abstract final class TravelRadioLayout {
   /// Side margin: a share of the screen width, within limits.
@@ -301,7 +302,7 @@ abstract final class RadioBarDesign {
   static const titleText = TextStyle(fontSize: 14, fontWeight: FontWeight.w500);
   static const detailText = TextStyle(fontSize: 12);
   static const detailOpacity = 0.8;
-  static const savedHeart = Color(0xFFF0A47E);
+  static const savedHeart = TravelRadioPalette.accent;
 }
 
 /// The travel diary: the radio's screen, enlarged.
@@ -331,6 +332,8 @@ abstract final class DiaryDesign {
   static const mapMaxShare = 0.45;
   static const panelRadius = Radius.circular(22);
   static const panelBorder = 3.0;
+  static const playerBackdropBlur = 4.0;
+  static const playerBackdropTint = 0.22;
   static const barInset = EdgeInsets.fromLTRB(12, 12, 12, 14);
   static const pagePadding = EdgeInsets.fromLTRB(16, 14, 16, 10);
   static const titleText = TextStyle(

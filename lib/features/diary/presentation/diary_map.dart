@@ -1,4 +1,8 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
+
+import '../../../ui/theme/app_motion.dart';
 
 import '../../../ui/theme/travel_radio_design.dart';
 import '../../../ui/theme/travel_radio_palette.dart';
@@ -34,13 +38,41 @@ class DiaryMap extends StatefulWidget {
   State<DiaryMap> createState() => _DiaryMapState();
 }
 
-class _DiaryMapState extends State<DiaryMap> {
+class _DiaryMapState extends State<DiaryMap>
+    with SingleTickerProviderStateMixin {
   // Worked out once per summary: the painter repaints only on a change.
   late var _looks = _looksOf(widget.summary);
+
+  late final AnimationController _zoomAnimation =
+      AnimationController(vsync: this)..addListener(() {
+        controller.value = _zoomTween!.transform(
+          Curves.easeOutCubic.transform(_zoomAnimation.value),
+        );
+      });
+  Matrix4Tween? _zoomTween;
+  Size? _viewSize;
+
+  @override
+  void dispose() {
+    _zoomAnimation.dispose();
+    super.dispose();
+  }
+
+  Matrix4 _overview(Size view, Size map) => Matrix4.identity()
+    ..translateByDouble(
+      (view.width - map.width) / 2,
+      (view.height - map.height) / 2,
+      0,
+      1,
+    );
 
   @override
   void didUpdateWidget(DiaryMap old) {
     super.didUpdateWidget(old);
+    if (old.controller != widget.controller) {
+      _zoomAnimation.stop();
+      _viewSize = null;
+    }
     if (old.summary != widget.summary) _looks = _looksOf(widget.summary);
   }
 
@@ -54,65 +86,91 @@ class _DiaryMapState extends State<DiaryMap> {
       DiaryDesign.minScale,
       DiaryDesign.maxScale,
     );
-    if (target == DiaryDesign.minScale) {
-      // Back to the whole world.
-      controller.value = Matrix4.identity();
-      return;
-    }
     final centre = view.center(Offset.zero);
     final focus = controller.toScene(centre);
     final shift = centre - focus * target;
     // Never past the edges of the world.
     double inside(double value, double viewSide, double mapSide) {
       final scaled = mapSide * target;
-      return scaled <= viewSide ? 0 : value.clamp(viewSide - scaled, 0);
+      return scaled <= viewSide
+          ? (viewSide - scaled) / 2
+          : value.clamp(viewSide - scaled, 0);
     }
 
-    controller.value = Matrix4.identity()
-      ..translateByDouble(
-        inside(shift.dx, view.width, map.width),
-        inside(shift.dy, view.height, map.height),
-        0,
-        1,
-      )
-      ..scaleByDouble(target, target, 1, 1);
+    final destination = target == DiaryDesign.minScale
+        ? _overview(view, map)
+        : (Matrix4.identity()
+            ..translateByDouble(
+              inside(shift.dx, view.width, map.width),
+              inside(shift.dy, view.height, map.height),
+              0,
+              1,
+            )
+            ..scaleByDouble(target, target, 1, 1));
+    _zoomAnimation.stop();
+    final duration = AppMotion.standard(context);
+    if (duration == Duration.zero) {
+      controller.value = destination;
+      return;
+    }
+    _zoomTween = Matrix4Tween(
+      begin: controller.value.clone(),
+      end: destination,
+    );
+    _zoomAnimation.duration = duration;
+    _zoomAnimation.forward(from: 0);
   }
 
   @override
   Widget build(BuildContext context) => LayoutBuilder(
     builder: (context, constraints) {
-      final cell = constraints.maxWidth / _columns;
-      final mapSize = Size(constraints.maxWidth, worldDotRows.length * cell);
-      final view = Size(constraints.maxWidth, constraints.maxHeight);
+      final view = constraints.biggest;
+      final cell = math.max(
+        view.width / _columns,
+        view.height / worldDotRows.length,
+      );
+      final mapSize = Size(_columns * cell, worldDotRows.length * cell);
+      if (_viewSize != view) {
+        _viewSize = view;
+        _zoomAnimation.stop();
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted && _viewSize == view) {
+            controller.value = _overview(view, mapSize);
+          }
+        });
+      }
       return Stack(
         children: [
-          Semantics(
-            label: widget.semanticsLabel,
-            image: true,
-            child: InteractiveViewer(
-              transformationController: controller,
-              minScale: DiaryDesign.minScale,
-              maxScale: DiaryDesign.maxScale,
-              boundaryMargin: EdgeInsets.zero,
-              constrained: false,
-              child: GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTapUp: (details) {
-                  final p = details.localPosition;
-                  final code = countryNear(
-                    worldDotNorth - p.dy / cell * worldDotStep,
-                    -180 + p.dx / cell * worldDotStep,
-                  );
-                  if (code != null) widget.onCountry(code);
-                },
-                child: RepaintBoundary(
-                  child: CustomPaint(
-                    key: const ValueKey('diary-map-paint'),
-                    size: mapSize,
-                    painter: DiaryMapPainter(
-                      looks: _looks,
-                      selected: widget.selected,
-                      cell: cell,
+          Positioned.fill(
+            child: Semantics(
+              label: widget.semanticsLabel,
+              image: true,
+              child: InteractiveViewer(
+                transformationController: controller,
+                onInteractionStart: (_) => _zoomAnimation.stop(),
+                minScale: DiaryDesign.minScale,
+                maxScale: DiaryDesign.maxScale,
+                boundaryMargin: EdgeInsets.zero,
+                constrained: false,
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTapUp: (details) {
+                    final p = details.localPosition;
+                    final code = countryNear(
+                      worldDotNorth - p.dy / cell * worldDotStep,
+                      -180 + p.dx / cell * worldDotStep,
+                    );
+                    if (code != null) widget.onCountry(code);
+                  },
+                  child: RepaintBoundary(
+                    child: CustomPaint(
+                      key: const ValueKey('diary-map-paint'),
+                      size: mapSize,
+                      painter: DiaryMapPainter(
+                        looks: _looks,
+                        selected: widget.selected,
+                        cell: cell,
+                      ),
                     ),
                   ),
                 ),
