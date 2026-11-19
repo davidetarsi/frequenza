@@ -46,10 +46,13 @@ Future<void> bootstrap({AppConfig config = const AppConfig()}) async {
     overrides: [radioAudioHandlerProvider.overrideWithValue(handler)],
   );
   // The first page depends on it: the welcome, or the radio.
-  final welcomeSeen = await container.read(welcomeSeenProvider.future);
+  await container.read(welcomeSeenProvider.future);
+  final hasSeenGuide = await container
+      .read(welcomeSeenProvider.notifier)
+      .hasSeenAnyGuide();
   // Before the notification: a flight from the headphones must already be
   // counted whole, with the launch details.
-  await startAnalytics(container, firstOpen: !welcomeSeen, locale: language);
+  await startAnalytics(container, firstOpen: !hasSeenGuide, locale: language);
   // The diary writes down every listen, from the first one.
   container.read(listenRecorderProvider);
   // The notification answers from the start, before any page is built.

@@ -137,4 +137,12 @@ abstract class LocaleKeys {
   static const diaryCloseSheet = 'diaryCloseSheet';
   static const diaryUnderAMinute = 'diaryUnderAMinute';
   static const diaryError = 'diaryError';
+  static const tourStartTitle = 'tourStartTitle';
+  static const tourFavoritesTitle = 'tourFavoritesTitle';
+  static const tourFavoritesBody = 'tourFavoritesBody';
+  static const tourDiaryTitle = 'tourDiaryTitle';
+  static const tourDiaryBody = 'tourDiaryBody';
+  static const tourProgress = 'tourProgress';
+  static const tourContinue = 'tourContinue';
+  static const tourClose = 'tourClose';
 }

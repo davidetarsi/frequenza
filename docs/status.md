@@ -331,3 +331,25 @@ Branch `feat/informazioni-e-vite`, sopra `feat/suono-sintonia`.
 - **Se il link non si apre:** compare «Impossibile aprire il link», come per GitHub.
 - **Da provare sul telefono:** la voce apre il modulo con telefono e versione già compilati.
 
+
+## Onboarding nella home — 18 novembre 2026
+
+- Branch `feat/onboarding-guidato`, da `develop` dopo il rilascio 0.4.0+5. La guida usa `RadioPage` e `RadioCabinet` reali. Suggerimenti nel display con freccia e componente evidenziato, nell'ordine manopola, preferiti, diario. Nessun pulsante Avanti o Salta visibile.
+- Primo titolo approvato «Accendi la radio». Corpo esatto da `welcomeBody`: «Ogni giro è una radio in diretta da qualche parte nel mondo. Quelle che ami le tieni con il cuore.»
+- Fascia EN/IT disponibile nei tre step. Primo passo attivato solo dalla manopola, che avvia davvero il primo viaggio. Negli altri due basta un tocco sulla pagina. Le azioni della radio restano protette durante la guida. Indietro Android chiude la guida.
+- Completamento salvato all'uscita, senza far interrompere l'ascolto. Dissolvenza della guida e della fascia, poi transizione esistente alla home con Hero della radio. Con movimento ridotto la dissolvenza e il volo Hero sono disabilitati.
+- Copy scorrevole nel display su schermi piccoli, in orizzontale e con testo ingrandito. Azioni semantiche per proseguire con lettore di schermo. Traduzioni IT/EN rigenerate.
+- Screenshot nativi controllati nei tre step. Rigenerazione, schema database, formato, analisi statica e controlli Node/Python superati con Flutter 3.38.5. Suite Flutter finale: 444 test superati, inclusi cambio lingua durante la guida, avvio viaggio, completamento persistente, Indietro Android, testo grande, orizzontale, movimento ridotto e azioni del lettore di schermo. Resta il collaudo su telefono di lettura, tocco e passaggio finale alla home.
+
+### Guida dopo l'aggiornamento
+
+- La revisione della guida è ora salvata in `app.welcomeRevision` (attuale: 2), separata dalla versione dell'app. Chi ha visto solo il vecchio onboarding vede la nuova guida una volta. Nuove installazioni mostrano direttamente la nuova guida, senza passare da quella precedente. Dopo completamento o chiusura con Indietro, i successivi avvii e aggiornamenti ordinari aprono la home.
+- Il vecchio flag resta per compatibilità e per distinguere i nuovi utenti nelle statistiche: rivedere la guida dopo l'aggiornamento non conta come prima installazione. Per riproporla in futuro bisogna incrementare esplicitamente la revisione.
+- Verificate tutte le stringhe IT/EN della guida e rigenerato il provider. Analisi statica pulita, 24 test mirati superati (installazione nuova, vecchio onboarding, revisione corrente/futura, riavvio, migrazione nella pagina, analytics e bootstrap).
+
+## Informativa e logging — 19 novembre 2026
+
+- Branch `fix/informativa-logging`, da `develop` dopo il merge della PR #44. Aggiornata la bozza di `docs/privacy.html` in italiano e inglese, confrontandola con eventi, dettagli della sessione, preferenza analytics e client tgram-analytics 0.2.0.
+- Logging esplicito nell'introduzione e nella sezione dedicata; finalità, attivazione predefinita, eventi e dati esclusi. Distinti archivi locali ed eventi inviati, codice temporaneo e identificativi persistenti, disattivazione delle statistiche e connessioni per la radio. Rimossi assoluti non adatti al trattamento descritto, come «nessun dato personale» e «l'app non manda più nulla».
+- Data aggiornata al 19 novembre 2026. HTML controllato per struttura, sezioni IT/EN e navigazione fra le lingue. Pubblicazione autorizzata da Davide tramite GitHub Pages, alimentato dal branch `develop`.
+- Correzione di Davide: Frequenza usa il piano gratuito del servizio gestito tgram-analytics, non un server dello sviluppatore. Questa indicazione sostituisce l'ipotesi di hosting proprio presente nei vecchi piani. Corretti informativa IT/EN e istruzioni operative: endpoint del fornitore `https://api.tgram-analytics.com`, collegamenti a privacy e DPA, report tramite Telegram, infrastruttura UE e conservazione predefinita di 90 giorni attribuita al fornitore, senza dichiararla verificata sul singolo progetto. IP/User-Agent originali non conservati e hash giornaliero descritti secondo la documentazione ufficiale verificata il 19/11/2026 (https://tgram-analytics.com/privacy.html e https://tgram-analytics.com/dpa.html).

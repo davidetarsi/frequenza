@@ -138,5 +138,13 @@
   "diaryLastListen": "Last listen: {}",
   "diaryCloseSheet": "Close",
   "diaryUnderAMinute": "under 1 min",
-  "diaryError": "The diary could not be read."
+  "diaryError": "The diary could not be read.",
+  "tourStartTitle": "Turn on the radio",
+  "tourFavoritesTitle": "Your favorites",
+  "tourFavoritesBody": "Find the radio stations and songs you saved here.",
+  "tourDiaryTitle": "Your travel diary",
+  "tourDiaryBody": "Find the countries and radio stations you have listened to here. It grows as you listen.",
+  "tourProgress": "{} OF 3",
+  "tourContinue": "Tap to continue",
+  "tourClose": "Tap to close"
 }
