@@ -1,15 +1,23 @@
-# Frequenza — stato verificato al 19 novembre 2026
+# Frequenza — stato verificato al 20 novembre 2026
 
 Il punto di ripresa di ogni sessione: si legge questo, poi solo il piano attivo. Le regole per le idee nuove sono in [principi.md](principi.md).
 
 ## Dove siamo
 
 - `main`: versione 0.4.1+6, dopo il merge della PR #46. Questo indica lo stato del repository; la pubblicazione sul Play Store resta gestita da Davide.
-- `develop`: include audit, componenti condivisi, localizzazione e correzione mondo → paese, dopo il merge della PR #48 (`0d53357`), confermato da Davide.
-- Branch di lavoro: `fix/snackbar-e-sintonizzazione-notifica`, da `origin/develop` dopo la PR #48. PR verso `develop` richiesta da Davide; merge gestito da Davide.
+- `develop`: include anche radio adattiva, snackbar e sintonizzazione in background, dopo il merge della PR #49 (`3aa62c7`).
+- Branch di lavoro: `fix/scadenza-snackbar`, da `origin/develop` dopo la PR #49. PR verso `develop` richiesta da Davide; merge e collaudo sul telefono gestiti da Davide.
 - Audit del 19 novembre: completati i blocchi su persistenza/stati, sicurezza/privacy, confini architetturali e localizzazione. Completato anche il blocco UI condivisa/token; resta il punto di manutenzione P3 nativo descritto sotto. Il rapporto è nell'area di lavoro `../audit/2026-11-19/rapporto.md` (non versionata nel repository).
 
 ## Piano attivo
+
+Scadenza snackbar completata — segnalazione del 20 novembre.
+
+- Davide segnala che l'avviso resta aperto dopo i 4 secondi. Nel componente comune era rimasta l'eccezione `persist: true` quando MediaQuery.accessibleNavigation era attivo; il flag del telefono non è stato rilevato direttamente, ma il comportamento è stato riprodotto nei test per salvataggio e rimozione.
+- Rimossa l'eccezione: `persist: false` esplicito in appSnackBar, durata sempre dal token condiviso di 4 secondi. Il componente non legge più MediaQuery e non richiede BuildContext; i due consumatori sono aggiornati. Nessuna modifica alle azioni Annulla o ai dati salvati.
+- Due regressioni falliscono prima della correzione e passano dopo. Verificato Annulla prima della scadenza con flag sia attivo sia disattivo. **42 test della feature canzoni superati**, analisi statica pulita, formattazione/diff verificati. Nessuna build nativa aggiuntiva per questa modifica Dart/UI; collaudo sul telefono da ripetere.
+
+## Radio adattiva completata — 19 novembre 2026
 
 Radio adattiva completata, autorizzata da Davide.
 

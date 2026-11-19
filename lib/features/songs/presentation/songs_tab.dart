@@ -133,7 +133,6 @@ class _SongsTabState extends ConsumerState<SongsTab> {
       ..hideCurrentSnackBar()
       ..showSnackBar(
         appSnackBar(
-          context,
           message: message,
           action: SnackBarAction(
             label: undo,
