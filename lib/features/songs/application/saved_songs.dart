@@ -48,12 +48,7 @@ class SavedSongs extends _$SavedSongs {
         final current = state.valueOrNull;
         if (current == null) return const SongSaveResult.unavailable();
         if (contains(track, station)) return const SongSaveResult.duplicate();
-        final song = SavedSong(
-          artist: track.artist,
-          title: track.title,
-          station: station,
-          savedAt: DateTime.now(),
-        );
+        final song = _songFor(track, station);
         final result = await _update([...current, song]);
         if (!currentTask()) return const SongSaveResult.unavailable();
         if (result.hasError) return const SongSaveResult.failed();
@@ -61,6 +56,40 @@ class SavedSongs extends _$SavedSongs {
         return const SongSaveResult.saved();
       }) ??
       const SongSaveResult.unavailable();
+
+  /// Checks membership when this task reaches the queue, so rapid taps toggle
+  /// the latest persisted state and never overwrite unrelated songs.
+  Future<bool> toggle(TrackTitle track, RadioStation station) async =>
+      await _tasks.run<bool>((currentTask) async {
+        final current = state.valueOrNull;
+        if (current == null) return false;
+        final key = SavedSong.keyOf(track, station);
+        final saved = current.any((song) => song.key == key);
+        final next = saved
+            ? [
+                for (final song in current)
+                  if (song.key != key) song,
+              ]
+            : [...current, _songFor(track, station)];
+        final result = await _update(next);
+        if (!currentTask() || result.hasError) return false;
+        ref
+            .read(analyticsProvider)
+            .track(
+              saved
+                  ? AppEvent.songRemoved(station)
+                  : AppEvent.songSaved(station),
+            );
+        return true;
+      }) ??
+      false;
+
+  SavedSong _songFor(TrackTitle track, RadioStation station) => SavedSong(
+    artist: track.artist,
+    title: track.title,
+    station: station,
+    savedAt: DateTime.now(),
+  );
 
   Future<void> remove(SavedSong song) async {
     await _tasks.run<bool>((currentTask) async {

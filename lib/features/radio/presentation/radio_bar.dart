@@ -7,12 +7,10 @@ import '../../../l10n/locale_keys.g.dart';
 import '../../../ui/theme/travel_radio_design.dart';
 import '../../../ui/theme/travel_radio_palette.dart';
 import '../../favorites/application/favorites_controller.dart';
-import '../../songs/application/saved_songs.dart';
 import '../../songs/presentation/save_song.dart';
 import '../application/radio_controller.dart';
 import '../domain/radio_bar_state.dart';
 import '../domain/radio_station.dart';
-import '../domain/track_title.dart';
 
 /// The player bar under a page opened over the radio. Touching the station
 /// goes back to the radio; the keys do what the radio's keys do. No next
@@ -60,7 +58,7 @@ class RadioBar extends ConsumerWidget {
     final keys = <Widget>[
       if (state.station case final station?) _heart(context, ref, station),
       if ((state.station, state.track) case (final station?, final track?))
-        _bookmark(context, ref, track, station),
+        SongBookmark.player(track: track, station: station),
       if (state.mainKey case final key?)
         _key(
           icon: switch (key) {
@@ -156,23 +154,6 @@ class RadioBar extends ConsumerWidget {
       onPressed: favorites.hasValue && !favorites.isLoading
           ? () => ref.read(favoritesProvider.notifier).toggle(station)
           : null,
-    );
-  }
-
-  Widget _bookmark(
-    BuildContext context,
-    WidgetRef ref,
-    TrackTitle track,
-    RadioStation station,
-  ) {
-    ref.watch(savedSongsProvider);
-    final saved = ref
-        .read(savedSongsProvider.notifier)
-        .contains(track, station);
-    return _icon(
-      icon: saved ? Icons.bookmark_added : Icons.bookmark_add_outlined,
-      tooltip: LocaleKeys.saveSong.tr(context: context),
-      onPressed: saved ? null : () => saveSong(context, ref, track, station),
     );
   }
 
