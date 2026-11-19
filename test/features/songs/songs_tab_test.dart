@@ -212,6 +212,22 @@ void main() {
     expect(row('B'), findsOneWidget);
   });
 
+  testWidgets('removal feedback expires while the songs sheet stays open', (
+    tester,
+  ) async {
+    final h = await openSongs(tester, [song('A', kexp, 10)]);
+    await tester.drag(row('A'), const Offset(-500, 0));
+    await tester.pumpAndSettle();
+    expect(find.text('Canzone tolta'), findsOneWidget);
+    await tester.pump(const Duration(seconds: 3));
+    expect(find.text('Canzone tolta'), findsOneWidget);
+    await tester.pump(const Duration(seconds: 1));
+    await tester.pumpAndSettle();
+    expect(find.text('Canzone tolta'), findsNothing);
+    expect(h.songs.items, isEmpty);
+    expect(find.byTooltip('Chiudi'), findsOneWidget);
+  });
+
   testWidgets('remove from the menu shows the same undo', (tester) async {
     final h = await openSongs(tester, [
       song('A', kexp, 10),

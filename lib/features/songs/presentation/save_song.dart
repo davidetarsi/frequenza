@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/locale_keys.g.dart';
 import '../../../ui/theme/app_component_design.dart';
+import '../../../ui/widgets/app_snack_bar.dart';
 import '../../radio/domain/radio_station.dart';
 import '../../radio/domain/track_title.dart';
 import '../application/saved_songs.dart';
@@ -39,8 +40,9 @@ Future<void> saveSong(
   messenger
     ..hideCurrentSnackBar()
     ..showSnackBar(
-      SnackBar(
-        content: Text(message),
+      appSnackBar(
+        context,
+        message: message,
         action: SnackBarAction(
           label: undo,
           onPressed: () {

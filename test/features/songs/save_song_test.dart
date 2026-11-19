@@ -43,6 +43,46 @@ void main() {
     expect(bookmarked, findsOneWidget);
   });
 
+  testWidgets(
+    'saving feedback expires after four seconds without removing the song',
+    (tester) async {
+      androidVersion(tester, 32);
+      final (audio, _) = await onAir(tester);
+      audio.trackTitles.add('Ana Moura - Desfado');
+      await tester.pumpAndSettle();
+      await tester.tap(bookmark);
+      await tester.pumpAndSettle();
+      await tester.pump(const Duration(seconds: 3));
+      expect(find.text('Canzone salvata'), findsOneWidget);
+      await tester.pump(const Duration(seconds: 1));
+      await tester.pumpAndSettle();
+      expect(find.text('Canzone salvata'), findsNothing);
+      expect(savedSongs(tester).single.title, 'Desfado');
+      expect(bookmarked, findsOneWidget);
+    },
+  );
+
+  testWidgets('accessible navigation keeps undo available beyond the timeout', (
+    tester,
+  ) async {
+    androidVersion(tester, 32);
+    final (audio, _) = await onAir(tester);
+    tester.platformDispatcher.accessibilityFeaturesTestValue =
+        const FakeAccessibilityFeatures(
+          disableAnimations: true,
+          accessibleNavigation: true,
+        );
+    audio.trackTitles.add('Ana Moura - Desfado');
+    await tester.pumpAndSettle();
+    await tester.tap(bookmark);
+    await tester.pumpAndSettle();
+    await tester.pump(const Duration(seconds: 10));
+    expect(find.text('Canzone salvata'), findsOneWidget);
+    await tester.tap(find.widgetWithText(SnackBarAction, 'Annulla'));
+    await tester.pumpAndSettle();
+    expect(savedSongs(tester), isEmpty);
+  });
+
   testWidgets('tapping the title saves it too', (tester) async {
     androidVersion(tester, 32);
     final (audio, _) = await onAir(tester);

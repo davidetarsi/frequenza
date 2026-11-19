@@ -4,6 +4,10 @@ import 'app_shape.dart';
 import 'app_spacing.dart';
 import 'travel_radio_palette.dart';
 
+abstract final class AdaptiveFitDesign {
+  static const searchSteps = 10;
+}
+
 abstract final class AppButtonDesign {
   static const loadingSize = 24.0;
   static const loadingStroke = 2.0;
@@ -21,6 +25,7 @@ abstract final class AppButtonDesign {
 }
 
 abstract final class AppMessageDesign {
+  static const snackBarDuration = Duration(seconds: 4);
   static const panelPadding = EdgeInsets.all(AppSpacing.large);
   static const emptyIconSize = 28.0;
 }
