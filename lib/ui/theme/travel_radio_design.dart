@@ -283,6 +283,11 @@ abstract final class RouteMapDesign {
   static const arrivalPulseRadius = 7.0;
   static const arrivalCycle = Duration(milliseconds: 2400);
   static const landing = Duration(milliseconds: 600);
+  static const countryStroke = 1.25;
+  static const countryFillOpacity = .065;
+  static const countryDotFade = .72;
+  static const countryArrival = Duration(milliseconds: 1800);
+  static const countryDeparture = Duration(milliseconds: 800);
   static const landingBlur = 6.0;
   static const dotsCycle = Duration(milliseconds: 1200);
   static const clockIconGap = 3.0;
