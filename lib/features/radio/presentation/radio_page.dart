@@ -13,6 +13,8 @@ import '../../journey/presentation/journey_texts.dart';
 import '../../journey/presentation/route_map.dart';
 import '../../songs/presentation/save_song.dart';
 import '../application/radio_controller.dart';
+import '../domain/radio_session.dart';
+import '../domain/journey.dart';
 import 'radio_display.dart';
 import 'copy_track_title.dart';
 import 'radio_cabinet.dart';
@@ -164,6 +166,8 @@ class RadioPage extends ConsumerWidget {
                 landings: journey.trips,
                 map: RouteMap(
                   flight: display.phase,
+                  reconnecting:
+                      session is Flying && session.kind == FlightKind.reconnect,
                   playing: display.playing,
                   departure: journey.departure,
                   leg: journey.leg,

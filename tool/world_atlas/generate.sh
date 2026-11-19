@@ -12,3 +12,9 @@ out=lib/features/journey/data/world_atlas.g.dart
 python3 -I tool/world_atlas/generate.py "$data/ne_110m_land.geojson" \
   "$data/ne_50m_admin_0_countries.geojson" /usr/share/zoneinfo/zone.tab "$out"
 dart format "$out"
+
+# Country silhouettes for the landing, from the same country/territory pieces.
+shapes=lib/features/journey/data/country_outlines.g.dart
+python3 -I tool/world_atlas/outlines.py "$data/ne_50m_admin_0_countries.geojson" \
+  /usr/share/zoneinfo/zone.tab "$shapes"
+dart format "$shapes"
