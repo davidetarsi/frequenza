@@ -7,16 +7,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../app/config/app_localization.dart';
+import '../../../app/localization/presentation/change_language.dart';
 import '../../../app/routing/app_router.dart';
 import '../../../l10n/locale_keys.g.dart';
 import '../../../ui/theme/app_motion.dart';
 import '../../../ui/theme/app_spacing.dart';
 import '../../../ui/theme/travel_radio_design.dart';
 import '../../../ui/theme/travel_radio_palette.dart';
+import '../../../ui/theme/welcome_tour_design.dart';
 import '../../../ui/widgets/code_badge.dart';
-import '../../radio/application/radio_controller.dart';
 import '../../radio/presentation/radio_page.dart';
-import '../application/welcome_seen.dart';
+import '../application/welcome_controller.dart';
+import '../domain/welcome_session.dart';
 
 class WelcomeTour extends ConsumerStatefulWidget {
   const WelcomeTour({super.key, required this.builder});
@@ -29,27 +31,30 @@ class WelcomeTour extends ConsumerStatefulWidget {
 class _WelcomeTourState extends ConsumerState<WelcomeTour> {
   final _targets = RadioPageAnchors();
   final _surface = GlobalKey();
-  int _step = 0;
-  bool _closing = false;
   Rect? _screen, _target;
 
   void _measure() {
     if (!mounted) return;
     final surface = _surface.currentContext?.findRenderObject();
     final screen = _targets.screen.currentContext?.findRenderObject();
-    final key = [_targets.dial, _targets.favorites, _targets.diary][_step];
+    final step = ref.read(welcomeControllerProvider).step;
+    final key = switch (step) {
+      WelcomeStep.radio => _targets.dial,
+      WelcomeStep.favorites => _targets.favorites,
+      WelcomeStep.diary => _targets.diary,
+    };
     final target = key.currentContext?.findRenderObject();
     if (surface is! RenderBox || screen is! RenderBox || target is! RenderBox) {
       return;
     }
     Rect rect(RenderBox box) =>
         surface.globalToLocal(box.localToGlobal(Offset.zero)) & box.size;
-    final face = rect(
-      screen,
-    ).deflate(RadioCabinetDesign.screenFrameInset + 1.5);
+    final face = rect(screen).deflate(
+      RadioCabinetDesign.screenFrameInset + WelcomeTourDesign.screenInset,
+    );
     // The dial anchor includes its caption; only the round control is lit.
     final anchor = rect(target);
-    final focus = _step == 0
+    final focus = step == WelcomeStep.radio
         ? Rect.fromLTWH(anchor.left, anchor.top, anchor.width, anchor.width)
         : anchor;
     if (_screen != face || _target != focus) {
@@ -60,52 +65,43 @@ class _WelcomeTourState extends ConsumerState<WelcomeTour> {
     }
   }
 
-  void _advance() {
-    if (_closing) return;
-    if (_step == 2) {
-      unawaited(_finish());
-    } else {
-      if (_step == 0) {
-        unawaited(ref.read(radioControllerProvider.notifier).tuneRandom());
-      }
-      setState(() {
-        _step++;
-        _target = null;
-      });
-    }
-  }
+  void _advance() => ref.read(welcomeControllerProvider.notifier).advance();
 
-  Future<void> _finish() async {
-    if (_closing) return;
-    setState(() => _closing = true);
+  Future<void> _leave() async {
+    // Timing and navigation belong to presentation; the controller has already
+    // recorded completion. Preserve the existing route and cabinet Hero.
     final duration = AppMotion.standard(context);
-    // Preserve the existing welcome-to-home route and cabinet Hero transition.
-    await ref.read(welcomeSeenProvider.notifier).markSeen();
-    if (!mounted) return;
     await Future<void>.delayed(duration);
     if (mounted) context.go(AppRoutes.home);
   }
 
   @override
   Widget build(BuildContext context) {
+    final session = ref.watch(welcomeControllerProvider);
+    ref.listen(welcomeControllerProvider, (before, after) {
+      if (before?.step != after.step) {
+        setState(() => _target = null);
+      }
+      if (after is WelcomeCompleted) unawaited(_leave());
+    });
     final theme = Theme.of(context);
     final palette = TravelRadioPalette.of(context);
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, _) {
-        if (!didPop) unawaited(_finish());
+        if (!didPop) ref.read(welcomeControllerProvider.notifier).dismiss();
       },
       child: Material(
         color: palette.paper,
         child: Column(
           children: [
             AnimatedOpacity(
-              opacity: _closing ? 0 : 1,
+              opacity: session.isClosing ? 0 : 1,
               duration: AppMotion.standard(context),
               child: SafeArea(
                 bottom: false,
                 child: SizedBox(
-                  height: 52,
+                  height: WelcomeTourDesign.languageBarHeight,
                   child: Padding(
                     padding: const EdgeInsets.only(right: AppSpacing.medium),
                     child: Row(
@@ -122,9 +118,9 @@ class _WelcomeTourState extends ConsumerState<WelcomeTour> {
                                 ? theme.colorScheme.primary
                                 : palette.muted,
                             icon: CodeBadge(locale.languageCode.toUpperCase()),
-                            onPressed: _closing
+                            onPressed: session.isClosing
                                 ? null
-                                : () => context.setLocale(locale),
+                                : () => changeLanguage(context, ref, locale),
                           ),
                       ],
                     ),
@@ -153,12 +149,12 @@ class _WelcomeTourState extends ConsumerState<WelcomeTour> {
                       ),
                       if (_screen != null && _target != null)
                         AnimatedOpacity(
-                          opacity: _closing ? 0 : 1,
+                          opacity: session.isClosing ? 0 : 1,
                           duration: AppMotion.standard(context),
                           child: _Guide(
                             screen: _screen!,
                             target: _target!,
-                            step: _step,
+                            step: session.step,
                             onAdvance: _advance,
                           ),
                         ),
@@ -182,59 +178,50 @@ class _Guide extends StatelessWidget {
     required this.onAdvance,
   });
   final Rect screen, target;
-  final int step;
+  final WelcomeStep step;
   final VoidCallback onAdvance;
 
   @override
   Widget build(BuildContext context) {
-    final title = [
-      LocaleKeys.tourStartTitle,
-      LocaleKeys.tourFavoritesTitle,
-      LocaleKeys.tourDiaryTitle,
-    ][step].tr(context: context);
-    final body = [
-      LocaleKeys.welcomeBody,
-      LocaleKeys.tourFavoritesBody,
-      LocaleKeys.tourDiaryBody,
-    ][step].tr(context: context);
-    final hint = [
-      LocaleKeys.welcomeHint,
-      LocaleKeys.tourContinue,
-      LocaleKeys.tourClose,
-    ][step].tr(context: context);
-    const ink = TravelRadioPalette.screenInk;
+    final title = switch (step) {
+      WelcomeStep.radio => LocaleKeys.tourStartTitle,
+      WelcomeStep.favorites => LocaleKeys.tourFavoritesTitle,
+      WelcomeStep.diary => LocaleKeys.tourDiaryTitle,
+    }.tr(context: context);
+    final body = switch (step) {
+      WelcomeStep.radio => LocaleKeys.welcomeBody,
+      WelcomeStep.favorites => LocaleKeys.tourFavoritesBody,
+      WelcomeStep.diary => LocaleKeys.tourDiaryBody,
+    }.tr(context: context);
+    final hint = switch (step) {
+      WelcomeStep.radio => LocaleKeys.welcomeHint,
+      WelcomeStep.favorites => LocaleKeys.tourContinue,
+      WelcomeStep.diary => LocaleKeys.tourClose,
+    }.tr(context: context);
     return GestureDetector(
       key: const ValueKey('welcome-guide'),
       behavior: HitTestBehavior.opaque,
       excludeFromSemantics: true,
       onTapUp: (event) {
-        if (step > 0 || target.contains(event.localPosition)) onAdvance();
+        if (step != WelcomeStep.radio || target.contains(event.localPosition)) {
+          onAdvance();
+        }
       },
       child: Stack(
         children: [
           Positioned.fill(
             child: CustomPaint(
-              painter: _GuidePainter(screen, target, step == 0),
+              painter: _GuidePainter(screen, target, step == WelcomeStep.radio),
             ),
           ),
           Positioned.fromRect(
             rect: screen,
             child: Container(
-              padding: const EdgeInsets.all(18),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
-                gradient: const LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    TravelRadioPalette.screenHighlight,
-                    TravelRadioPalette.screen,
-                  ],
-                ),
-              ),
+              padding: WelcomeTourDesign.copyPadding,
+              decoration: WelcomeTourDesign.copyDecoration,
               child: LayoutBuilder(
                 builder: (context, constraints) => SingleChildScrollView(
-                  key: ValueKey('tour-copy-$step'),
+                  key: ValueKey('tour-copy-${step.index}'),
                   child: ConstrainedBox(
                     constraints: BoxConstraints(
                       minHeight: constraints.maxHeight,
@@ -252,36 +239,20 @@ class _Guide extends StatelessWidget {
                               Text(
                                 LocaleKeys.tourProgress.tr(
                                   context: context,
-                                  args: ['${step + 1}'],
+                                  args: ['${step.index + 1}'],
                                 ),
-                                style: TextStyle(
-                                  color: ink.withValues(alpha: .7),
-                                  fontSize: 13,
-                                  fontFamily: 'monospace',
-                                  letterSpacing: 1.4,
-                                ),
+                                style: WelcomeTourDesign.progressText,
                               ),
                               const SizedBox(height: AppSpacing.large),
                               Semantics(
                                 header: true,
                                 child: Text(
                                   title,
-                                  style: const TextStyle(
-                                    color: ink,
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.w600,
-                                  ),
+                                  style: WelcomeTourDesign.titleText,
                                 ),
                               ),
                               const SizedBox(height: AppSpacing.medium),
-                              Text(
-                                body,
-                                style: TextStyle(
-                                  color: ink.withValues(alpha: .9),
-                                  fontSize: 16,
-                                  height: 1.45,
-                                ),
-                              ),
+                              Text(body, style: WelcomeTourDesign.bodyText),
                             ],
                           ),
                           Padding(
@@ -293,10 +264,7 @@ class _Guide extends StatelessWidget {
                               onTap: onAdvance,
                               child: Text(
                                 hint,
-                                style: TextStyle(
-                                  color: ink.withValues(alpha: .7),
-                                  fontSize: 13,
-                                ),
+                                style: WelcomeTourDesign.hintText,
                               ),
                             ),
                           ),
@@ -310,7 +278,9 @@ class _Guide extends StatelessWidget {
           ),
           Positioned.fill(
             child: IgnorePointer(
-              child: CustomPaint(painter: _Arrow(screen, target, step == 0)),
+              child: CustomPaint(
+                painter: _Arrow(screen, target, step == WelcomeStep.radio),
+              ),
             ),
           ),
         ],
@@ -325,28 +295,25 @@ class _GuidePainter extends CustomPainter {
   final bool knob;
   @override
   void paint(Canvas canvas, Size size) {
-    final focus = target.inflate(7);
+    final focus = target.inflate(WelcomeTourDesign.focusOutset);
     final shape = RRect.fromRectAndRadius(
       focus,
-      Radius.circular(knob ? focus.width / 2 : 32),
+      knob ? Radius.circular(focus.width / 2) : WelcomeTourDesign.actionRadius,
     );
     final holes = Path()
-      ..addRRect(RRect.fromRectAndRadius(screen, const Radius.circular(12)))
+      ..addRRect(RRect.fromRectAndRadius(screen, WelcomeTourDesign.copyRadius))
       ..addRRect(shape);
     final shade = Path.combine(
       PathOperation.difference,
       Path()..addRect(Offset.zero & size),
       holes,
     );
-    canvas.drawPath(
-      shade,
-      Paint()..color = const Color(0xFF081810).withValues(alpha: .64),
-    );
+    canvas.drawPath(shade, Paint()..color = WelcomeTourDesign.shade);
     canvas.drawRRect(
       shape,
       Paint()
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.5
+        ..strokeWidth = WelcomeTourDesign.focusStroke
         ..color = TravelRadioPalette.screenInk,
     );
   }
@@ -364,26 +331,35 @@ class _Arrow extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final path = Path();
     if (knob) {
-      final start = Offset(screen.right - 30, screen.bottom - 32);
-      final end = Offset(target.center.dx, target.top - 8);
+      final start = screen.bottomRight + WelcomeTourDesign.dialArrowStart;
+      final end = Offset(
+        target.center.dx,
+        target.top - WelcomeTourDesign.dialArrowGap,
+      );
       path.moveTo(start.dx, start.dy);
       path.cubicTo(
-        start.dx + 12,
-        start.dy + 30,
-        end.dx + 10,
-        end.dy - 22,
+        start.dx + WelcomeTourDesign.dialArrowFirstControl.dx,
+        start.dy + WelcomeTourDesign.dialArrowFirstControl.dy,
+        end.dx + WelcomeTourDesign.dialArrowLastControl.dx,
+        end.dy + WelcomeTourDesign.dialArrowLastControl.dy,
         end.dx,
         end.dy,
       );
     } else {
-      final start = Offset(screen.right - 24, screen.top + 26);
-      final end = Offset(target.center.dx, target.bottom + 9);
+      final start = screen.topRight + WelcomeTourDesign.actionArrowStart;
+      final end = Offset(
+        target.center.dx,
+        target.bottom + WelcomeTourDesign.actionArrowGap,
+      );
       path.moveTo(start.dx, start.dy);
       path.cubicTo(
-        math.min(size.width - 18, start.dx + 52),
-        screen.top - 75,
-        end.dx + 40,
-        end.dy + 58,
+        math.min(
+          size.width - WelcomeTourDesign.actionArrowSideInset,
+          start.dx + WelcomeTourDesign.actionArrowBend,
+        ),
+        screen.top - WelcomeTourDesign.actionArrowRise,
+        end.dx + WelcomeTourDesign.actionArrowLastControl.dx,
+        end.dy + WelcomeTourDesign.actionArrowLastControl.dy,
         end.dx,
         end.dy,
       );
@@ -392,26 +368,29 @@ class _Arrow extends CustomPainter {
     final tangent = metric.getTangentForOffset(metric.length)!;
     final point = tangent.position;
     final angle = tangent.angle;
-    for (final delta in [-.5, .5]) {
+    for (final delta in [
+      -WelcomeTourDesign.arrowHeadSpread,
+      WelcomeTourDesign.arrowHeadSpread,
+    ]) {
       path.moveTo(point.dx, point.dy);
       path.lineTo(
-        point.dx - 10 * math.cos(angle + delta),
-        point.dy - 10 * math.sin(angle + delta),
+        point.dx - WelcomeTourDesign.arrowHeadLength * math.cos(angle + delta),
+        point.dy - WelcomeTourDesign.arrowHeadLength * math.sin(angle + delta),
       );
     }
     canvas.drawPath(
       path,
       Paint()
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 4
+        ..strokeWidth = WelcomeTourDesign.arrowShadowStroke
         ..strokeCap = StrokeCap.round
-        ..color = const Color(0xFF081810).withValues(alpha: .6),
+        ..color = WelcomeTourDesign.arrowShadow,
     );
     canvas.drawPath(
       path,
       Paint()
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.8
+        ..strokeWidth = WelcomeTourDesign.arrowStroke
         ..strokeCap = StrokeCap.round
         ..color = TravelRadioPalette.screenInk,
     );

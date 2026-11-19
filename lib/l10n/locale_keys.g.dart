@@ -145,4 +145,19 @@ abstract class LocaleKeys {
   static const tourProgress = 'tourProgress';
   static const tourContinue = 'tourContinue';
   static const tourClose = 'tourClose';
+  static const songSaveError = 'songSaveError';
+  static const languageSaveError = 'languageSaveError';
+  static const notificationNext = 'notificationNext';
+  static const notificationPrevious = 'notificationPrevious';
+  static const favoritesCount = 'favoritesCount';
+  static const stationCountry = 'stationCountry';
+  static const favoriteDetails = 'favoriteDetails';
+  static const diarySummary = 'diarySummary';
+  static const diaryTopStation = 'diaryTopStation';
+  static const approximateDistance = 'approximateDistance';
+  static const countryDetailSuffix = 'countryDetailSuffix';
+  static const detailsSeparator = 'detailsSeparator';
+  static const diaryCountrySummary = 'diaryCountrySummary';
+  static const flightAnnouncement = 'flightAnnouncement';
+  static const approximateTime = 'approximateTime';
 }

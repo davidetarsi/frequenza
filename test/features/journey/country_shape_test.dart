@@ -1,7 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:frequenza/features/journey/data/country_outlines.g.dart';
+import 'package:frequenza/features/journey/domain/atlas/country_outlines.g.dart';
 import 'package:frequenza/features/journey/presentation/country_shape.dart';
 
 void main() {
@@ -54,5 +54,30 @@ void main() {
     expect(middle.width, greaterThan(island.width));
     expect(middle.width, lessThan(world.width));
     expect(middle.isFinite, isTrue);
+  });
+  test('zoom keeps the destination in view throughout the approach', () {
+    const world = Rect.fromLTWH(-180, -80, 360, 140);
+    for (final code in ['SG', 'JP', 'BR', 'AU', 'FR']) {
+      final destination = CountryShape.of(code)!.viewport;
+      for (var step = 0; step <= 20; step++) {
+        final view = interpolateMapView(world, destination, step / 20);
+        expect(
+          view.inflate(1e-8).contains(destination.topLeft),
+          isTrue,
+          reason: '$code at step $step loses the top of the country',
+        );
+        expect(
+          view.inflate(1e-8).contains(destination.bottomRight),
+          isTrue,
+          reason: '$code at step $step loses the bottom of the country',
+        );
+      }
+    }
+  });
+
+  test('panning at an unchanged scale stays finite and linear', () {
+    const from = Rect.fromLTWH(0, 0, 20, 10);
+    const to = Rect.fromLTWH(40, -20, 20, 10);
+    expect(interpolateMapView(from, to, .5), Rect.lerp(from, to, .5));
   });
 }

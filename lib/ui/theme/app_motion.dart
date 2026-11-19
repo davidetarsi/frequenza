@@ -13,10 +13,14 @@ abstract final class AppMotion {
 
   /// The favorites count swelling when a station is saved.
   static const countPulse = Duration(milliseconds: 400);
+  static const countPulseScale = 1.25;
+  static const countPulseCurve = Curves.easeInOut;
 
   /// The diary growing out of the radio's screen, and back.
   static const diaryOpen = Duration(milliseconds: 520);
   static const diaryClose = Duration(milliseconds: 340);
+  static const diaryOpenCurve = Curves.easeInOutCubic;
+  static const diaryCloseCurve = Curves.easeInCubic;
 
   /// The player bar rises in the last part of the opening, from below.
   static const diaryBarStart = 0.55;

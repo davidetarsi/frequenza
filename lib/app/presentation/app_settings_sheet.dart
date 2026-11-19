@@ -9,9 +9,12 @@ import '../../ui/widgets/app_settings_option.dart';
 import '../../ui/widgets/code_badge.dart';
 import '../../ui/widgets/travel_sheet.dart';
 import '../config/app_localization.dart';
+import '../localization/presentation/change_language.dart';
+import '../localization/domain/app_language.dart';
 import '../links/app_version.dart';
 import '../links/external_links.dart';
 import '../theme/app_theme_mode.dart';
+import 'open_app_link.dart';
 
 Future<void> showSettings(BuildContext context) =>
     showTravelSheet(context, builder: (_) => const AppSettingsSheet());
@@ -75,7 +78,7 @@ class AppSettingsSheet extends ConsumerWidget {
             leading: CodeBadge(locale.languageCode.toUpperCase()),
             label: label.tr(context: context),
             selected: context.locale == locale,
-            onTap: () => context.setLocale(locale),
+            onTap: () => changeLanguage(context, ref, locale),
           ),
         const SizedBox(height: AppSpacing.medium),
         Text(
@@ -108,7 +111,13 @@ class AppSettingsSheet extends ConsumerWidget {
           label: LocaleKeys.privacyPolicy.tr(context: context),
           selected: false,
           trailing: const Icon(Icons.open_in_new),
-          onTap: () => _open(context, ref, () async => AppLinks.privacy),
+          onTap: () => openAppLink(
+            context,
+            ref,
+            () async => AppLinks.privacyFor(
+              AppLanguage.device(context.locale.languageCode),
+            ),
+          ),
         ),
         const SizedBox(height: AppSpacing.medium),
         Text(
@@ -120,14 +129,14 @@ class AppSettingsSheet extends ConsumerWidget {
           label: LocaleKeys.viewOnGitHub.tr(context: context),
           selected: false,
           trailing: const Icon(Icons.open_in_new),
-          onTap: () => _open(context, ref, () async => AppLinks.project),
+          onTap: () => openAppLink(context, ref, () async => AppLinks.project),
         ),
         AppSettingsOption(
           leading: const Icon(Icons.feedback_outlined),
           label: LocaleKeys.sendFeedback.tr(context: context),
           selected: false,
           trailing: const Icon(Icons.open_in_new),
-          onTap: () => _open(
+          onTap: () => openAppLink(
             context,
             ref,
             () async => AppLinks.feedback(
@@ -152,20 +161,6 @@ class AppSettingsSheet extends ConsumerWidget {
         SnackBar(
           content: Text(LocaleKeys.analyticsSaveError.tr(context: context)),
         ),
-      );
-    }
-  }
-
-  /// Opens [link]; says so when nothing opens it.
-  Future<void> _open(
-    BuildContext context,
-    WidgetRef ref,
-    Future<Uri> Function() link,
-  ) async {
-    final opened = await ref.read(openExternalProvider)(await link());
-    if (!opened && context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(LocaleKeys.linkError.tr(context: context))),
       );
     }
   }

@@ -1,49 +1,71 @@
-import 'dart:io';
-
+import 'package:audio_service/audio_service.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:audio_service/audio_service.dart';
 import 'package:just_audio/just_audio.dart';
 
 import '../features/analytics/application/analytics_session.dart';
 import '../features/diary/application/listen_recorder.dart';
 import '../features/radio/application/radio_notification.dart';
 import '../features/radio/application/radio_providers.dart';
-import '../features/radio/data/native_channel.dart';
+import '../features/radio/data/just_audio_service.dart';
 import '../features/radio/data/radio_audio_handler.dart';
 import '../features/welcome/application/welcome_seen.dart';
-
-import '../l10n/app_translations.g.dart';
-import '../l10n/locale_keys.g.dart';
-
 import 'app.dart';
 import 'config/app_config.dart';
+import 'config/notification_config.dart';
+import 'preferences/data/shared_preferences_repository.dart';
+import 'preferences/application/app_preferences_provider.dart';
+import 'localization/application/app_language_provider.dart';
+import 'localization/application/language_effects.dart';
+import 'localization/application/notification_localization.dart';
+import 'platform/application/app_platform_provider.dart';
+import 'platform/data/method_channel_app_platform.dart';
+import 'platform/domain/app_platform.dart';
 
 Future<void> bootstrap({AppConfig config = const AppConfig()}) async {
   WidgetsFlutterBinding.ensureInitialized();
-  await EasyLocalization.ensureInitialized();
+  try {
+    await EasyLocalization.ensureInitialized();
+  } catch (_) {
+    // A broken preference store must not block the radio. The supported
+    // start locale is resolved below and explicitly applied by the UI bridge.
+  }
+  final AppPlatform platform = MethodChannelAppPlatform();
   final player = AudioPlayer();
-  final language =
-      WidgetsBinding.instance.platformDispatcher.locale.languageCode == 'it'
-      ? 'it'
-      : 'en';
-  String text(String key) => CodegenLoader.mapLocales[language]![key] as String;
-  final fallbackArt = await _notificationArt();
+  final preferences = SharedPreferencesRepository();
+  final language = await resolveInitialLanguage(
+    preferences,
+    platform.deviceLanguageCode,
+  );
+  final labels = notificationLocalization(language);
+  final fallbackArt = await platform.notificationArtwork();
   final handler = await AudioService.init(
     builder: () => RadioAudioHandler(
       player,
       flightTitle: config.appName,
-      flightSubtitle: text(LocaleKeys.notificationFlying),
-      saveLabel: text(LocaleKeys.notificationSave),
-      removeLabel: text(LocaleKeys.notificationRemove),
+      flightSubtitle: labels.flying,
+      saveLabel: labels.save,
+      removeLabel: labels.remove,
       fallbackArt: fallbackArt,
     ),
-    config: radioServiceConfig(channelName: text(LocaleKeys.audioChannelName)),
+    config: radioServiceConfig(channelName: labels.channelName),
   );
   final container = ProviderContainer(
-    overrides: [radioAudioHandlerProvider.overrideWithValue(handler)],
+    overrides: [
+      appPlatformProvider.overrideWithValue(platform),
+      appPreferencesRepositoryProvider.overrideWithValue(preferences),
+      initialAppLanguageProvider.overrideWithValue(language),
+      radioMediaSessionProvider.overrideWithValue(handler),
+      radioAudioServiceProvider.overrideWith((ref) {
+        final service = JustAudioService(player: player, mediaSession: handler);
+        ref.onDispose(() async {
+          await handler.dispose();
+          await service.dispose();
+        });
+        return service;
+      }),
+    ],
   );
   // The first page depends on it: the welcome, or the radio.
   await container.read(welcomeSeenProvider.future);
@@ -52,7 +74,12 @@ Future<void> bootstrap({AppConfig config = const AppConfig()}) async {
       .hasSeenAnyGuide();
   // Before the notification: a flight from the headphones must already be
   // counted whole, with the launch details.
-  await startAnalytics(container, firstOpen: !hasSeenGuide, locale: language);
+  await startAnalytics(
+    container,
+    firstOpen: !hasSeenGuide,
+    locale: language.name,
+  );
+  container.read(appLanguageEffectsProvider);
   // The diary writes down every listen, from the first one.
   container.read(listenRecorderProvider);
   // The notification answers from the start, before any page is built.
@@ -60,7 +87,7 @@ Future<void> bootstrap({AppConfig config = const AppConfig()}) async {
   runApp(
     UncontrolledProviderScope(
       container: container,
-      child: StarterApp(config: config),
+      child: StarterApp(config: config, locale: Locale(language.name)),
     ),
   );
 }
@@ -71,24 +98,8 @@ Future<void> bootstrap({AppConfig config = const AppConfig()}) async {
 /// after ten minutes, or when the app is swiped away from the recents.
 AudioServiceConfig radioServiceConfig({required String channelName}) =>
     AudioServiceConfig(
-      androidNotificationChannelId: 'it.davidetarsi.frequenza.channel.audio',
+      androidNotificationChannelId: radioNotificationChannelId,
       androidNotificationChannelName: channelName,
       androidNotificationIcon: 'drawable/ic_stat_frequenza',
       androidStopForegroundOnPause: false,
     );
-
-/// Frequenza's logo as a file in the app cache: the notification shows it
-/// for stations without a logo. Null when it cannot be written.
-Future<Uri?> _notificationArt() async {
-  try {
-    final folder = await nativeChannel.invokeMethod<String>('cacheDir');
-    if (folder == null) return null;
-    final art = await rootBundle.load('assets/images/notification_art.png');
-    final file = File('$folder/notification_art.png');
-    await file.writeAsBytes(art.buffer.asUint8List(), flush: true);
-    return Uri.file(file.path);
-  } catch (_) {
-    // Missing asset or folder: the notification just shows no logo.
-    return null;
-  }
-}

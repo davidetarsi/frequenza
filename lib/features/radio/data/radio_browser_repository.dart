@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
+import 'dart:typed_data';
 
 import 'package:http/http.dart' as http;
 
@@ -8,16 +9,24 @@ import '../../journey/domain/geo_point.dart';
 import '../domain/country_draw.dart';
 import '../domain/radio_repository.dart';
 import '../domain/radio_station.dart';
+import '../domain/station_input.dart';
+import '../../../app/network/domain/https_uri.dart';
 
 class RadioBrowserRepository implements RadioRepository {
   RadioBrowserRepository({
     http.Client? client,
     List<String>? mirrors,
     this.timeout = const Duration(seconds: 8),
-    this.userAgent = 'Frequenza/0.1.0 (it.davidetarsi.frequenza)',
+    this.userAgent = 'Frequenza (it.davidetarsi.frequenza)',
+    Future<String>? resolvedUserAgent,
+    this.maxResponseBytes = 1024 * 1024,
     Random? random,
   }) : _client = client ?? http.Client(),
-       _mirrors = mirrors ?? _defaultMirrors,
+       _ownsClient = client == null,
+       _resolvedUserAgent = resolvedUserAgent?.catchError(
+         (Object _) => userAgent,
+       ),
+       _mirrors = List.unmodifiable(mirrors ?? _defaultMirrors),
        _random = random ?? Random();
 
   /// `all` is the name Radio Browser keeps pointing at its live servers;
@@ -33,6 +42,23 @@ class RadioBrowserRepository implements RadioRepository {
   static const drawSize = 30;
 
   final http.Client _client;
+  final bool _ownsClient;
+  final Future<String>? _resolvedUserAgent;
+  final int maxResponseBytes;
+  final _requests = <Completer<void>>{};
+  bool _closed = false;
+
+  /// Aborts outstanding work and closes an owned HTTP client. Injected clients
+  /// remain the caller's responsibility, so a shared transport is not closed.
+  void close() {
+    if (_closed) return;
+    _closed = true;
+    for (final abort in _requests) {
+      if (!abort.isCompleted) abort.complete();
+    }
+    if (_ownsClient) _client.close();
+  }
+
   final List<String> _mirrors;
   final Duration timeout;
   final String userAgent;
@@ -164,7 +190,11 @@ class RadioBrowserRepository implements RadioRepository {
             'iso_3166_1': final String code,
             'stationcount': final num count,
           })
-            code: count.toInt(),
+            if (code.isNotEmpty &&
+                code.length <= StationInput.countryCode &&
+                count.isFinite &&
+                count > 0)
+              code: count.toInt(),
       };
       return countries.isEmpty ? null : _countries = countries;
     } on Object {
@@ -173,47 +203,39 @@ class RadioBrowserRepository implements RadioRepository {
   }
 
   RadioStation? _parseStation(Map<String, dynamic> json) {
-    final id = json['stationuuid']?.toString() ?? '';
-    final name = (json['name']?.toString() ?? '').trim();
-    final urlResolved = (json['url_resolved']?.toString() ?? '').trim();
-    final country = (json['country']?.toString() ?? '').trim();
-    final countryCode = (json['countrycode']?.toString() ?? '')
-        .trim()
-        .toUpperCase();
-
-    // Enforce strict HTTPS stream requirement
-    if (id.isEmpty ||
-        name.isEmpty ||
-        !urlResolved.toLowerCase().startsWith('https://')) {
-      return null;
-    }
-
-    final favicon = json['favicon']?.toString().trim();
-    final faviconUrl =
-        (favicon != null && favicon.toLowerCase().startsWith('https://'))
-        ? favicon
-        : null;
-
-    final tagsString = json['tags']?.toString() ?? '';
+    final id = StationInput.text(json['stationuuid'], StationInput.id);
+    final name = StationInput.text(json['name'], StationInput.name);
+    final stream = json['url_resolved'];
+    final uri = stream is String ? httpsUri(stream) : null;
+    if (id == null || name == null || uri == null) return null;
+    final country =
+        StationInput.text(json['country'], StationInput.country) ?? '';
+    final countryCode =
+        (StationInput.text(json['countrycode'], StationInput.countryCode) ?? '')
+            .toUpperCase();
+    final favicon = json['favicon'];
+    final faviconUrl = favicon is String ? httpsUri(favicon)?.toString() : null;
+    final tagsString =
+        StationInput.text(json['tags'], StationInput.tagsText) ?? '';
     final tags = tagsString
         .split(',')
         .map((t) => t.trim())
-        .where((t) => t.isNotEmpty)
-        .take(5)
+        .where((t) => StationInput.text(t, StationInput.tag) != null)
+        .take(StationInput.tagsCount)
         .toList();
-
-    final codec = json['codec']?.toString().trim();
-    final bitrate = json['bitrate'] is num
-        ? (json['bitrate'] as num).toInt()
+    final codec = StationInput.text(json['codec'], StationInput.codec);
+    final rawBitrate = json['bitrate'];
+    final bitrate = rawBitrate is num && rawBitrate.isFinite
+        ? rawBitrate.toInt()
         : null;
 
     final point = GeoPoint.tryFrom(json['geo_lat'], json['geo_long']);
-    final region = json['state']?.toString().trim();
+    final region = StationInput.text(json['state'], StationInput.region);
 
     return RadioStation(
       id: id,
       name: name,
-      streamUrl: urlResolved,
+      streamUrl: uri.toString(),
       country: country,
       countryCode: countryCode,
       region: (region == null || region.isEmpty) ? null : region,
@@ -236,32 +258,82 @@ class RadioBrowserRepository implements RadioRepository {
     for (var attempt = 0; attempt < totalMirrors; attempt++) {
       final mirrorIndex = (_currentMirrorIndex + attempt) % totalMirrors;
       final baseUrl = _mirrors[mirrorIndex];
-      final uri = Uri.parse(
-        baseUrl,
-      ).replace(path: path, queryParameters: queryParams);
-
       try {
-        final response = await _client
-            .get(
-              uri,
-              headers: {'User-Agent': userAgent, 'Accept': 'application/json'},
-            )
-            .timeout(timeout);
-
-        if (response.statusCode >= 200 && response.statusCode < 300) {
-          _currentMirrorIndex = mirrorIndex; // remember working mirror
-          return jsonDecode(response.body);
-        } else {
-          lastError = http.ClientException(
-            'HTTP ${response.statusCode} from $baseUrl',
-            uri,
-          );
+        if (_closed) throw StateError('Radio Browser repository is closed');
+        final base = httpsUri(baseUrl);
+        if (base == null) {
+          throw FormatException('Radio Browser mirror must use HTTPS');
         }
+        final uri = base.replace(path: path, queryParameters: queryParams);
+        final decoded = await _requestJson(uri);
+        if (_closed) throw StateError('Radio Browser repository is closed');
+        _currentMirrorIndex = mirrorIndex;
+        return decoded;
       } catch (e) {
+        if (_closed) rethrow;
         lastError = e;
       }
     }
 
     throw lastError ?? Exception('All Radio Browser mirrors failed');
+  }
+
+  Future<dynamic> _requestJson(Uri uri) async {
+    if (httpsUri(uri.toString()) == null) {
+      throw FormatException('Invalid HTTPS request');
+    }
+    final identity = await (_resolvedUserAgent ?? Future.value(userAgent))
+        .timeout(timeout, onTimeout: () => userAgent)
+        .catchError((Object _) => userAgent);
+    if (_closed) throw StateError('Radio Browser repository is closed');
+    final safeIdentity =
+        identity.length <= 256 && !identity.contains(RegExp(r'[\r\n]'))
+        ? identity
+        : 'Frequenza (it.davidetarsi.frequenza)';
+    final abort = Completer<void>();
+    _requests.add(abort);
+    final request =
+        http.AbortableRequest('GET', uri, abortTrigger: abort.future)
+          ..followRedirects = false
+          ..headers.addAll({
+            'User-Agent': safeIdentity,
+            'Accept': 'application/json',
+          });
+    final timer = Timer(timeout, () {
+      if (!abort.isCompleted) abort.complete();
+    });
+    try {
+      return await _readJson(request).timeout(timeout);
+    } finally {
+      timer.cancel();
+      if (!abort.isCompleted) abort.complete();
+      _requests.remove(abort);
+    }
+  }
+
+  Future<dynamic> _readJson(http.BaseRequest request) async {
+    final response = await _client.send(request);
+    if (_closed ||
+        response.statusCode < 200 ||
+        response.statusCode >= 300 ||
+        (response.contentLength != null &&
+            response.contentLength! > maxResponseBytes)) {
+      await response.stream.listen(null).cancel();
+      throw http.ClientException(
+        'Invalid or oversized Radio Browser response',
+        request.url,
+      );
+    }
+    final bytes = BytesBuilder();
+    await for (final chunk in response.stream) {
+      if (_closed || bytes.length + chunk.length > maxResponseBytes) {
+        throw http.ClientException(
+          'Radio Browser response exceeds its limit',
+          request.url,
+        );
+      }
+      bytes.add(chunk);
+    }
+    return jsonDecode(utf8.decode(bytes.takeBytes()));
   }
 }

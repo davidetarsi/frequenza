@@ -1,38 +1,40 @@
 import 'package:flutter/material.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
+import '../preferences/application/app_preferences_provider.dart';
+import '../preferences/domain/app_preferences_repository.dart';
 import '../state/latest_save.dart';
 
 part 'app_theme_mode.g.dart';
 
 @Riverpod(keepAlive: true)
 class AppThemeMode extends _$AppThemeMode {
-  static const _key = 'app.themeMode';
   final _save = LatestSave();
 
   @override
   Future<ThemeMode> build() async {
     _save.start(ref);
-    final preferences = await SharedPreferences.getInstance();
-    final saved = preferences.getString(_key);
-    return ThemeMode.values.firstWhere(
-      (mode) => mode.name == saved,
-      orElse: () => ThemeMode.system,
-    );
+    final repository = ref.watch(appPreferencesRepositoryProvider);
+    return switch (await repository.loadTheme()) {
+      PreferredTheme.system => ThemeMode.system,
+      PreferredTheme.light => ThemeMode.light,
+      PreferredTheme.dark => ThemeMode.dark,
+    };
   }
 
   Future<bool> select(ThemeMode mode) async {
     if (state.isLoading || state.valueOrNull == mode) return true;
     final previous = state.valueOrNull ?? ThemeMode.system;
+    final repository = ref.read(appPreferencesRepositoryProvider);
     final result = await _save.run(
       shown: AsyncData(previous),
       emit: (value) => state = value,
       action: () async {
-        final preferences = await SharedPreferences.getInstance();
-        if (!await preferences.setString(_key, mode.name)) {
-          throw StateError('Theme preference could not be saved');
-        }
+        await repository.saveTheme(switch (mode) {
+          ThemeMode.system => PreferredTheme.system,
+          ThemeMode.light => PreferredTheme.light,
+          ThemeMode.dark => PreferredTheme.dark,
+        });
         return mode;
       },
     );

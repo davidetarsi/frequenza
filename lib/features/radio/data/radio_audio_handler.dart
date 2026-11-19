@@ -4,8 +4,10 @@ import 'package:audio_service/audio_service.dart';
 import 'package:just_audio/just_audio.dart';
 
 import '../domain/radio_station.dart';
-import 'native_channel.dart';
-import 'radio_media_session.dart';
+import '../../../app/platform/data/native_channel.dart';
+import '../domain/radio_media_session.dart';
+import '../domain/radio_media_localization.dart';
+import '../../journey/domain/country_name.dart';
 
 class RadioAudioHandler extends BaseAudioHandler implements RadioMediaSession {
   RadioAudioHandler(
@@ -31,7 +33,11 @@ class RadioAudioHandler extends BaseAudioHandler implements RadioMediaSession {
   }
 
   final AudioPlayer player;
-  final String flightTitle, flightSubtitle, saveLabel, removeLabel;
+  final String flightTitle;
+  String flightSubtitle, saveLabel, removeLabel;
+  RadioMediaLocalization? _localization;
+  RadioStation? _station;
+  bool _flightItem = false;
 
   /// Frequenza's logo, for stations without one.
   final Uri? fallbackArt;
@@ -99,9 +105,21 @@ class RadioAudioHandler extends BaseAudioHandler implements RadioMediaSession {
     _show(
       PlaybackState(
         controls: [
-          MediaControl.skipToPrevious,
-          playing ? MediaControl.pause : MediaControl.play,
-          MediaControl.skipToNext,
+          _localization == null
+              ? MediaControl.skipToPrevious
+              : MediaControl.skipToPrevious.copyWith(
+                  label: _localization!.previous,
+                ),
+          playing
+              ? (_localization == null
+                    ? MediaControl.pause
+                    : MediaControl.pause.copyWith(label: _localization!.pause))
+              : (_localization == null
+                    ? MediaControl.play
+                    : MediaControl.play.copyWith(label: _localization!.play)),
+          _localization == null
+              ? MediaControl.skipToNext
+              : MediaControl.skipToNext.copyWith(label: _localization!.next),
           MediaControl.custom(
             androidIcon: _saved
                 ? 'drawable/ic_favorite'
@@ -132,12 +150,39 @@ class RadioAudioHandler extends BaseAudioHandler implements RadioMediaSession {
   }
 
   @override
+  void updateLocalization(RadioMediaLocalization localization) {
+    _localization = localization;
+    flightSubtitle = localization.flying;
+    saveLabel = localization.save;
+    removeLabel = localization.remove;
+    if (mediaItem.value != null) {
+      if (_flightItem) {
+        showFlight();
+      } else if (_station case final station?) {
+        showStation(station);
+      }
+    }
+    _republish();
+  }
+
+  @override
   void showStation(RadioStation station) {
+    _station = station;
+    _flightItem = false;
+    final labels = _localization;
     mediaItem.add(
       MediaItem(
         id: station.id,
         title: station.name,
-        artist: station.country.isEmpty ? null : station.country,
+        artist: labels == null
+            ? (station.country.isEmpty ? null : station.country)
+            : localizedCountryName(
+                station.countryCode,
+                labels.language,
+                fallback: station.country.isEmpty
+                    ? labels.unknownCountry
+                    : station.country,
+              ),
         artUri:
             (station.faviconUrl == null
                 ? null
@@ -149,6 +194,7 @@ class RadioAudioHandler extends BaseAudioHandler implements RadioMediaSession {
 
   @override
   void showFlight() {
+    _flightItem = true;
     mediaItem.add(
       MediaItem(id: 'flight', title: flightTitle, artist: flightSubtitle),
     );

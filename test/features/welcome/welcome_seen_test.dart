@@ -26,13 +26,13 @@ void main() {
   for (final entry in <String, (Map<String, Object>, bool)>{
     'a new install': ({}, false),
     'the legacy guide only': ({'app.welcomeSeen': true}, false),
-    'an older revision': ({WelcomeSeen.revisionKey: 1}, false),
+    'an older revision': ({'app.welcomeRevision': 1}, false),
     'this revision': (
-      {WelcomeSeen.revisionKey: WelcomeSeen.currentRevision},
+      {'app.welcomeRevision': WelcomeSeen.currentRevision},
       true,
     ),
     'a future revision after a downgrade': (
-      {WelcomeSeen.revisionKey: WelcomeSeen.currentRevision + 1},
+      {'app.welcomeRevision': WelcomeSeen.currentRevision + 1},
       true,
     ),
   }.entries) {

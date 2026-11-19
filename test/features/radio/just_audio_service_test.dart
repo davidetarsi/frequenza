@@ -4,8 +4,9 @@ import 'package:audio_session/audio_session.dart';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frequenza/features/radio/data/just_audio_service.dart';
-import 'package:frequenza/features/radio/data/native_channel.dart';
-import 'package:frequenza/features/radio/data/radio_media_session.dart';
+import 'package:frequenza/app/platform/data/native_channel.dart';
+import 'package:frequenza/features/radio/domain/radio_media_session.dart';
+import 'package:frequenza/features/radio/domain/radio_media_localization.dart';
 import 'package:frequenza/features/radio/domain/radio_audio_service.dart';
 import 'package:frequenza/features/radio/domain/radio_station.dart';
 import 'package:just_audio/just_audio.dart';
@@ -55,6 +56,8 @@ class LivePlayer extends Fake implements AudioPlayer {
 }
 
 class RecordingSession implements RadioMediaSession {
+  @override
+  void updateLocalization(RadioMediaLocalization localization) {}
   RadioStation? shown;
   var flights = 0;
 

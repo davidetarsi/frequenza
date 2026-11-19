@@ -2,6 +2,8 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 
 import '../../journey/domain/geo_point.dart';
 import 'radio_station.dart';
+import '../../../app/network/domain/https_uri.dart';
+import 'station_input.dart';
 
 /// A station as the phone keeps it: short keys, and only what is needed to
 /// tune in again.
@@ -31,23 +33,47 @@ RadioStation? stationFromRecord(Object? record) {
       url is! String) {
     return null;
   }
-  final uri = Uri.tryParse(url);
-  if (uri == null || uri.scheme != 'https' || uri.host.isEmpty) return null;
+  final uri = httpsUri(url);
+  if (StationInput.text(id, StationInput.id) == null ||
+      StationInput.text(name, StationInput.name) == null ||
+      uri == null) {
+    return null;
+  }
   final point = GeoPoint.tryFrom(record['lat'], record['lon']);
   final region = record['region'];
   return RadioStation.fromJson({
     'id': id,
     'name': name,
-    'url': url,
-    'country': record['country'] is String ? record['country'] : '',
-    'code': record['code'] is String ? record['code'] : '',
-    'region': region is String && region.isNotEmpty ? region : null,
+    'url': uri.toString(),
+    'country': StationInput.text(record['country'], StationInput.country) ?? '',
+    'code': StationInput.text(record['code'], StationInput.countryCode) ?? '',
+    'region': StationInput.text(region, StationInput.region),
     'tags': (record['tags'] is List ? record['tags'] as List : [])
         .whereType<String>()
+        .where((tag) => StationInput.text(tag, StationInput.tag) != null)
+        .take(StationInput.tagsCount)
         .toList(),
     'lat': point?.latitude,
     'lon': point?.longitude,
   });
+}
+
+/// The full snapshot used by the diary, checked through the same station
+/// boundary as favourites. Optional display metadata never bypasses its bounds.
+RadioStation? stationFromSnapshot(Object? snapshot) {
+  if (snapshot is! Map<String, dynamic>) return null;
+  try {
+    final station = RadioStation.fromJson(snapshot);
+    final base = stationFromRecord(stationRecord(station));
+    if (base == null) return null;
+    return base.copyWith(
+      faviconUrl: httpsUri(station.faviconUrl)?.toString(),
+      codec: StationInput.text(station.codec, StationInput.codec),
+      bitrate: (station.bitrate ?? 0) > 0 ? station.bitrate : null,
+    );
+  } catch (_) {
+    return null;
+  }
 }
 
 /// A station inside another stored record: it throws when the station

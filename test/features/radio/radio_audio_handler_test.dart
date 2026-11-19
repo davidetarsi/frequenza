@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frequenza/features/radio/data/radio_audio_handler.dart';
-import 'package:frequenza/features/radio/data/radio_media_session.dart';
+import 'package:frequenza/features/radio/domain/radio_media_session.dart';
 import 'package:frequenza/features/radio/domain/radio_station.dart';
 import 'package:just_audio/just_audio.dart';
 

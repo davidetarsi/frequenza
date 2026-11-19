@@ -76,7 +76,7 @@ void main() {
     expect(find.text('Your favorites'), findsOneWidget);
     expect(container.read(radioControllerProvider), isA<Flying>());
     var preferences = await tester.runAsync(SharedPreferences.getInstance);
-    expect(preferences!.getInt(WelcomeSeen.revisionKey), isNull);
+    expect(preferences!.getInt('app.welcomeRevision'), isNull);
     await tester.tap(find.byKey(const ValueKey('welcome-guide')));
     await tester.pump();
     await tester.pump();
@@ -91,7 +91,7 @@ void main() {
     expect(find.text('EN'), findsNothing);
     preferences = await tester.runAsync(SharedPreferences.getInstance);
     expect(
-      preferences!.getInt(WelcomeSeen.revisionKey),
+      preferences!.getInt('app.welcomeRevision'),
       WelcomeSeen.currentRevision,
     );
     await container.read(radioControllerProvider.notifier).stop();
@@ -149,7 +149,7 @@ void main() {
     }
     final preferences = await tester.runAsync(SharedPreferences.getInstance);
     expect(
-      preferences!.getInt(WelcomeSeen.revisionKey),
+      preferences!.getInt('app.welcomeRevision'),
       WelcomeSeen.currentRevision,
     );
     expect(find.byKey(const ValueKey('welcome-guide')), findsNothing);
@@ -160,7 +160,7 @@ void main() {
       tester,
       preferences: {
         'app.welcomeSeen': true,
-        WelcomeSeen.revisionKey: WelcomeSeen.currentRevision,
+        'app.welcomeRevision': WelcomeSeen.currentRevision,
       },
     );
     expect(find.byKey(const ValueKey('welcome-guide')), findsNothing);

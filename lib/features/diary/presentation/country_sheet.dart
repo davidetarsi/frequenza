@@ -1,3 +1,4 @@
+import '../../../app/localization/presentation/detail_text.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
@@ -6,10 +7,11 @@ import '../../../ui/theme/app_spacing.dart';
 import '../../../ui/theme/travel_radio_design.dart';
 import '../../../ui/theme/travel_radio_palette.dart';
 import '../../../ui/widgets/code_badge.dart';
+import '../../../ui/widgets/app_button.dart';
 import '../../../ui/widgets/travel_sheet.dart';
 import '../../radio/domain/radio_station.dart';
 import '../domain/diary_summary.dart';
-import 'country_name.dart';
+import '../../journey/presentation/country_name.dart';
 import 'diary_duration.dart';
 
 /// Country-specific content for the shared bottom sheet in the diary.
@@ -62,10 +64,10 @@ class CountrySheet extends StatelessWidget {
                     style: theme.textTheme.titleSmall?.copyWith(color: ink),
                   ),
                   Text(
-                    [
-                      ?heard.station.region,
+                    detailText(context, [
+                      heard.station.region,
                       diaryDuration(context, heard.seconds),
-                    ].join(' · '),
+                    ]),
                     style: theme.textTheme.bodySmall?.copyWith(color: muted),
                   ),
                 ],
@@ -86,7 +88,7 @@ class CountrySheet extends StatelessWidget {
     final body = switch (card) {
       StoppedCountry(:final country) => [
         for (final heard in country.stations) station(heard),
-        const SizedBox(height: 8),
+        const SizedBox(height: AppSpacing.small),
         Text(
           t(LocaleKeys.diaryLastListen, [
             DateFormat.yMMMd(
@@ -104,7 +106,7 @@ class CountrySheet extends StatelessWidget {
           ]),
           style: theme.textTheme.bodyMedium?.copyWith(color: ink),
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: DiaryDesign.sheetSectionGap),
         Text(
           t(LocaleKeys.diaryHeardHere).toUpperCase(),
           style: DiaryDesign.sectionText.copyWith(color: muted),
@@ -116,17 +118,12 @@ class CountrySheet extends StatelessWidget {
           t(LocaleKeys.diaryUnvisited),
           style: theme.textTheme.bodyMedium?.copyWith(color: ink),
         ),
-        const SizedBox(height: 14),
-        FilledButton(
-          style: FilledButton.styleFrom(
-            backgroundColor: TravelRadioPalette.accent,
-            foregroundColor: TravelRadioPalette.screenInk,
-            minimumSize: const Size.fromHeight(DiaryDesign.sheetButton),
-          ),
+        const SizedBox(height: DiaryDesign.sheetActionGap),
+        AppButton.emphasized(
           onPressed: () => onFlyRandom(code),
-          child: Text(t(LocaleKeys.diaryFlyTo, [name])),
+          label: t(LocaleKeys.diaryFlyTo, [name]),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: AppSpacing.small),
         Text(
           t(LocaleKeys.diaryRandomIn),
           textAlign: TextAlign.center,
@@ -136,8 +133,16 @@ class CountrySheet extends StatelessWidget {
     };
 
     final summary = switch (card) {
-      StoppedCountry(:final country) =>
-        '${diaryDuration(context, country.seconds)} · ${LocaleKeys.diaryRadios.plural(country.stations.length, context: context)}',
+      StoppedCountry(:final country) => LocaleKeys.diaryCountrySummary.tr(
+        context: context,
+        namedArgs: {
+          'time': diaryDuration(context, country.seconds),
+          'radios': LocaleKeys.diaryRadios.plural(
+            country.stations.length,
+            context: context,
+          ),
+        },
+      ),
       PassingCountry(:final country) => diaryDuration(context, country.seconds),
       UnvisitedCountry() => null,
     };
@@ -160,7 +165,7 @@ class CountrySheet extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.end,
-              style: DiaryDesign.numbersText.copyWith(color: ink, fontSize: 14),
+              style: DiaryDesign.sheetNumbersText.copyWith(color: ink),
             ),
       children: body,
     );

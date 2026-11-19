@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -43,6 +44,20 @@ class MemorySongs implements SongsRepository {
   }
 }
 
+class HeldSongs extends MemorySongs {
+  final started = Completer<void>();
+  final release = Completer<void>();
+
+  @override
+  Future<void> save(List<SavedSong> songs) async {
+    if (!started.isCompleted) {
+      started.complete();
+      await release.future;
+    }
+    await super.save(songs);
+  }
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -55,6 +70,76 @@ void main() {
   }
 
   TrackTitle track(String raw) => TrackTitle.parse(raw)!;
+
+  test('concurrent saves retain both songs', () async {
+    final repository = MemorySongs();
+    final c = container(repository);
+    await c.read(savedSongsProvider.future);
+    final controller = c.read(savedSongsProvider.notifier);
+    await Future.wait([
+      controller.save(track('First song'), kexp),
+      controller.save(track('Second song'), kexp),
+    ]);
+    expect(repository.items.map((s) => s.title), ['First song', 'Second song']);
+  });
+
+  test('concurrent duplicate saves retain one song', () async {
+    final repository = MemorySongs();
+    final c = container(repository);
+    await c.read(savedSongsProvider.future);
+    final controller = c.read(savedSongsProvider.notifier);
+    final results = await Future.wait([
+      controller.save(track('Same song'), kexp),
+      controller.save(track('Same song'), kexp),
+    ]);
+    expect(results, [true, false]);
+    expect(repository.items, hasLength(1));
+  });
+
+  test('a queued save does not undo a preceding removal', () async {
+    final repository = MemorySongs();
+    final c = container(repository);
+    await c.read(savedSongsProvider.future);
+    final controller = c.read(savedSongsProvider.notifier);
+    await controller.save(track('Old song'), kexp);
+    final old = repository.items.single;
+    await Future.wait([
+      controller.remove(old),
+      controller.save(track('New song'), kexp),
+    ]);
+    expect(repository.items.map((s) => s.title), ['New song']);
+  });
+
+  test(
+    'reloading during a write waits for persistence before the next save',
+    () async {
+      final repository = HeldSongs();
+      final c = container(repository);
+      await c.read(savedSongsProvider.future);
+      final pending = c
+          .read(savedSongsProvider.notifier)
+          .save(track('First'), kexp);
+      await repository.started.future;
+      c.invalidate(savedSongsProvider);
+      final reloaded = c.read(savedSongsProvider.future);
+      repository.release.complete();
+      await pending;
+      expect((await reloaded).map((s) => s.title), ['First']);
+      await c.read(savedSongsProvider.notifier).save(track('Second'), kexp);
+      expect(repository.items.map((s) => s.title), ['First', 'Second']);
+    },
+  );
+
+  test('a failed write does not block subsequent saves', () async {
+    final repository = MemorySongs()..failSave = true;
+    final c = container(repository);
+    await c.read(savedSongsProvider.future);
+    final controller = c.read(savedSongsProvider.notifier);
+    expect(await controller.save(track('Failed'), kexp), isFalse);
+    repository.failSave = false;
+    expect(await controller.save(track('Recovered'), kexp), isTrue);
+    expect(repository.items.map((s) => s.title), ['Recovered']);
+  });
 
   test('saving twice the same song keeps one', () async {
     final songs = MemorySongs();
@@ -240,5 +325,20 @@ void main() {
     await notifier.restore(b, 1);
 
     expect(c.read(savedSongsProvider).requireValue, [b]);
+  });
+  test('saved song titles cannot bypass metadata bounds on reload', () {
+    final snapshot = SavedSong(
+      title: 'Valid',
+      station: kexp,
+      savedAt: DateTime.utc(2026),
+    ).toJson();
+    expect(
+      () => SavedSong.fromJson({...snapshot, 'title': 'x' * 4097}),
+      throwsFormatException,
+    );
+    expect(
+      () => SavedSong.fromJson({...snapshot, 'title': '  '}),
+      throwsFormatException,
+    );
   });
 }

@@ -21,10 +21,19 @@ class _CountPulseState extends State<CountPulse>
     vsync: this,
     duration: AppMotion.countPulse,
   );
-  late final _scale = TweenSequence([
-    TweenSequenceItem(tween: Tween(begin: 1.0, end: 1.25), weight: 1),
-    TweenSequenceItem(tween: Tween(begin: 1.25, end: 1.0), weight: 1),
-  ]).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+  late final _scale =
+      TweenSequence([
+        TweenSequenceItem(
+          tween: Tween(begin: 1.0, end: AppMotion.countPulseScale),
+          weight: 1,
+        ),
+        TweenSequenceItem(
+          tween: Tween(begin: AppMotion.countPulseScale, end: 1.0),
+          weight: 1,
+        ),
+      ]).animate(
+        CurvedAnimation(parent: _controller, curve: AppMotion.countPulseCurve),
+      );
 
   @override
   void didUpdateWidget(CountPulse oldWidget) {

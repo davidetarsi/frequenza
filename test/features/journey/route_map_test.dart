@@ -52,12 +52,12 @@ void main() {
       await tester.pumpWidget(host(map()));
       expect(frame(tester).viewport.width, closeTo(360, 1e-8));
       expect(frame(tester).outline, 0);
-      await tester.pump(const Duration(milliseconds: 900));
+      await tester.pump(const Duration(milliseconds: 450));
       expect(
         frame(tester).viewport.width,
         inExclusiveRange(CountryShape.of('FR')!.viewport.width, 360),
       );
-      await tester.pump(const Duration(seconds: 1));
+      await tester.pump(const Duration(milliseconds: 1500));
       expect(frame(tester).outline, 1);
       final arrived = frame(tester).viewport;
       await tester.pumpWidget(host(map(phase: FlightPhase.flying)));
@@ -73,6 +73,63 @@ void main() {
       await tester.pumpWidget(const SizedBox.shrink());
     },
   );
+
+  testWidgets('the country is framed before its border is drawn', (
+    tester,
+  ) async {
+    const singapore = StationPlace(
+      point: GeoPoint(1.35, 103.82),
+      approximate: false,
+      countryCode: 'SG',
+    );
+    await tester.pumpWidget(
+      host(map(phase: FlightPhase.flying, trips: 0, to: null)),
+    );
+    await tester.pumpWidget(host(map(to: singapore)));
+    await tester.pump(const Duration(milliseconds: 600));
+    final approaching = frame(tester);
+    expect(
+      approaching.viewport
+          .inflate(1e-8)
+          .contains(CountryShape.of('SG')!.bounds.center),
+      isTrue,
+    );
+    expect(approaching.outline, 0);
+    await tester.pump(const Duration(milliseconds: 500));
+    final drawing = frame(tester);
+    expect(
+      drawing.viewport.center.dx,
+      closeTo(CountryShape.of('SG')!.viewport.center.dx, 1e-8),
+    );
+    expect(
+      drawing.viewport.width,
+      closeTo(CountryShape.of('SG')!.viewport.width, 1e-8),
+    );
+    expect(drawing.outline, inExclusiveRange(0, 1));
+    final view = drawing.viewport;
+    final outline = drawing.outline;
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(frame(tester).viewport, view);
+    expect(frame(tester).outline, greaterThan(outline));
+    await tester.pumpAndSettle();
+    expect(frame(tester).outline, 1);
+  });
+
+  testWidgets('a new station in the same country starts a fresh border', (
+    tester,
+  ) async {
+    await tester.pumpWidget(host(map()));
+    expect(frame(tester).outline, 1);
+    await tester.pumpWidget(host(map(phase: FlightPhase.flying)));
+    await tester.pump(const Duration(milliseconds: 100));
+    // The next station can arrive before the previous zoom-out ends.
+    await tester.pumpWidget(host(map(trips: 2)));
+    expect(frame(tester).outline, 0);
+    await tester.pump(const Duration(milliseconds: 1100));
+    expect(frame(tester).outline, inExclusiveRange(0, 1));
+    await tester.pumpAndSettle();
+    expect(frame(tester).outline, 1);
+  });
 
   testWidgets(
     'interrupted zooms continue from the current view without a jump',

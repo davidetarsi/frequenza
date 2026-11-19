@@ -60,18 +60,20 @@ void main() {
     await openPrivacy(tester);
     expect(find.text('Privacy'), findsOneWidget);
     expect(
-      find.text('Aiutano a capire cosa non funziona. Nessun dato su di te.'),
+      find.text(
+        "Eventi d'uso e dati tecnici per migliorare la radio. Puoi disattivarli quando vuoi.",
+      ),
       findsOneWidget,
     );
     expect(switchOn(tester), isTrue);
 
-    await tester.tap(find.text('Statistiche anonime'));
+    await tester.tap(find.text("Statistiche d'uso"));
     await tester.pumpAndSettle();
     final prefs = await SharedPreferences.getInstance();
     expect(prefs.getBool('app.analyticsOn'), isFalse);
     expect(switchOn(tester), isFalse);
 
-    await tester.tap(find.text('Statistiche anonime'));
+    await tester.tap(find.text("Statistiche d'uso"));
     await tester.pumpAndSettle();
     expect(prefs.getBool('app.analyticsOn'), isTrue);
   });
@@ -86,7 +88,7 @@ void main() {
     });
     await openPrivacy(tester);
     expect(switchOn(tester), isFalse);
-    await tester.tap(find.text('Statistiche anonime'));
+    await tester.tap(find.text("Statistiche d'uso"));
     await tester.pumpAndSettle();
     expect(
       find.text('Non è stato possibile salvare la scelta. Riprova.'),
@@ -99,7 +101,7 @@ void main() {
     await tester.tap(find.text('Informativa sulla privacy'));
     await tester.pumpAndSettle();
     expect(opened, [
-      Uri.parse('https://davidetarsi.github.io/frequenza/privacy.html'),
+      Uri.parse('https://davidetarsi.github.io/frequenza/privacy.html#it'),
     ]);
   });
 }

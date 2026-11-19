@@ -6,6 +6,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import '../../radio/domain/radio_station.dart';
 import '../../radio/domain/station_record.dart';
 import '../../radio/domain/track_title.dart';
+import '../../radio/domain/station_input.dart';
 
 part 'saved_song.freezed.dart';
 part 'saved_song.g.dart';
@@ -18,7 +19,7 @@ class SavedSong with _$SavedSong {
   @JsonSerializable(includeIfNull: false)
   const factory SavedSong({
     @JsonKey(fromJson: _text) String? artist,
-    required String title,
+    @JsonKey(fromJson: _title) required String title,
     @StationRecordConverter() required RadioStation station,
     @JsonKey(name: 'at', toJson: _utc) required DateTime savedAt,
   }) = _SavedSong;
@@ -43,6 +44,10 @@ class SavedSong with _$SavedSong {
 
 /// An artist that is not text, or is blank, is no artist.
 String? _text(Object? value) =>
-    value is String && value.trim().isNotEmpty ? value : null;
+    StationInput.text(value, StationInput.trackTitle);
 
 String _utc(DateTime time) => time.toUtc().toIso8601String();
+
+String _title(Object? value) =>
+    StationInput.text(value, StationInput.trackTitle) ??
+    (throw const FormatException('Invalid saved song title'));

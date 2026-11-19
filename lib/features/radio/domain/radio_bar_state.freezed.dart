@@ -392,6 +392,7 @@ abstract class _$$BarPlayingImplCopyWith<$Res> {
   $Res call({RadioStation station, TrackTitle? track, bool connecting});
 
   $RadioStationCopyWith<$Res> get station;
+  $TrackTitleCopyWith<$Res>? get track;
 }
 
 /// @nodoc
@@ -437,6 +438,20 @@ class __$$BarPlayingImplCopyWithImpl<$Res>
   $RadioStationCopyWith<$Res> get station {
     return $RadioStationCopyWith<$Res>(_value.station, (value) {
       return _then(_value.copyWith(station: value));
+    });
+  }
+
+  /// Create a copy of RadioBarState
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $TrackTitleCopyWith<$Res>? get track {
+    if (_value.track == null) {
+      return null;
+    }
+
+    return $TrackTitleCopyWith<$Res>(_value.track!, (value) {
+      return _then(_value.copyWith(track: value));
     });
   }
 }
@@ -605,6 +620,7 @@ abstract class _$$BarPausedImplCopyWith<$Res> {
   $Res call({RadioStation station, TrackTitle? track});
 
   $RadioStationCopyWith<$Res> get station;
+  $TrackTitleCopyWith<$Res>? get track;
 }
 
 /// @nodoc
@@ -642,6 +658,20 @@ class __$$BarPausedImplCopyWithImpl<$Res>
   $RadioStationCopyWith<$Res> get station {
     return $RadioStationCopyWith<$Res>(_value.station, (value) {
       return _then(_value.copyWith(station: value));
+    });
+  }
+
+  /// Create a copy of RadioBarState
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $TrackTitleCopyWith<$Res>? get track {
+    if (_value.track == null) {
+      return null;
+    }
+
+    return $TrackTitleCopyWith<$Res>(_value.track!, (value) {
+      return _then(_value.copyWith(track: value));
     });
   }
 }

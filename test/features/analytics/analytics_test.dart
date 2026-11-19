@@ -140,7 +140,7 @@ void main() {
   test('a failing server never throws', () async {
     final c = container(client: server(fails: true));
     c.read(analyticsSessionDetailsProvider.notifier).describe({'locale': 'it'});
-    (await loaded(c)).track(const AppEvent.welcomeCompleted());
+    (await loaded(c)).track(AppEvent.welcomeCompleted());
     await settle();
     expect(requests, isNotEmpty);
   });
@@ -153,8 +153,8 @@ void main() {
     });
     final analytics = await loaded(container(client: silent));
     final watch = Stopwatch()..start();
-    analytics.track(const AppEvent.songCopied());
-    analytics.track(const AppEvent.songCopied());
+    analytics.track(AppEvent.songCopied());
+    analytics.track(AppEvent.songCopied());
     expect(watch.elapsedMilliseconds, lessThan(50));
     await settle();
     expect(asked, 2);
@@ -175,7 +175,7 @@ void main() {
       'app_version': '0.4.0+5',
       'locale': 'it',
     });
-    (await loaded(c)).track(const AppEvent.songCopied());
+    (await loaded(c)).track(AppEvent.songCopied());
     await settle();
     final properties = sent(requests.single)['properties'] as Map;
     expect(properties['app_version'], '0.4.0+5');
@@ -188,7 +188,7 @@ void main() {
     await loaded(c);
     c.read(analyticsSessionDetailsProvider.notifier).describe({'locale': 'en'});
     await c.read(analyticsConsentProvider.notifier).select(true);
-    c.read(analyticsProvider).track(const AppEvent.songCopied());
+    c.read(analyticsProvider).track(AppEvent.songCopied());
     await settle();
     final properties = sent(requests.single)['properties'] as Map;
     expect(properties['locale'], 'en');
@@ -196,11 +196,11 @@ void main() {
 
   test('turning statistics back on starts a new launch code', () async {
     final c = container(client: server());
-    (await loaded(c)).track(const AppEvent.songCopied());
+    (await loaded(c)).track(AppEvent.songCopied());
     final notifier = c.read(analyticsConsentProvider.notifier);
     await notifier.select(false);
     await notifier.select(true);
-    c.read(analyticsProvider).track(const AppEvent.songCopied());
+    c.read(analyticsProvider).track(AppEvent.songCopied());
     await settle();
     expect(requests, hasLength(2));
     expect(

@@ -1,3 +1,4 @@
+import '../../journey/presentation/country_name.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -31,8 +32,17 @@ class RadioBar extends ConsumerWidget {
     final title = switch (state) {
       BarPlaying(:final station) ||
       BarPaused(:final station) ||
-      BarStopped(:final station) =>
-        '${station.name} · ${station.country.isEmpty ? t(LocaleKeys.unknownCountry) : station.country}',
+      BarStopped(:final station) => LocaleKeys.stationCountry.tr(
+        context: context,
+        namedArgs: {
+          'station': station.name,
+          'country': countryName(
+            context,
+            station.countryCode,
+            fallback: station.country,
+          ),
+        },
+      ),
       BarFlying() => t(LocaleKeys.barFlying),
       BarFailed() => t(LocaleKeys.barNoSignal),
       BarHidden() => '',
@@ -94,7 +104,7 @@ class RadioBar extends ConsumerWidget {
                 button: true,
                 label: LocaleKeys.barBackToRadio.tr(
                   context: context,
-                  args: ['$title, $detail'],
+                  namedArgs: {'title': title, 'detail': detail},
                 ),
                 excludeSemantics: true,
                 child: InkWell(
@@ -200,7 +210,7 @@ class RadioBar extends ConsumerWidget {
       backgroundColor: TravelRadioPalette.screen,
       foregroundColor: TravelRadioPalette.screenInk,
       disabledBackgroundColor: TravelRadioPalette.screen.withValues(
-        alpha: 0.45,
+        alpha: RadioBarDesign.disabledKeyOpacity,
       ),
       disabledForegroundColor: TravelRadioPalette.screenInk,
     ),

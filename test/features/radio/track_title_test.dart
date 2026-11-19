@@ -2,6 +2,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:frequenza/features/radio/domain/track_title.dart';
 
 void main() {
+  test('oversized broadcast metadata is not parsed or displayed', () {
+    expect(TrackTitle.parse('x' * 4097), isNull);
+  });
+
   test('splits artist and title on a spaced dash', () {
     for (final dash in [' - ', ' – ', ' — ']) {
       final track = TrackTitle.parse('Ana Moura${dash}Desfado')!;

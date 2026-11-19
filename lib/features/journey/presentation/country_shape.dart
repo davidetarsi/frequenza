@@ -1,7 +1,8 @@
 import 'dart:math' as math;
 import 'dart:ui';
 
-import '../data/country_outlines.g.dart';
+import '../domain/atlas/country_outlines.g.dart';
+import '../../../ui/theme/travel_radio_design.dart';
 
 /// Display geometry only. Decoded lazily, without networking or product state.
 class CountryShape {
@@ -84,8 +85,14 @@ class CountryShape {
   /// A little breathing room around the whole country, also for small islands.
   Rect get viewport => Rect.fromCenter(
     center: bounds.center,
-    width: math.max(.08, bounds.width * 1.35),
-    height: math.max(.08, bounds.height * 1.35),
+    width: math.max(
+      RouteMapDesign.minCountryViewExtent,
+      bounds.width * RouteMapDesign.countryViewMargin,
+    ),
+    height: math.max(
+      RouteMapDesign.minCountryViewExtent,
+      bounds.height * RouteMapDesign.countryViewMargin,
+    ),
   );
 
   static Rect _bounds(List<List<Offset>> rings) {
@@ -99,13 +106,26 @@ class CountryShape {
   }
 }
 
-/// Interpolate field of view geometrically: tiny countries zoom smoothly too.
+/// Scale geometrically and pan by the same change in extent. This keeps the
+/// destination in frame instead of zooming past it while the centre catches up.
 Rect interpolateMapView(Rect from, Rect to, double progress) {
-  double side(double a, double b) =>
-      math.exp(math.log(a) + (math.log(b) - math.log(a)) * progress);
-  return Rect.fromCenter(
-    center: Offset.lerp(from.center, to.center, progress)!,
-    width: side(from.width, to.width),
-    height: side(from.height, to.height),
+  if (progress <= 0) return from;
+  if (progress >= 1) return to;
+  (double, double) axis(double a, double b, double start, double end) {
+    if (a == b) return (a, start + (end - start) * progress);
+    final extent = math.exp(
+      math.log(a) + (math.log(b) - math.log(a)) * progress,
+    );
+    final pan = (extent - a) / (b - a);
+    return (extent, start + (end - start) * pan);
+  }
+
+  final (width, x) = axis(from.width, to.width, from.center.dx, to.center.dx);
+  final (height, y) = axis(
+    from.height,
+    to.height,
+    from.center.dy,
+    to.center.dy,
   );
+  return Rect.fromCenter(center: Offset(x, y), width: width, height: height);
 }

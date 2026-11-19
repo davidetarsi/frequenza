@@ -1,6 +1,7 @@
+import '../localization/domain/app_language.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:url_launcher/url_launcher.dart';
+import '../platform/application/app_platform_provider.dart';
 
 part 'external_links.g.dart';
 
@@ -11,6 +12,9 @@ abstract final class AppLinks {
   static final privacy = Uri.parse(
     'https://davidetarsi.github.io/frequenza/privacy.html',
   );
+
+  static Uri privacyFor(AppLanguage language) =>
+      privacy.replace(fragment: language.name);
 
   /// The Google form for ideas and bugs, with the [phone] and the app
   /// [version] filled in.
@@ -30,4 +34,4 @@ typedef OpenExternal = Future<bool> Function(Uri uri);
 
 @Riverpod(keepAlive: true)
 OpenExternal openExternal(Ref ref) =>
-    (uri) => launchUrl(uri, mode: LaunchMode.externalApplication);
+    ref.watch(appPlatformProvider).openExternal;

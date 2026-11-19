@@ -6,7 +6,7 @@ import '../../../ui/theme/app_motion.dart';
 
 import '../../../ui/theme/travel_radio_design.dart';
 import '../../../ui/theme/travel_radio_palette.dart';
-import '../../journey/data/world_atlas.g.dart';
+import '../../journey/domain/atlas/world_atlas.g.dart';
 import '../domain/diary_summary.dart';
 import '../domain/world_cells.dart';
 
@@ -46,7 +46,7 @@ class _DiaryMapState extends State<DiaryMap>
   late final AnimationController _zoomAnimation =
       AnimationController(vsync: this)..addListener(() {
         controller.value = _zoomTween!.transform(
-          Curves.easeOutCubic.transform(_zoomAnimation.value),
+          DiaryDesign.zoomCurve.transform(_zoomAnimation.value),
         );
       });
   Matrix4Tween? _zoomTween;

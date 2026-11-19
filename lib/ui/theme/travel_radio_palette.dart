@@ -23,6 +23,7 @@ class TravelRadioPalette {
       trim,
       metalLight,
       metalDark;
+  static const guideShade = Color(0xFF081810);
   static const screen = Color(0xFF203C33);
   static const screenInk = Color(0xFFE4EBC5);
   static const hardware = Color(0xFF354B3F);

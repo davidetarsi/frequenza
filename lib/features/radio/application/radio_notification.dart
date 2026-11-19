@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../favorites/application/favorites_controller.dart';
-import '../data/radio_media_session.dart';
+import '../domain/radio_media_session.dart';
 import '../domain/radio_session.dart';
 import 'radio_controller.dart';
 import 'radio_providers.dart';
@@ -15,7 +15,7 @@ part 'radio_notification.g.dart';
 /// favorites, and its heart follows what the app shows.
 @Riverpod(keepAlive: true)
 void radioNotification(Ref ref) {
-  final RadioMediaSession? session = ref.watch(radioAudioHandlerProvider);
+  final RadioMediaSession? session = ref.watch(radioMediaSessionProvider);
   if (session == null) return;
 
   void publish() {

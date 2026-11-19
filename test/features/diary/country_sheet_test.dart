@@ -11,7 +11,7 @@ import 'package:frequenza/features/diary/application/diary_providers.dart';
 import 'package:frequenza/features/diary/domain/diary_flight.dart';
 import 'package:frequenza/features/diary/presentation/diary_page.dart';
 import 'package:frequenza/features/favorites/application/favorites_providers.dart';
-import 'package:frequenza/features/journey/data/world_atlas.g.dart';
+import 'package:frequenza/features/journey/domain/atlas/world_atlas.g.dart';
 import 'package:frequenza/features/radio/application/radio_controller.dart';
 import 'package:frequenza/features/radio/application/radio_providers.dart';
 import 'package:frequenza/features/radio/domain/journey.dart';

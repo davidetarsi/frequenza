@@ -6,7 +6,7 @@ part of 'welcome_seen.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$welcomeSeenHash() => r'189389ce03737185d5ca145bce5af0c2b8976b80';
+String _$welcomeSeenHash() => r'bfdd9c154a00af09031cc237cdfc172fbc9b5161';
 
 /// Whether this revision of the guide has been seen, including after an update.
 ///

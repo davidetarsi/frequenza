@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frequenza/features/diary/domain/diary_summary.dart';
 import 'package:frequenza/features/diary/presentation/diary_map.dart';
-import 'package:frequenza/features/journey/data/world_atlas.g.dart';
+import 'package:frequenza/features/journey/domain/atlas/world_atlas.g.dart';
 
 void main() {
   const width = 360.0;

@@ -6,7 +6,7 @@ part of 'app_version.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$appVersionHash() => r'7bcecb9938fb4563538cf33c51e2dde4d44dc4ac';
+String _$appVersionHash() => r'd2b2f8d29394812ca5bfc54e56a2e8cdc74480d8';
 
 /// The installed version, as `0.2.1+2`; empty when Android cannot tell.
 ///
@@ -25,7 +25,7 @@ final appVersionProvider = FutureProvider<String>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef AppVersionRef = FutureProviderRef<String>;
-String _$deviceInfoHash() => r'ffe77d98baad513be6b6ffc1d40ea5ad9d2b9ca0';
+String _$deviceInfoHash() => r'9b05c9855b9907b22430f573a6156e62c685c574';
 
 /// The phone, as `Google Pixel 8 · Android 16`; empty when Android cannot
 /// tell.
