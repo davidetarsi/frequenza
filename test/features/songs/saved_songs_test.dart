@@ -9,6 +9,8 @@ import 'package:frequenza/features/songs/application/saved_songs.dart';
 import 'package:frequenza/features/songs/data/preferences_songs_repository.dart';
 import 'package:frequenza/features/songs/domain/saved_song.dart';
 import 'package:frequenza/features/songs/domain/songs_repository.dart';
+import 'package:frequenza/features/analytics/application/analytics_providers.dart';
+import '../analytics/recording_analytics.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 const kexp = RadioStation(
@@ -70,6 +72,62 @@ void main() {
   }
 
   TrackTitle track(String raw) => TrackTitle.parse(raw)!;
+
+  test(
+    'queued toggles use the latest state and preserve unrelated songs',
+    () async {
+      final repository = HeldSongs();
+      final analytics = RecordingAnalytics();
+      final c = ProviderContainer(
+        overrides: [
+          songsRepositoryProvider.overrideWithValue(repository),
+          analyticsProvider.overrideWithValue(analytics),
+        ],
+      );
+      addTearDown(c.dispose);
+      await c.read(savedSongsProvider.future);
+      final notifier = c.read(savedSongsProvider.notifier);
+      final first = notifier.toggle(track('A'), kexp);
+      await repository.started.future;
+      final second = notifier.toggle(track('A'), kexp);
+      final unrelated = notifier.save(track('B'), kexp);
+      repository.release.complete();
+      expect(await first, isTrue);
+      expect(await second, isTrue);
+      expect(await unrelated, isTrue);
+      expect(repository.items.map((s) => s.title), ['B']);
+      expect(analytics.names, ['song_saved', 'song_removed', 'song_saved']);
+      expect(await notifier.toggle(track('A'), kexp), isTrue);
+      expect(repository.items.map((s) => s.title), ['B', 'A']);
+    },
+  );
+
+  test(
+    'failed toggle keeps the previous list and does not emit a success event',
+    () async {
+      final repository = MemorySongs();
+      final analytics = RecordingAnalytics();
+      final c = ProviderContainer(
+        overrides: [
+          songsRepositoryProvider.overrideWithValue(repository),
+          analyticsProvider.overrideWithValue(analytics),
+        ],
+      );
+      addTearDown(c.dispose);
+      await c.read(savedSongsProvider.future);
+      final notifier = c.read(savedSongsProvider.notifier);
+      await notifier.toggle(track('A'), kexp);
+      repository.failSave = true;
+      expect(await notifier.toggle(track('A'), kexp), isFalse);
+      expect(notifier.contains(track('A'), kexp), isTrue);
+      expect(repository.items.single.title, 'A');
+      expect(analytics.names, ['song_saved']);
+      repository.failSave = false;
+      expect(await notifier.toggle(track('A'), kexp), isTrue);
+      expect(repository.items, isEmpty);
+      expect(analytics.names, ['song_saved', 'song_removed']);
+    },
+  );
 
   test('concurrent saves retain both songs', () async {
     final repository = MemorySongs();

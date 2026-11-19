@@ -173,6 +173,12 @@ void main() {
     await tester.tap(find.byTooltip('Salva canzone'));
     await tester.pumpAndSettle();
     expect(songs.items.single.title, 'Desfado');
-    expect(find.text('Canzone salvata'), findsOneWidget);
+    expect(find.byType(SnackBar), findsNothing);
+    await tester.tap(find.byTooltip('Togli'));
+    await tester.pumpAndSettle();
+    expect(songs.items, isEmpty);
+    expect(favorites.items.map((s) => s.id), ['kexp']);
+    expect(find.byTooltip('Salva canzone'), findsOneWidget);
+    expect(find.byType(SnackBar), findsNothing);
   });
 }
