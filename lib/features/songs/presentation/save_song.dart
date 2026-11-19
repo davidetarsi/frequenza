@@ -41,7 +41,6 @@ Future<void> saveSong(
     ..hideCurrentSnackBar()
     ..showSnackBar(
       appSnackBar(
-        context,
         message: message,
         action: SnackBarAction(
           label: undo,
