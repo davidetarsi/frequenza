@@ -14,6 +14,7 @@ import '../../../ui/theme/travel_radio_palette.dart';
 import '../../../ui/theme/app_component_design.dart';
 import '../../../ui/widgets/app_loading.dart';
 import '../../../ui/widgets/app_message.dart';
+import '../../../ui/widgets/app_snack_bar.dart';
 import '../../radio/application/radio_controller.dart';
 import '../../radio/presentation/copy_track_title.dart';
 import '../application/saved_songs.dart';
@@ -131,8 +132,9 @@ class _SongsTabState extends ConsumerState<SongsTab> {
     messenger
       ..hideCurrentSnackBar()
       ..showSnackBar(
-        SnackBar(
-          content: Text(message),
+        appSnackBar(
+          context,
+          message: message,
           action: SnackBarAction(
             label: undo,
             onPressed: () {

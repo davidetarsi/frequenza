@@ -5,11 +5,32 @@ Il punto di ripresa di ogni sessione: si legge questo, poi solo il piano attivo.
 ## Dove siamo
 
 - `main`: versione 0.4.1+6, dopo il merge della PR #46. Questo indica lo stato del repository; la pubblicazione sul Play Store resta gestita da Davide.
-- `develop`: include anche l'animazione mondo → paese → mondo (PR #47).
-- Branch di lavoro: `refactor/coerenza-architettura`, da `develop` dopo la PR #47. PR verso `develop` richiesta da Davide; il merge resta gestito da Davide.
+- `develop`: include audit, componenti condivisi, localizzazione e correzione mondo → paese, dopo il merge della PR #48 (`0d53357`), confermato da Davide.
+- Branch di lavoro: `fix/snackbar-e-sintonizzazione-notifica`, da `origin/develop` dopo la PR #48. PR verso `develop` richiesta da Davide; merge gestito da Davide.
 - Audit del 19 novembre: completati i blocchi su persistenza/stati, sicurezza/privacy, confini architetturali e localizzazione. Completato anche il blocco UI condivisa/token; resta il punto di manutenzione P3 nativo descritto sotto. Il rapporto è nell'area di lavoro `../audit/2026-11-19/rapporto.md` (non versionata nel repository).
 
 ## Piano attivo
+
+Radio adattiva completata, autorizzata da Davide.
+
+- Sostituire il passaggio rigido a 740/900 punti con adattamento progressivo basato sulle dimensioni reali del contenuto, mantenendo la mappa fino all'ingombro minimo leggibile. `AdaptiveFit` misura un solo sottoalbero e sceglie la densità più grande che entra, senza trasformare testo o aree di tocco.
+- RadioCabinet usa metriche interpolate nei token tra configurazione regolare e minima con mappa; larghezza e intestazione si riducono insieme. Mappa da 84 a 56 punti, pulsanti sempre almeno 44 punti e text scaler di sistema conservato. Niente misure/font locali.
+- Solo se la radio minima con mappa non entra, usare la variante compatta esistente. Solo per viewport estremi in cui non entra neanche quella, consentire scorrimento della pagina conservando la posizione.
+- Adattamento applicato anche alla variante orizzontale: la mappa viene mantenuta quando il contenuto entra. Margine dedicato tra ombra della scocca e testo in fondo alla pagina. Identità della mappa conservata durante le riduzioni progressive; posizione di scorrimento conservata nei casi estremi.
+- Verifiche completate con Flutter 3.38.5: **530 test Flutter superati**, analisi statica pulita, formattazione/diff coerenti e APK dev debug arm64 compilato. Cinque regressioni responsive coprono riduzione continua con mappa a 740/720 punti, fallback e ripristino della mappa, orizzontale, scala del testo e controlli ancora utilizzabili dopo uno scorrimento/aggiornamento.
+- Controllo visivo tramite renderer Flutter con font Roboto/MaterialIcons su viewport 390×900, 390×740 e 390×560, con barre di sistema simulate. Nessun telefono collegato; collaudo reale ancora da fare. Correzioni snackbar/notifica precedenti conservate nello stesso branch; nessun cambiamento a versione o regole CI/PR.
+
+## Snackbar e sintonizzazione dalla notifica — 19 novembre 2026
+
+Snackbar temporanee e sintonizzazione dalla notifica: correzioni completate.
+
+- Snackbar con Annulla: la versione Flutter in uso rende persistenti per default gli avvisi con un'azione. Componente `appSnackBar` condiviso per salvataggio e rimozione della canzone, durata nel token AppMessageDesign a 4 secondi e persistenza solo con navigazione accessibile attiva, per mantenere utilizzabile Annulla.
+- Il cambio radio dalla notifica usa già lo stesso RadioController della manopola: avvio della connessione in parallelo, volume a zero fino al minimo di 1 secondo e dissolvenza all'arrivo. Nessuna modifica ai tempi o al controller.
+- Causa del fruscio assente: MainActivity vietava start fuori dal primo piano e fermava l'effetto in onStop. Il canale piattaforma e il MediaPlayer ora appartengono a FrequenzaPlatformPlugin, registrato una volta sul motore condiviso di audio_service, con applicationContext e rilascio al distacco del motore. Nessun riferimento all'Activity nel player o nel canale, nessun nuovo servizio o permesso Android.
+- 29 test mirati superati: scadenza del salvataggio/rimozione senza gesto, Annulla/accessibilità, notifica Avanti/Indietro con lifecycle paused e audio effettivamente muto a 999 ms, udibile dopo 1000 ms. APK dev debug arm64 compilato, analisi pulita e suite completa con **525 test Flutter superati**. Formattazione e diff verificati.
+- Nessun dispositivo collegato: fruscio con schermo spento e Activity ricreata da collaudare su telefono. Non sono stati cambiati firma, versione, dati o regole CI/PR.
+
+## Correzione mondo → paese completata — 19 novembre 2026
 
 Correzione animazione mondo → paese completata, segnalata da Davide.
 

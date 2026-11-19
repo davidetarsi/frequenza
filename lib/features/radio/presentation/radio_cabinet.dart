@@ -53,6 +53,7 @@ class RadioCabinet extends StatelessWidget {
     required this.isPlaying,
     required this.compact,
     required this.horizontal,
+    this.density = 1,
     this.flying = false,
     this.landings = 0,
     this.map,
@@ -96,6 +97,7 @@ class RadioCabinet extends StatelessWidget {
   final String? countryDetail;
   final VoidCallback? onTune;
   final bool isBusy, isPlaying, compact, horizontal;
+  final double density;
 
   /// Shows [station] as a searching label instead of a name.
   final bool flying;
@@ -130,7 +132,7 @@ class RadioCabinet extends StatelessWidget {
     final scaler = MediaQuery.textScalerOf(context);
     final metrics = compact
         ? RadioCabinetDesign.compact
-        : RadioCabinetDesign.regular;
+        : RadioCabinetDesign.metricsFor(density);
     final diameter = metrics.diameter;
     final stationFont = metrics.stationSize;
     final largeText =
@@ -281,7 +283,7 @@ class RadioCabinet extends StatelessWidget {
                   children: [
                     if (map case final map?)
                       SizedBox(
-                        height: RouteMapDesign.height,
+                        height: RouteMapDesign.heightFor(density),
                         width: double.infinity,
                         child: map,
                       )

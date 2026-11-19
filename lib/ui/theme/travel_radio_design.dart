@@ -29,8 +29,21 @@ abstract final class TravelRadioLayout {
   static const landscapeMaxHeight = 560.0;
   static const landscapeContentWidth = 720.0;
   static const landscapeControlsWidth = 160.0;
-  static const compactHeight = 740.0;
-  static const compactHeightWithLargeText = 900.0;
+  static const minFittingWidthShare = .9;
+  static const minPageGap = 4.0;
+  // The cabinet's painted shadow extends beyond its layout box.
+  static const mapFooterClearance = 20.0;
+  static const pageGapCount = 5;
+  static const landscapeGapCount = 4;
+
+  static double fittingWidth(double width, double density) {
+    final minimum = (width * minFittingWidthShare).clamp(
+      minCabinetWidth.clamp(0.0, width),
+      width,
+    );
+    return minimum + (width - minimum) * density;
+  }
+
   static const referenceTextSize = 16.0;
   static const largeTextThreshold = 20.0;
   static const headingTracking = -1.0;
@@ -44,6 +57,27 @@ abstract final class TravelRadioLayout {
   static const captionLineHeight = 1.1;
   static const captionTracking = 0.0;
 }
+
+typedef RadioCabinetMetrics = ({
+  double diameter,
+  double stationSize,
+  double frameInset,
+  double shellInset,
+  double screenInset,
+  double countryGap,
+  double detailGap,
+  double statusGap,
+  double detailHeightFactor,
+  double statusHeightFactor,
+  double dialLabelGap,
+  double dialLabelSize,
+  double dialLabelHeightFactor,
+  double handleHeight,
+  double controlsGap,
+  double keyHeight,
+  double keysGap,
+  int textLines,
+});
 
 abstract final class RadioCabinetDesign {
   static const compact = (
@@ -86,6 +120,42 @@ abstract final class RadioCabinetDesign {
     keysGap: 16.0,
     textLines: 2,
   );
+
+  static const tightStatusHeightFactor = 2.1;
+
+  static RadioCabinetMetrics metricsFor(double density) {
+    double mix(double tight, double comfortable) =>
+        tight + (comfortable - tight) * density;
+    return (
+      diameter: mix(compact.diameter, regular.diameter),
+      stationSize: mix(compact.stationSize, regular.stationSize),
+      frameInset: mix(compact.frameInset, regular.frameInset),
+      shellInset: mix(compact.shellInset, regular.shellInset),
+      screenInset: mix(compact.screenInset, regular.screenInset),
+      countryGap: mix(compact.countryGap, regular.countryGap),
+      detailGap: mix(compact.detailGap, regular.detailGap),
+      statusGap: mix(compact.statusGap, regular.statusGap),
+      detailHeightFactor: mix(
+        compact.detailHeightFactor,
+        regular.detailHeightFactor,
+      ),
+      statusHeightFactor: mix(
+        tightStatusHeightFactor,
+        regular.statusHeightFactor,
+      ),
+      dialLabelGap: mix(compact.dialLabelGap, regular.dialLabelGap),
+      dialLabelSize: mix(compact.dialLabelSize, regular.dialLabelSize),
+      dialLabelHeightFactor: mix(
+        compact.dialLabelHeightFactor,
+        regular.dialLabelHeightFactor,
+      ),
+      handleHeight: mix(compact.handleHeight, regular.handleHeight),
+      controlsGap: mix(compact.controlsGap, regular.controlsGap),
+      keyHeight: mix(compact.keyHeight, regular.keyHeight),
+      keysGap: mix(compact.keysGap, regular.keysGap),
+      textLines: regular.textLines,
+    );
+  }
 
   static const screenFrameInset = 5.0;
   static const screenFrameRadius = BorderRadius.all(Radius.circular(15));
@@ -252,6 +322,9 @@ abstract final class RadioDiagnosticsDesign {
 
 abstract final class RouteMapDesign {
   static const height = 84.0;
+  static const tightHeight = 56.0;
+  static double heightFor(double density) =>
+      tightHeight + (height - tightHeight) * density;
   static const north = 80.0;
   static const south = -60.0;
   static const dotRadius = .55;
