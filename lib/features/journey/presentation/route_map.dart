@@ -6,7 +6,7 @@ import '../../../ui/theme/app_motion.dart';
 import '../../../ui/theme/travel_radio_design.dart';
 import '../../../ui/theme/travel_radio_palette.dart';
 import '../../radio/presentation/radio_display.dart';
-import '../data/world_atlas.g.dart';
+import '../domain/atlas/world_atlas.g.dart';
 import '../domain/geo_point.dart';
 import '../domain/station_place.dart';
 import '../domain/travel_leg.dart';
@@ -57,7 +57,8 @@ class _RouteMapState extends State<RouteMap> with TickerProviderStateMixin {
       ? 0
       : _arriving
       ? _outlineStart + (1 - _outlineStart) * _reveal(_camera.value)
-      : _outlineStart * (1 - const Interval(0, .6).transform(_camera.value));
+      : _outlineStart *
+            (1 - RouteMapDesign.departureFade.transform(_camera.value));
   Rect get _view =>
       interpolateMapView(_from, _to, _cameraProgress(_camera.value, _arriving));
 
@@ -73,7 +74,9 @@ class _RouteMapState extends State<RouteMap> with TickerProviderStateMixin {
     final next = arriving ? _destination : oldCountry;
     _previousCountry = arriving && next != oldCountry ? oldCountry : null;
     _previousOpacity = _previousCountry == null ? 0 : oldOutline;
-    _outlineStart = arriving && next != oldCountry ? 0 : oldOutline;
+    // Every new landing draws its border, including another station in the
+    // same country arriving before the departure animation has completed.
+    _outlineStart = arriving ? 0 : oldOutline;
     _country = next;
     _to = arriving ? next?.viewport ?? _worldView : _worldView;
     _camera.duration = arriving
@@ -89,7 +92,7 @@ class _RouteMapState extends State<RouteMap> with TickerProviderStateMixin {
   /// Made once: the welcome demo rebuilds the map on every frame.
   late final _landingCurve = CurvedAnimation(
     parent: _landing,
-    curve: Curves.easeOutCubic,
+    curve: RouteMapDesign.landingCurve,
   );
 
   @override
@@ -202,10 +205,9 @@ const _worldView = Rect.fromLTWH(
 );
 
 double _cameraProgress(double value, bool arriving) => arriving
-    ? const Interval(.12, .8, curve: Curves.easeInOutCubic).transform(value)
-    : Curves.easeInOutCubic.transform(value);
-double _reveal(double value) =>
-    const Interval(.45, 1, curve: Curves.easeOutCubic).transform(value);
+    ? RouteMapDesign.arrivalCamera.transform(value)
+    : RouteMapDesign.departureCamera.transform(value);
+double _reveal(double value) => RouteMapDesign.countryReveal.transform(value);
 
 /// Paints the current camera frame; movement changes only display geometry.
 class RouteMapPainter extends CustomPainter {
@@ -249,7 +251,8 @@ class RouteMapPainter extends CustomPainter {
       ? 0
       : arriving
       ? outlineStart + (1 - outlineStart) * _reveal(camera.value)
-      : outlineStart * (1 - const Interval(0, .6).transform(camera.value));
+      : outlineStart *
+            (1 - RouteMapDesign.departureFade.transform(camera.value));
 
   static const _ink = TravelRadioPalette.screenInk;
 
@@ -268,7 +271,10 @@ class RouteMapPainter extends CustomPainter {
 
     _paintDots(canvas, project, scale, size);
     final fade = 1 - outline;
-    for (final past in fade > .001 ? history : const <TravelLeg>[]) {
+    for (final past
+        in fade > RouteMapDesign.visibleOpacity
+            ? history
+            : const <TravelLeg>[]) {
       if (identical(past, leg) || past.to == null) continue;
       _paintHistory(
         canvas,
@@ -278,14 +284,10 @@ class RouteMapPainter extends CustomPainter {
       );
     }
     if (previousCountry != null) {
-      _paintCountry(
-        canvas,
-        previousCountry!,
-        previousOpacity * (1 - const Interval(0, .4).transform(camera.value)),
-        view,
-        scale,
-        size,
-      );
+      final fading =
+          previousOpacity *
+          (1 - RouteMapDesign.previousCountryFade.transform(camera.value));
+      _paintCountry(canvas, previousCountry!, fading, view, scale, size);
     }
     if (country != null && outline > 0) {
       _paintCountry(canvas, country!, outline, view, scale, size);
@@ -304,7 +306,9 @@ class RouteMapPainter extends CustomPainter {
             Paint()
               ..style = PaintingStyle.stroke
               ..strokeWidth = RouteMapDesign.radarStroke
-              ..color = _ink.withValues(alpha: (1 - t) * .6),
+              ..color = _ink.withValues(
+                alpha: (1 - t) * RouteMapDesign.radarOpacity,
+              ),
           );
         }
       case FlightPhase.signalLost:
@@ -319,7 +323,7 @@ class RouteMapPainter extends CustomPainter {
         final from = project(leg.from.point);
         canvas.drawCircle(
           from,
-          RouteMapDesign.pointRadius * .7,
+          RouteMapDesign.pointRadius * RouteMapDesign.departurePointShare,
           Paint()..color = _ink.withValues(alpha: 1 - outline),
         );
         final to = leg.to;
@@ -348,7 +352,9 @@ class RouteMapPainter extends CustomPainter {
             Paint()
               ..style = PaintingStyle.stroke
               ..strokeWidth = RouteMapDesign.radarStroke
-              ..color = _ink.withValues(alpha: (1 - pulse.value) * .7),
+              ..color = _ink.withValues(
+                alpha: (1 - pulse.value) * RouteMapDesign.arrivalPulseOpacity,
+              ),
           );
         }
     }
@@ -376,10 +382,10 @@ class RouteMapPainter extends CustomPainter {
             RouteMapDesign.dotOpacity *
             (1 - outline * RouteMapDesign.countryDotFade),
       );
-    final radius = (RouteMapDesign.dotRadius * math.sqrt(scale / .6)).clamp(
-      RouteMapDesign.dotRadius,
-      1.4,
-    );
+    final radius =
+        (RouteMapDesign.dotRadius *
+                math.sqrt(scale / RouteMapDesign.dotReferenceScale))
+            .clamp(RouteMapDesign.dotRadius, RouteMapDesign.maxDotRadius);
     final visible = (Offset.zero & size).inflate(radius);
     for (final place in _landPoints) {
       final point = project(place);

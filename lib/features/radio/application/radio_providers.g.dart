@@ -6,7 +6,7 @@ part of 'radio_providers.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$radioRepositoryHash() => r'88899d8e817f6a06b2ffeddc5a5404f432961d5b';
+String _$radioRepositoryHash() => r'cca9daf275cbcb7e63e368ba66afb0737c2652db';
 
 /// See also [radioRepository].
 @ProviderFor(radioRepository)
@@ -40,26 +40,26 @@ final flightTimingProvider = Provider<FlightTiming>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef FlightTimingRef = ProviderRef<FlightTiming>;
-String _$radioAudioHandlerHash() => r'b333dadd00a01b69a7e68f718b6da06d68605c08';
+String _$radioMediaSessionHash() => r'a2b6ef5c491ace26ae42c818f17f166b885495e7';
 
 /// The system media session, overridden at startup by `bootstrap`.
 ///
-/// Copied from [radioAudioHandler].
-@ProviderFor(radioAudioHandler)
-final radioAudioHandlerProvider = Provider<RadioAudioHandler?>.internal(
-  radioAudioHandler,
-  name: r'radioAudioHandlerProvider',
+/// Copied from [radioMediaSession].
+@ProviderFor(radioMediaSession)
+final radioMediaSessionProvider = Provider<RadioMediaSession?>.internal(
+  radioMediaSession,
+  name: r'radioMediaSessionProvider',
   debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
       ? null
-      : _$radioAudioHandlerHash,
+      : _$radioMediaSessionHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-typedef RadioAudioHandlerRef = ProviderRef<RadioAudioHandler?>;
-String _$radioAudioServiceHash() => r'168d9bff1d2312f72b7940bf434639afd62000d9';
+typedef RadioMediaSessionRef = ProviderRef<RadioMediaSession?>;
+String _$radioAudioServiceHash() => r'c38c7f465b96d446075862549766cb509429bef6';
 
 /// See also [radioAudioService].
 @ProviderFor(radioAudioService)

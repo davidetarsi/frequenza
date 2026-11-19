@@ -1,3 +1,5 @@
+import '../../journey/presentation/country_name.dart';
+import '../../../app/localization/presentation/detail_text.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -67,11 +69,31 @@ class RadioPage extends ConsumerWidget {
     String text(DisplayText text) => switch (text) {
       Translated(:final key) => key.tr(context: context),
       Verbatim(:final text) => text,
+      CountryText(:final code, :final fallback) => countryName(
+        context,
+        code,
+        fallback: fallback,
+      ),
     };
     final distance = display.leg?.distance;
-    final countryDetail = distance == null
+    final distanceLabel = distance == null
         ? null
-        : '${distance.approximate ? '≈ ' : ''}${LocaleKeys.distanceKm.tr(context: context, args: [NumberFormat.decimalPattern(context.locale.toLanguageTag()).format(distance.km)])}';
+        : LocaleKeys.distanceKm.tr(
+            context: context,
+            args: [
+              NumberFormat.decimalPattern(
+                context.locale.toLanguageTag(),
+              ).format(distance.km),
+            ],
+          );
+    final countryDetail = distanceLabel == null
+        ? null
+        : distance!.approximate
+        ? LocaleKeys.approximateDistance.tr(
+            context: context,
+            namedArgs: {'distance': distanceLabel},
+          )
+        : distanceLabel;
     final screenWidth = MediaQuery.sizeOf(context).width;
     return Scaffold(
       body: SafeArea(
@@ -103,13 +125,16 @@ class RadioPage extends ConsumerWidget {
                   (compact
                           ? theme.textTheme.titleMedium
                           : theme.textTheme.headlineMedium)
-                      ?.copyWith(
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: TravelRadioLayout.headingTracking,
-                      ),
+                      ?.merge(TravelRadioLayout.headingText),
             );
-            final favoritesLabel =
-                '${LocaleKeys.favorites.tr(context: context)} · $favoritesCount';
+            final favoritesLabel = LocaleKeys.favoritesCount.tr(
+              context: context,
+              namedArgs: {
+                'count': NumberFormat.decimalPattern(
+                  context.locale.toLanguageTag(),
+                ).format(favoritesCount),
+              },
+            );
             final favoritesButton = AppIconButton(
               key: tourTargets?.favorites ?? const ValueKey('favorites-open'),
               tooltip: favoritesLabel,
@@ -150,14 +175,16 @@ class RadioPage extends ConsumerWidget {
                 detail: display.busy
                     ? ''
                     : song ??
-                          station?.tags.take(2).join(' · ') ??
+                          (station == null
+                              ? null
+                              : detailText(context, station.tags.take(2))) ??
                           LocaleKeys.firstTrip.tr(context: context),
                 onDetailTap: track == null || station == null
                     ? null
                     : () => saveSong(context, ref, track, station),
                 onDetailLongPress: song == null
                     ? null
-                    : () => copyTrackTitle(context, song),
+                    : () => copyTrackTitle(context, ref, song),
                 detailAction: track == null || station == null
                     ? null
                     : SongBookmark(track: track, station: station),
@@ -185,7 +212,11 @@ class RadioPage extends ConsumerWidget {
                     ? null
                     : LocaleKeys.tripNumber.tr(
                         context: context,
-                        args: ['${journey.trips}'],
+                        args: [
+                          NumberFormat.decimalPattern(
+                            context.locale.toLanguageTag(),
+                          ).format(journey.trips),
+                        ],
                       ),
                 knobLabel: display.knobKey.tr(context: context).toUpperCase(),
                 tuneLabel: LocaleKeys.tuneAccessibility.tr(context: context),

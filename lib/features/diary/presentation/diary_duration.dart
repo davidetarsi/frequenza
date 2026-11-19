@@ -10,10 +10,18 @@ String diaryDuration(BuildContext context, int seconds) =>
       UnderAMinute() => LocaleKeys.diaryUnderAMinute.tr(context: context),
       DiaryMinutes(:final minutes) => LocaleKeys.diaryMinutes.tr(
         context: context,
-        args: ['$minutes'],
+        args: [
+          NumberFormat.decimalPattern(
+            context.locale.toLanguageTag(),
+          ).format(minutes),
+        ],
       ),
       DiaryHours(:final hours) => LocaleKeys.diaryHours.tr(
         context: context,
-        args: ['$hours'],
+        args: [
+          NumberFormat.decimalPattern(
+            context.locale.toLanguageTag(),
+          ).format(hours),
+        ],
       ),
     };

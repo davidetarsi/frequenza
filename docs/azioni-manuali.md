@@ -121,7 +121,7 @@ Su https://play.google.com/console.
   | Annunci | no |
   | Classificazione dei contenuti | questionario: «Tutti gli altri tipi di app», no a violenza, sesso, gioco d'azzardo e simili |
   | Pubblico di destinazione | solo 18+: così non valgono le regole per i bambini |
-  | Sicurezza dei dati | vedi il punto 8: dalla versione con le statistiche anonime, non più «nessun dato raccolto» |
+  | Sicurezza dei dati | vedi il punto 8: dalla versione con le statistiche d’uso, non più «nessun dato raccolto» |
   | App governative, finanziarie, sanitarie, di notizie | no |
   | Impostazioni dello Store | categoria Musica e audio, email di contatto |
 
@@ -136,6 +136,15 @@ Su https://play.google.com/console.
   - Il link di partecipazione arriva dopo il primo rilascio.
 
 ## 5. Primo rilascio
+
+Per una build locale `--flavor prod --release` serve sempre `android/key.properties`
+(non versionato), con `storeFile`, `storePassword`, `keyAlias` e `keyPassword`.
+`storeFile` è relativo a `android/app`, oppure assoluto; `storeType` è facoltativo
+(predefinito `JKS`). La build si ferma se mancano file o campi: non usa una firma
+di debug come ripiego. Le build dev mantengono la configurazione esistente: usano
+la chiave configurata se presente, altrimenti quella di debug locale. Le build
+debug non richiedono la chiave di produzione.
+
 
 - [ ] La versione `0.2.0+1` è nella PR `release/0.2.0` (punto 3). Serve una volta sola: su `main` c'è ancora `0.1.0` e il bump automatico arriva lì solo con questo rilascio.
 - [ ] **Novità della versione.** Prima di ogni rilascio, controlla `distribution/whatsnew/whatsnew-it-IT` e `whatsnew-en-US` (massimo 500 caratteri).
@@ -188,7 +197,7 @@ Su https://play.google.com/console.
   - `version_code`: il numero dopo il `+` (`1` per `0.2.0+1`).
   - `rollout`: `100`, o meno per partire piano.
 
-## 8. Statistiche anonime (tgram-analytics)
+## 8. Statistiche d'uso (tgram-analytics)
 
 Prima del primo rilascio con le statistiche. Senza questi passi la build di produzione esce con le statistiche spente.
 

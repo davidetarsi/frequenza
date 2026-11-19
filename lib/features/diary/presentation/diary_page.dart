@@ -10,6 +10,7 @@ import '../../../ui/theme/app_spacing.dart';
 import '../../../ui/theme/travel_radio_design.dart';
 import '../../../ui/theme/travel_radio_palette.dart';
 import '../../../ui/widgets/bottom_fade.dart';
+import '../../../ui/widgets/app_message.dart';
 import '../../analytics/application/analytics_providers.dart';
 import '../../analytics/domain/app_event.dart';
 import '../../radio/application/radio_controller.dart';
@@ -19,7 +20,7 @@ import '../application/diary_summary_provider.dart';
 import '../domain/diary_flight.dart';
 import '../domain/diary_period.dart';
 import '../domain/diary_summary.dart';
-import 'country_name.dart';
+import '../../journey/presentation/country_name.dart';
 import 'country_sheet.dart';
 import 'diary_duration.dart';
 import 'diary_map.dart';
@@ -66,7 +67,7 @@ class _DiaryPageState extends ConsumerState<DiaryPage> {
   @override
   void initState() {
     super.initState();
-    ref.read(analyticsProvider).track(const AppEvent.diaryOpened());
+    ref.read(analyticsProvider).track(AppEvent.diaryOpened());
   }
 
   @override
@@ -115,8 +116,9 @@ class _DiaryPageState extends ConsumerState<DiaryPage> {
   Widget build(BuildContext context) {
     final read = ref.watch(diarySummaryProvider(_period));
     if (read.valueOrNull case final summary?) _last = summary;
-    final summary = _last;
-    final failed = summary == null && read.hasError;
+    // Previous data may remain during loading, never after a read error.
+    final failed = read.hasError && !read.isLoading;
+    final summary = failed ? null : _last;
     final card = switch ((summary, _selected)) {
       (final summary?, final code?) => cardFor(summary, code),
       _ => null,
@@ -266,7 +268,7 @@ class _DiaryPageState extends ConsumerState<DiaryPage> {
               padding: DiaryDesign.pagePadding.copyWith(left: 0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                spacing: 8,
+                spacing: DiaryDesign.headerGap,
                 children: [
                   LayoutBuilder(
                     builder: (context, box) => Row(
@@ -288,12 +290,19 @@ class _DiaryPageState extends ConsumerState<DiaryPage> {
                         const SizedBox(width: AppSpacing.small),
                         ConstrainedBox(
                           constraints: BoxConstraints(
-                            maxWidth: box.maxWidth / 2,
+                            maxWidth:
+                                box.maxWidth * DiaryDesign.summaryWidthShare,
                           ),
                           child: Text(
                             total == 0
                                 ? countryCount
-                                : '$countryCount · $listeningTime',
+                                : LocaleKeys.diarySummary.tr(
+                                    context: context,
+                                    namedArgs: {
+                                      'countries': countryCount,
+                                      'time': listeningTime,
+                                    },
+                                  ),
                             key: const ValueKey('diary-summary'),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -346,9 +355,11 @@ class _DiaryPageState extends ConsumerState<DiaryPage> {
                   );
                   final content = switch (summary) {
                     _ when failed => [
-                      Text(
-                        t(LocaleKeys.diaryError),
-                        style: TextStyle(color: muted),
+                      AppMessage(
+                        message: t(LocaleKeys.diaryError),
+                        actionLabel: t(LocaleKeys.retry),
+                        onAction: () =>
+                            ref.invalidate(diarySummaryProvider(_period)),
                       ),
                     ],
                     _ when loading => <Widget>[],
@@ -410,38 +421,53 @@ class _DiaryPageState extends ConsumerState<DiaryPage> {
         key.tr(context: context, args: args);
     final top = summary.top;
     final stops = summary.stopped;
-    final shown = _showAll ? stops : stops.take(10).toList();
+    final shown = _showAll
+        ? stops
+        : stops.take(DiaryDesign.initialCountryCount).toList();
     final longest = stops.isEmpty ? 0 : stops.first.seconds;
     return [
       Text(
         t(LocaleKeys.diaryTop).toUpperCase(),
         style: DiaryDesign.sectionText.copyWith(color: muted),
       ),
-      const SizedBox(height: 6),
+      const SizedBox(height: DiaryDesign.topLabelGap),
       Material(
         color: TravelRadioPalette.screenHighlight,
         textStyle: Theme.of(
           context,
         ).textTheme.bodyMedium?.copyWith(color: TravelRadioPalette.screenInk),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: DiaryDesign.topRadius,
           side: BorderSide(
-            color: TravelRadioPalette.screenInk.withValues(alpha: 0.3),
+            color: TravelRadioPalette.screenInk.withValues(
+              alpha: DiaryDesign.topBorderOpacity,
+            ),
           ),
         ),
         child: InkWell(
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: DiaryDesign.topRadius,
           onTap: () => _fly(
             DiaryFlightSource.topStation,
             (radio) => radio.tuneTo(top.station),
           ),
           child: Padding(
-            padding: const EdgeInsets.all(12),
+            padding: DiaryDesign.topPadding,
             child: Row(
               children: [
                 Expanded(
                   child: Text(
-                    '${top.station.name} · ${countryName(context, top.station.countryCode, fallback: top.station.country)} · ${diaryDuration(context, top.seconds)}',
+                    LocaleKeys.diaryTopStation.tr(
+                      context: context,
+                      namedArgs: {
+                        'station': top.station.name,
+                        'country': countryName(
+                          context,
+                          top.station.countryCode,
+                          fallback: top.station.country,
+                        ),
+                        'time': diaryDuration(context, top.seconds),
+                      },
+                    ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -451,7 +477,7 @@ class _DiaryPageState extends ConsumerState<DiaryPage> {
                 const SizedBox(width: AppSpacing.small),
                 const Icon(
                   Icons.arrow_forward,
-                  size: 16,
+                  size: DiaryDesign.topArrowSize,
                   color: TravelRadioPalette.screenInk,
                 ),
               ],
@@ -459,7 +485,7 @@ class _DiaryPageState extends ConsumerState<DiaryPage> {
           ),
         ),
       ),
-      const SizedBox(height: 14),
+      const SizedBox(height: DiaryDesign.sectionGap),
       Text(
         t(LocaleKeys.diaryCountries).toUpperCase(),
         style: DiaryDesign.sectionText.copyWith(color: muted),
@@ -468,9 +494,9 @@ class _DiaryPageState extends ConsumerState<DiaryPage> {
         InkWell(
           onTap: () => _pick(summary, country.code),
           child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8),
+            padding: DiaryDesign.rankRowPadding,
             child: Row(
-              spacing: 8,
+              spacing: DiaryDesign.rankGap,
               children: [
                 SizedBox(
                   width: DiaryDesign.rankNameWidth,
@@ -488,7 +514,7 @@ class _DiaryPageState extends ConsumerState<DiaryPage> {
                       height: DiaryDesign.barHeight,
                       decoration: BoxDecoration(
                         color: TravelRadioPalette.screenInk,
-                        borderRadius: BorderRadius.circular(3),
+                        borderRadius: DiaryDesign.barRadius,
                       ),
                     ),
                   ),
@@ -505,7 +531,7 @@ class _DiaryPageState extends ConsumerState<DiaryPage> {
             ),
           ),
         ),
-      if (!_showAll && stops.length > 10)
+      if (!_showAll && stops.length > DiaryDesign.initialCountryCount)
         TextButton(
           onPressed: () => setState(() => _showAll = true),
           child: Text(t(LocaleKeys.diaryShowAll, ['${stops.length}'])),
@@ -555,7 +581,11 @@ class _PeriodPill extends StatelessWidget {
       child: Material(
         color: selected ? ink : Colors.transparent,
         shape: StadiumBorder(
-          side: BorderSide(color: selected ? ink : ink.withValues(alpha: 0.4)),
+          side: BorderSide(
+            color: selected
+                ? ink
+                : ink.withValues(alpha: DiaryDesign.periodBorderOpacity),
+          ),
         ),
         child: InkWell(
           customBorder: const StadiumBorder(),
@@ -564,11 +594,13 @@ class _PeriodPill extends StatelessWidget {
             padding: DiaryDesign.periodPadding,
             child: Text(
               label,
-              style: TextStyle(
-                color: selected ? TravelRadioPalette.screen : ink,
-                fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-                fontSize: 12,
-              ),
+              style:
+                  (selected
+                          ? DiaryDesign.selectedPeriodText
+                          : DiaryDesign.periodText)
+                      .copyWith(
+                        color: selected ? TravelRadioPalette.screen : ink,
+                      ),
             ),
           ),
         ),

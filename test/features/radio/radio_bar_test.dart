@@ -100,7 +100,7 @@ void main() {
       tester,
       onAir(OnAirPlayback.playing, title: 'Ana Moura - Desfado'),
     );
-    expect(find.text('KEXP · The United States Of America'), findsOneWidget);
+    expect(find.text("KEXP · Stati Uniti d'America"), findsOneWidget);
     expect(find.text('Ana Moura — Desfado'), findsOneWidget);
     expect(find.byTooltip('Salva la stazione'), findsOneWidget);
     expect(find.byTooltip('Salva canzone'), findsOneWidget);

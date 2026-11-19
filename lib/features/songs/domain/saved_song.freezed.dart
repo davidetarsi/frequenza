@@ -23,6 +23,7 @@ SavedSong _$SavedSongFromJson(Map<String, dynamic> json) {
 mixin _$SavedSong {
   @JsonKey(fromJson: _text)
   String? get artist => throw _privateConstructorUsedError;
+  @JsonKey(fromJson: _title)
   String get title => throw _privateConstructorUsedError;
   @StationRecordConverter()
   RadioStation get station => throw _privateConstructorUsedError;
@@ -46,7 +47,7 @@ abstract class $SavedSongCopyWith<$Res> {
   @useResult
   $Res call({
     @JsonKey(fromJson: _text) String? artist,
-    String title,
+    @JsonKey(fromJson: _title) String title,
     @StationRecordConverter() RadioStation station,
     @JsonKey(name: 'at', toJson: _utc) DateTime savedAt,
   });
@@ -119,7 +120,7 @@ abstract class _$$SavedSongImplCopyWith<$Res>
   @useResult
   $Res call({
     @JsonKey(fromJson: _text) String? artist,
-    String title,
+    @JsonKey(fromJson: _title) String title,
     @StationRecordConverter() RadioStation station,
     @JsonKey(name: 'at', toJson: _utc) DateTime savedAt,
   });
@@ -176,7 +177,7 @@ class __$$SavedSongImplCopyWithImpl<$Res>
 class _$SavedSongImpl extends _SavedSong {
   const _$SavedSongImpl({
     @JsonKey(fromJson: _text) this.artist,
-    required this.title,
+    @JsonKey(fromJson: _title) required this.title,
     @StationRecordConverter() required this.station,
     @JsonKey(name: 'at', toJson: _utc) required this.savedAt,
   }) : super._();
@@ -188,6 +189,7 @@ class _$SavedSongImpl extends _SavedSong {
   @JsonKey(fromJson: _text)
   final String? artist;
   @override
+  @JsonKey(fromJson: _title)
   final String title;
   @override
   @StationRecordConverter()
@@ -233,7 +235,7 @@ class _$SavedSongImpl extends _SavedSong {
 abstract class _SavedSong extends SavedSong {
   const factory _SavedSong({
     @JsonKey(fromJson: _text) final String? artist,
-    required final String title,
+    @JsonKey(fromJson: _title) required final String title,
     @StationRecordConverter() required final RadioStation station,
     @JsonKey(name: 'at', toJson: _utc) required final DateTime savedAt,
   }) = _$SavedSongImpl;
@@ -246,6 +248,7 @@ abstract class _SavedSong extends SavedSong {
   @JsonKey(fromJson: _text)
   String? get artist;
   @override
+  @JsonKey(fromJson: _title)
   String get title;
   @override
   @StationRecordConverter()

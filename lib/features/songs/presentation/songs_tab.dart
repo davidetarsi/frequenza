@@ -1,22 +1,23 @@
+import '../../journey/presentation/country_name.dart';
+import '../../../app/localization/presentation/detail_text.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../app/links/external_links.dart';
+import '../../../app/presentation/open_app_link.dart';
 import '../../analytics/application/analytics_providers.dart';
 import '../../analytics/domain/app_event.dart';
 import '../../../l10n/locale_keys.g.dart';
 import '../../../ui/theme/app_shape.dart';
 import '../../../ui/theme/app_spacing.dart';
-import '../../../ui/theme/travel_radio_design.dart';
 import '../../../ui/theme/travel_radio_palette.dart';
-import '../../../ui/widgets/app_button.dart';
+import '../../../ui/theme/app_component_design.dart';
 import '../../../ui/widgets/app_loading.dart';
 import '../../../ui/widgets/app_message.dart';
 import '../../radio/application/radio_controller.dart';
 import '../../radio/presentation/copy_track_title.dart';
 import '../application/saved_songs.dart';
-import '../data/installed_apps.dart';
+import '../application/installed_apps.dart';
 import '../domain/saved_song.dart';
 import '../domain/song_search.dart';
 
@@ -38,46 +39,24 @@ class _SongsTabState extends ConsumerState<SongsTab> {
   @override
   Widget build(BuildContext context) {
     final songs = ref.watch(savedSongsProvider);
-    final p = TravelRadioPalette.of(context);
     final visible = [
       for (final song in songs.valueOrNull ?? <SavedSong>[])
         if (!_leaving.contains(song.key)) song,
     ];
     if (songs.hasError && !songs.isLoading) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            LocaleKeys.songsError.tr(context: context),
-            style: TextStyle(color: Theme.of(context).colorScheme.error),
-          ),
-          AppButton(
-            variant: AppButtonVariant.text,
-            onPressed: () => ref.invalidate(savedSongsProvider),
-            label: LocaleKeys.retry.tr(context: context),
-          ),
-        ],
+      return AppMessage.error(
+        message: LocaleKeys.songsError.tr(context: context),
+        onAction: () => ref.invalidate(savedSongsProvider),
+        actionLabel: LocaleKeys.retry.tr(context: context),
       );
     }
     if (!songs.hasValue) {
       return AppLoading(label: LocaleKeys.loading.tr(context: context));
     }
     if (visible.isEmpty) {
-      return Container(
-        padding: const EdgeInsets.all(AppSpacing.large),
-        decoration: BoxDecoration(
-          color: p.paperRaised,
-          borderRadius: AppShape.panelRadius,
-        ),
-        child: AppMessage.empty(
-          leading: Icon(
-            Icons.bookmark_border,
-            color: p.muted,
-            size: RadioFavoritesDesign.emptyIconSize,
-          ),
-          message: LocaleKeys.songsEmpty.tr(context: context),
-          messageStyle: TextStyle(color: p.ink),
-        ),
+      return AppMessage.emptyPanel(
+        icon: Icons.bookmark_border,
+        message: LocaleKeys.songsEmpty.tr(context: context),
       );
     }
     // Countries in the order of their latest song.
@@ -94,13 +73,14 @@ class _SongsTabState extends ConsumerState<SongsTab> {
           Padding(
             padding: const EdgeInsets.only(bottom: AppSpacing.small),
             child: Text(
-              group.first.station.country.isEmpty
-                  ? LocaleKeys.unknownCountry.tr(context: context)
-                  : group.first.station.country,
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                color: p.muted,
-                fontWeight: FontWeight.w600,
+              countryName(
+                context,
+                group.first.station.countryCode,
+                fallback: group.first.station.country,
               ),
+              style: Theme.of(context).textTheme.titleSmall
+                  ?.merge(SavedItemsDesign.groupText)
+                  .copyWith(color: TravelRadioPalette.of(context).muted),
             ),
           ),
           for (final song in group)
@@ -121,12 +101,12 @@ class _SongsTabState extends ConsumerState<SongsTab> {
     switch (choice) {
       case (final SearchService service, final Uri link):
         ref.read(analyticsProvider).track(AppEvent.songSearchOpened(service));
-        await ref.read(openExternalProvider)(link);
+        await openAppLink(context, ref, () async => link);
       case _Choice.copy:
-        ref.read(analyticsProvider).track(const AppEvent.songCopied());
-        await copyTrackTitle(context, song.display);
+        ref.read(analyticsProvider).track(AppEvent.songCopied());
+        await copyTrackTitle(context, ref, song.display);
       case _Choice.tune:
-        ref.read(analyticsProvider).track(const AppEvent.stationRetuned());
+        ref.read(analyticsProvider).track(AppEvent.stationRetuned());
         final controller = ref.read(radioControllerProvider.notifier);
         Navigator.pop(context);
         await controller.tuneTo(song.station);
@@ -187,12 +167,12 @@ class _SongRow extends ConsumerWidget {
     final day = DateFormat.yMMMd(
       context.locale.toLanguageTag(),
     ).format(song.savedAt.toLocal());
-    final details = [
+    final details = detailText(context, [
       ?song.artist,
       station.name,
       ?station.region,
       day,
-    ].join(' · ');
+    ]);
     final removeLabel = LocaleKeys.removeSong.tr(context: context);
     return Dismissible(
       key: ValueKey('song-${song.key}'),
@@ -202,7 +182,9 @@ class _SongRow extends ConsumerWidget {
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.large),
         decoration: BoxDecoration(
-          color: error.withValues(alpha: .12),
+          color: error.withValues(
+            alpha: SavedItemsDesign.removeBackgroundOpacity,
+          ),
           borderRadius: AppShape.panelRadius,
         ),
         child: Row(
@@ -233,12 +215,10 @@ class _SongRow extends ConsumerWidget {
                       Text(
                         song.title,
                         style: Theme.of(context).textTheme.titleMedium
-                            ?.copyWith(
-                              color: p.ink,
-                              fontWeight: FontWeight.w600,
-                            ),
+                            ?.merge(SavedItemsDesign.titleText)
+                            .copyWith(color: p.ink),
                       ),
-                      const SizedBox(height: RadioFavoritesDesign.titleGap),
+                      const SizedBox(height: SavedItemsDesign.titleGap),
                       Text(
                         details,
                         style: Theme.of(

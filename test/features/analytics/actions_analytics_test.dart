@@ -94,7 +94,7 @@ void main() {
     var c = open();
     await c.read(welcomeSeenProvider.future);
     await c.read(welcomeSeenProvider.notifier).markSeen();
-    expect(analytics.events, [const AppEvent.welcomeCompleted()]);
+    expect(analytics.events, [AppEvent.welcomeCompleted()]);
 
     final previous = SharedPreferencesStorePlatform.instance;
     SharedPreferencesStorePlatform.instance = BrokenStore();
@@ -106,6 +106,6 @@ void main() {
     c = open();
     await c.read(welcomeSeenProvider.future);
     await c.read(welcomeSeenProvider.notifier).markSeen();
-    expect(analytics.events, [const AppEvent.welcomeCompleted()]);
+    expect(analytics.events, [AppEvent.welcomeCompleted()]);
   });
 }

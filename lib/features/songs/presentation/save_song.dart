@@ -3,10 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/locale_keys.g.dart';
+import '../../../ui/theme/app_component_design.dart';
 import '../../radio/domain/radio_station.dart';
 import '../../radio/domain/track_title.dart';
 import '../application/saved_songs.dart';
 import '../domain/saved_song.dart';
+import '../domain/song_save_result.dart';
 
 /// Saves the song on air and says so at the bottom, with an undo. A song
 /// already saved stays as it is.
@@ -20,7 +22,19 @@ Future<void> saveSong(
   final message = LocaleKeys.songSaved.tr(context: context);
   final undo = LocaleKeys.undo.tr(context: context);
   final songs = ref.read(savedSongsProvider.notifier);
-  if (!await songs.save(track, station)) return;
+  final result = await songs.saveResult(track, station);
+  if (!context.mounted) return;
+  switch (result) {
+    case SongDuplicate():
+      return;
+    case SongSaveFailed() || SongsUnavailable():
+      messenger.showSnackBar(
+        SnackBar(content: Text(LocaleKeys.songSaveError.tr(context: context))),
+      );
+      return;
+    case SongSaved():
+      break;
+  }
   final key = SavedSong.keyOf(track, station);
   messenger
     ..hideCurrentSnackBar()
@@ -54,11 +68,14 @@ class SongBookmark extends ConsumerWidget {
     final saved = ref
         .read(savedSongsProvider.notifier)
         .contains(track, station);
-    final size = IconTheme.of(context).size ?? 18;
+    final size = IconTheme.of(context).size ?? SongBookmarkDesign.iconSize;
     return IconButton(
       tooltip: LocaleKeys.saveSong.tr(context: context),
       padding: EdgeInsets.zero,
-      constraints: BoxConstraints.tightFor(width: size + 8, height: size + 4),
+      constraints: BoxConstraints.tightFor(
+        width: size + SongBookmarkDesign.widthInset,
+        height: size + SongBookmarkDesign.heightInset,
+      ),
       style: const ButtonStyle(tapTargetSize: MaterialTapTargetSize.shrinkWrap),
       iconSize: size,
       color: IconTheme.of(context).color,

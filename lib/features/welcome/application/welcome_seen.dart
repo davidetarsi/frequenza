@@ -1,5 +1,7 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../../app/preferences/application/app_preferences_provider.dart';
+import '../../../app/state/latest_save.dart';
 
 import '../../analytics/application/analytics_providers.dart';
 import '../../analytics/domain/app_event.dart';
@@ -9,8 +11,7 @@ part 'welcome_seen.g.dart';
 /// Whether this revision of the guide has been seen, including after an update.
 @Riverpod(keepAlive: true)
 class WelcomeSeen extends _$WelcomeSeen {
-  static const _key = 'app.welcomeSeen';
-  static const revisionKey = 'app.welcomeRevision';
+  final _save = LatestSave();
 
   // Increment only when a changed guide should be shown again, not per release.
   static const currentRevision = 2;
@@ -19,9 +20,10 @@ class WelcomeSeen extends _$WelcomeSeen {
   /// and the radio must open whatever happens.
   @override
   Future<bool> build() async {
+    _save.start(ref);
+    final repository = ref.watch(appPreferencesRepositoryProvider);
     try {
-      final preferences = await SharedPreferences.getInstance();
-      return (preferences.getInt(revisionKey) ?? 0) >= currentRevision;
+      return await repository.loadWelcomeRevision() >= currentRevision;
     } catch (_) {
       return true;
     }
@@ -29,10 +31,9 @@ class WelcomeSeen extends _$WelcomeSeen {
 
   /// Used for launch analytics: seeing a revised guide is not a first install.
   Future<bool> hasSeenAnyGuide() async {
+    final repository = ref.read(appPreferencesRepositoryProvider);
     try {
-      final preferences = await SharedPreferences.getInstance();
-      return (preferences.getBool(_key) ?? false) ||
-          (preferences.getInt(revisionKey) ?? 0) > 0;
+      return await repository.hasSeenAnyGuide();
     } catch (_) {
       return true;
     }
@@ -41,12 +42,17 @@ class WelcomeSeen extends _$WelcomeSeen {
   /// Seen at once: a failed save only means the welcome comes back on the
   /// next launch, never that the radio stays out of reach.
   Future<void> markSeen() async {
-    state = const AsyncData(true);
-    ref.read(analyticsProvider).track(const AppEvent.welcomeCompleted());
-    try {
-      final preferences = await SharedPreferences.getInstance();
-      await preferences.setInt(revisionKey, currentRevision);
-      await preferences.setBool(_key, true);
-    } catch (_) {}
+    final repository = ref.read(appPreferencesRepositoryProvider);
+    ref.read(analyticsProvider).track(AppEvent.welcomeCompleted());
+    // The in-memory flag stays true even on error: leaving the guide must
+    // remain possible. AsyncValue still exposes a failed persistence attempt.
+    await _save.run(
+      shown: const AsyncData(true),
+      emit: (value) => state = value,
+      action: () async {
+        await repository.saveWelcomeRevision(currentRevision);
+        return true;
+      },
+    );
   }
 }

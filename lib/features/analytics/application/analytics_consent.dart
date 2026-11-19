@@ -1,6 +1,6 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../app/preferences/application/app_preferences_provider.dart';
 import '../../../app/state/latest_save.dart';
 
 part 'analytics_consent.g.dart';
@@ -15,15 +15,14 @@ bool analyticsOn(AsyncValue<bool> consent) =>
 /// settings, off when the preferences cannot be read.
 @Riverpod(keepAlive: true)
 class AnalyticsConsent extends _$AnalyticsConsent {
-  static const _key = 'app.analyticsOn';
   final _save = LatestSave();
 
   @override
   Future<bool> build() async {
     _save.start(ref);
+    final repository = ref.watch(appPreferencesRepositoryProvider);
     try {
-      final preferences = await SharedPreferences.getInstance();
-      return preferences.getBool(_key) ?? true;
+      return await repository.loadAnalyticsConsent() ?? true;
     } catch (_) {
       return false;
     }
@@ -34,14 +33,12 @@ class AnalyticsConsent extends _$AnalyticsConsent {
     if (state.isLoading) return true;
     // After a failed save the old value is not the one in force: save again.
     if (!state.hasError && state.valueOrNull == on) return true;
+    final repository = ref.read(appPreferencesRepositoryProvider);
     final result = await _save.run(
       shown: state,
       emit: (value) => state = value,
       action: () async {
-        final preferences = await SharedPreferences.getInstance();
-        if (!await preferences.setBool(_key, on)) {
-          throw StateError('Statistics choice could not be saved');
-        }
+        await repository.saveAnalyticsConsent(on);
         return on;
       },
     );

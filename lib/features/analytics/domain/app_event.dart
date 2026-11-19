@@ -1,3 +1,5 @@
+import 'package:freezed_annotation/freezed_annotation.dart';
+
 import '../../diary/domain/diary_flight.dart';
 import '../../diary/domain/diary_period.dart';
 import '../../diary/domain/diary_summary.dart';
@@ -5,65 +7,77 @@ import '../../radio/domain/journey.dart';
 import '../../radio/domain/radio_station.dart';
 import '../../songs/domain/song_search.dart';
 
-/// One anonymous event. Every name and property the app sends is written
+part 'app_event.freezed.dart';
+
+/// One usage event. Every name and property the app sends is written
 /// here, and none carries text typed or chosen by the person: only public
 /// station data, known values, numbers and flags.
-final class AppEvent {
-  const AppEvent(this.name, [this.properties = const {}]);
+@freezed
+class AppEvent with _$AppEvent {
+  const AppEvent._();
+  const factory AppEvent(
+    String name, [
+    @Default({}) Map<String, Object> properties,
+  ]) = _AppEvent;
 
-  AppEvent.appOpened({required bool firstOpen})
-    : this('app_opened', {'first_open': firstOpen});
+  factory AppEvent.appOpened({required bool firstOpen}) =>
+      AppEvent('app_opened', {'first_open': firstOpen});
 
-  const AppEvent.welcomeCompleted() : this('welcome_completed');
+  factory AppEvent.welcomeCompleted() => AppEvent('welcome_completed');
 
-  AppEvent.flightStarted(FlightKind kind)
-    : this('flight_started', {'kind': kind.name});
+  factory AppEvent.flightStarted(FlightKind kind) =>
+      AppEvent('flight_started', {'kind': kind.name});
 
-  AppEvent.flightLanded(
+  factory AppEvent.flightLanded(
     RadioStation station, {
     required FlightKind kind,
     required int attempts,
-  }) : this('flight_landed', {
-         'kind': kind.name,
-         ..._station(station),
-         'attempts': attempts,
-       });
+  }) => AppEvent('flight_landed', {
+    'kind': kind.name,
+    ..._station(station),
+    'attempts': attempts,
+  });
 
-  AppEvent.flightFailed({required FlightKind kind, required int attempts})
-    : this('flight_failed', {'kind': kind.name, 'attempts': attempts});
+  factory AppEvent.flightFailed({
+    required FlightKind kind,
+    required int attempts,
+  }) => AppEvent('flight_failed', {'kind': kind.name, 'attempts': attempts});
 
-  AppEvent.playbackBroken(RadioStation station)
-    : this('playback_broken', _station(station));
+  factory AppEvent.playbackBroken(RadioStation station) =>
+      AppEvent('playback_broken', _station(station));
 
-  AppEvent.favoriteAdded(RadioStation station)
-    : this('favorite_added', _place(station));
+  factory AppEvent.favoriteAdded(RadioStation station) =>
+      AppEvent('favorite_added', _place(station));
 
-  AppEvent.favoriteRemoved(RadioStation station)
-    : this('favorite_removed', _place(station));
+  factory AppEvent.favoriteRemoved(RadioStation station) =>
+      AppEvent('favorite_removed', _place(station));
 
-  AppEvent.songSaved(RadioStation station)
-    : this('song_saved', _place(station));
+  factory AppEvent.songSaved(RadioStation station) =>
+      AppEvent('song_saved', _place(station));
 
-  AppEvent.songRemoved(RadioStation station)
-    : this('song_removed', _place(station));
+  factory AppEvent.songRemoved(RadioStation station) =>
+      AppEvent('song_removed', _place(station));
 
   /// A listen saved in the diary has ended, after [seconds] on air.
-  AppEvent.listenEnded(RadioStation station, {required int seconds})
-    : this('listen_ended', {..._place(station), 'duration': _band(seconds)});
+  factory AppEvent.listenEnded(RadioStation station, {required int seconds}) =>
+      AppEvent('listen_ended', {
+        ..._place(station),
+        'duration': _band(seconds),
+      });
 
-  AppEvent.songSearchOpened(SearchService service)
-    : this('song_search_opened', {'service': _snake(service.name)});
+  factory AppEvent.songSearchOpened(SearchService service) =>
+      AppEvent('song_search_opened', {'service': _snake(service.name)});
 
-  const AppEvent.songCopied() : this('song_copied');
+  factory AppEvent.songCopied() => AppEvent('song_copied');
 
   /// The diary always opens on the last 30 days: the period is not news.
-  const AppEvent.diaryOpened() : this('diary_opened');
+  factory AppEvent.diaryOpened() => AppEvent('diary_opened');
 
-  AppEvent.diaryPeriodChosen(DiaryPeriod period)
-    : this('diary_period_chosen', {'period': period.name});
+  factory AppEvent.diaryPeriodChosen(DiaryPeriod period) =>
+      AppEvent('diary_period_chosen', {'period': period.name});
 
-  AppEvent.diaryCountryOpened(String code, CountryCard card)
-    : this('diary_country_opened', {
+  factory AppEvent.diaryCountryOpened(String code, CountryCard card) =>
+      AppEvent('diary_country_opened', {
         'country': code,
         'kind': switch (card) {
           StoppedCountry() => 'stopped',
@@ -72,13 +86,10 @@ final class AppEvent {
         },
       });
 
-  AppEvent.diaryFlight(DiaryFlightSource source)
-    : this('diary_flight', {'source': _snake(source.name)});
+  factory AppEvent.diaryFlight(DiaryFlightSource source) =>
+      AppEvent('diary_flight', {'source': _snake(source.name)});
 
-  const AppEvent.stationRetuned() : this('station_retuned');
-
-  final String name;
-  final Map<String, Object> properties;
+  factory AppEvent.stationRetuned() => AppEvent('station_retuned');
 
   static Map<String, Object> _place(RadioStation station) => {
     'country': station.countryCode,
@@ -105,25 +116,4 @@ final class AppEvent {
     RegExp('[A-Z]'),
     (match) => '_${match[0]!.toLowerCase()}',
   );
-
-  @override
-  bool operator ==(Object other) =>
-      other is AppEvent &&
-      other.name == name &&
-      _sameProperties(other.properties, properties);
-
-  @override
-  int get hashCode => Object.hash(
-    name,
-    Object.hashAllUnordered(
-      properties.entries.map((entry) => Object.hash(entry.key, entry.value)),
-    ),
-  );
-
-  static bool _sameProperties(Map<String, Object> a, Map<String, Object> b) =>
-      a.length == b.length &&
-      a.entries.every((entry) => b[entry.key] == entry.value);
-
-  @override
-  String toString() => 'AppEvent($name, $properties)';
 }

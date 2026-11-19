@@ -64,7 +64,10 @@ void main() {
   test('on air shows the station and its controls', () {
     final display = RadioDisplay.of(onAir(OnAirPlayback.playing));
     expect(display.title, Verbatim(paris.name));
-    expect(display.country, Verbatim(paris.country));
+    expect(
+      display.country,
+      CountryText(paris.countryCode, fallback: paris.country),
+    );
     expect(display.statusKey, LocaleKeys.playing);
     expect(display.knobKey, LocaleKeys.tune);
     expect(display.phase, FlightPhase.grounded);

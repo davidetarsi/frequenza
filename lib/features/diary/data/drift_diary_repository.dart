@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:drift/drift.dart';
 
 import '../../radio/domain/radio_station.dart';
+import '../../radio/domain/station_record.dart';
 import '../domain/diary_repository.dart';
 import '../domain/listen.dart';
 import 'diary_database.dart';
@@ -68,6 +69,7 @@ class DriftDiaryRepository implements DiaryRepository {
   @override
   Future<List<RadioStation>> stations() async => [
     for (final row in await _db.select(_db.stations).get())
-      RadioStation.fromJson(jsonDecode(row.json) as Map<String, dynamic>),
+      stationFromSnapshot(jsonDecode(row.json)) ??
+          (throw const FormatException('Invalid diary station')),
   ];
 }

@@ -1,3 +1,4 @@
+import '../../journey/presentation/country_name.dart';
 import '../../radio/domain/radio_station.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -6,8 +7,10 @@ import '../../../l10n/locale_keys.g.dart';
 import '../../../ui/theme/app_spacing.dart';
 import '../../../ui/theme/app_shape.dart';
 import '../../../ui/theme/travel_radio_design.dart';
-import '../../../ui/widgets/app_button.dart';
+import '../../../ui/theme/app_component_design.dart';
+import '../../../ui/theme/travel_sheet_design.dart';
 import '../../../ui/widgets/app_icon_button.dart';
+import '../../../ui/widgets/code_badge.dart';
 import '../../../ui/widgets/app_message.dart';
 import '../../../ui/widgets/app_loading.dart';
 import '../../../ui/widgets/travel_sheet.dart';
@@ -68,7 +71,7 @@ class _FavoritesSheetState extends ConsumerState<FavoritesSheet> {
           onSelectionChanged: (selected) =>
               setState(() => _tab = selected.single),
         ),
-        const SizedBox(height: RadioFavoritesDesign.contentGap),
+        const SizedBox(height: TravelSheetDesign.contentGap),
         if (_tab == _Tab.songs) const SongsTab(),
         if (_tab == _Tab.stations)
           ...favorites.when(
@@ -78,33 +81,17 @@ class _FavoritesSheetState extends ConsumerState<FavoritesSheet> {
                 AppLoading(label: LocaleKeys.loading.tr(context: context)),
             ],
             error: (_, _) => [
-              Text(
-                LocaleKeys.favoritesError.tr(context: context),
-                style: TextStyle(color: Theme.of(context).colorScheme.error),
-              ),
-              AppButton(
-                variant: AppButtonVariant.text,
-                onPressed: ref.read(favoritesProvider.notifier).load,
-                label: LocaleKeys.retry.tr(context: context),
+              AppMessage.error(
+                message: LocaleKeys.favoritesError.tr(context: context),
+                onAction: ref.read(favoritesProvider.notifier).load,
+                actionLabel: LocaleKeys.retry.tr(context: context),
               ),
             ],
             data: (data) => [
               if (data.stations.isEmpty)
-                Container(
-                  padding: const EdgeInsets.all(AppSpacing.large),
-                  decoration: BoxDecoration(
-                    color: p.paperRaised,
-                    borderRadius: AppShape.panelRadius,
-                  ),
-                  child: AppMessage.empty(
-                    leading: Icon(
-                      Icons.favorite_border,
-                      color: p.muted,
-                      size: RadioFavoritesDesign.emptyIconSize,
-                    ),
-                    message: LocaleKeys.favoritesEmpty.tr(context: context),
-                    messageStyle: TextStyle(color: p.ink),
-                  ),
+                AppMessage.emptyPanel(
+                  icon: Icons.favorite_border,
+                  message: LocaleKeys.favoritesEmpty.tr(context: context),
                 ),
             ],
           ),
@@ -118,16 +105,21 @@ class _FavoritesSheetState extends ConsumerState<FavoritesSheet> {
                 id: station.id,
                 name: station.name,
                 code: station.countryCode,
-                subtitle: [
-                  if (station.country.isEmpty)
-                    LocaleKeys.unknownCountry.tr(context: context)
-                  else
-                    station.country,
-                  if (playing == station.id)
-                    LocaleKeys.playing.tr(context: context)
-                  else
-                    LocaleKeys.tapToListen.tr(context: context),
-                ].where((s) => s.isNotEmpty).join(' · '),
+                subtitle: LocaleKeys.favoriteDetails.tr(
+                  context: context,
+                  namedArgs: {
+                    'country': countryName(
+                      context,
+                      station.countryCode,
+                      fallback: station.country,
+                    ),
+                    'status':
+                        (playing == station.id
+                                ? LocaleKeys.playing
+                                : LocaleKeys.tapToListen)
+                            .tr(context: context),
+                  },
+                ),
                 active: playing == station.id,
                 removeLabel: LocaleKeys.removeFavorite.tr(context: context),
                 onPlay: () {
@@ -205,35 +197,20 @@ class _StationPreset extends StatelessWidget {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    ExcludeSemantics(
-                      child: Container(
-                        width: RadioFavoritesDesign.presetCodeSize.width,
-                        height: RadioFavoritesDesign.presetCodeSize.height,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: active ? TravelRadioPalette.hardware : p.paper,
-                          borderRadius: AppShape.controlRadius,
-                          border: Border.all(
-                            color: active
-                                ? TravelRadioPalette.activePresetBorder
-                                : p.trim.withValues(
-                                    alpha: RadioFavoritesDesign
-                                        .inactivePresetBorderOpacity,
-                                  ),
-                          ),
-                        ),
-                        child: code.isEmpty
-                            ? Icon(
-                                Icons.public,
-                                size: RadioFavoritesDesign.presetGlobeSize,
-                                color: ink,
-                              )
-                            : Text(
-                                code,
-                                style: RadioFavoritesDesign.presetCodeText
-                                    .copyWith(color: ink),
-                              ),
-                      ),
+                    CodeBadge(
+                      code,
+                      size: RadioFavoritesDesign.presetCodeSize,
+                      foregroundColor: ink,
+                      backgroundColor: active
+                          ? TravelRadioPalette.hardware
+                          : p.paper,
+                      borderColor: active
+                          ? TravelRadioPalette.activePresetBorder
+                          : p.trim.withValues(
+                              alpha: RadioFavoritesDesign
+                                  .inactivePresetBorderOpacity,
+                            ),
+                      fallbackIcon: Icons.public,
                     ),
                     const SizedBox(width: AppSpacing.standard),
                     Expanded(
@@ -243,12 +220,10 @@ class _StationPreset extends StatelessWidget {
                           Text(
                             name,
                             style: Theme.of(context).textTheme.titleMedium
-                                ?.copyWith(
-                                  color: ink,
-                                  fontWeight: FontWeight.w600,
-                                ),
+                                ?.merge(SavedItemsDesign.titleText)
+                                .copyWith(color: ink),
                           ),
-                          const SizedBox(height: RadioFavoritesDesign.titleGap),
+                          const SizedBox(height: SavedItemsDesign.titleGap),
                           Text(
                             subtitle,
                             style: Theme.of(

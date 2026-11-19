@@ -212,7 +212,7 @@ void main() {
       find.bySemanticsLabel('2 paesi; il più ascoltato: Brasile'),
       findsOneWidget,
     );
-    expect(analytics.events, [const AppEvent.diaryOpened()]);
+    expect(analytics.events, [AppEvent.diaryOpened()]);
   });
 
   testWidgets('a shorter period counts again, and is counted', (tester) async {
@@ -382,6 +382,32 @@ void main() {
     expect(find.text('2 paesi · 843 min'), findsOneWidget);
     expect(find.textContaining('Il diario si riempie'), findsNothing);
   });
+
+  testWidgets(
+    'a failed period change reports the error instead of stale totals',
+    (tester) async {
+      final log = HeldDiary();
+      await openRadio(tester, log: log);
+      await openDiaryPage(tester);
+      expect(find.text('2 paesi · 843 min'), findsOneWidget);
+      log.broken = true;
+      await tester.tap(find.text('7 giorni'));
+      await tester.pumpAndSettle();
+      expect(
+        find.text('Non è stato possibile leggere il diario.'),
+        findsOneWidget,
+      );
+      expect(find.text('2 paesi · 843 min'), findsNothing);
+      log.broken = false;
+      await tester.tap(find.text('Riprova'));
+      await tester.pumpAndSettle();
+      expect(find.text('1 paese · 543 min'), findsOneWidget);
+      expect(
+        find.text('Non è stato possibile leggere il diario.'),
+        findsNothing,
+      );
+    },
+  );
 
   testWidgets('a diary that cannot be read says so', (tester) async {
     await openRadio(tester, log: HeldDiary()..broken = true);

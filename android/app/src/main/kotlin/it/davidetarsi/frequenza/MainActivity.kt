@@ -1,5 +1,7 @@
 package it.davidetarsi.frequenza
 
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.media.AudioAttributes
 import android.media.MediaPlayer
 import android.media.AudioManager
@@ -58,6 +60,28 @@ class MainActivity : AudioServiceActivity() {
                 }
                 // Dal 13 Android conferma da sé ogni copia negli appunti.
                 "sdkInt" -> result.success(Build.VERSION.SDK_INT)
+                // Update the channel label without changing its ID or user settings.
+                "notificationChannel" -> {
+                    val args = call.arguments as? Map<*, *>
+                    val id = args?.get("id") as? String
+                    val name = args?.get("name") as? String
+                    if (id.isNullOrBlank() || name.isNullOrBlank() || id.length > 128 || name.length > 512) {
+                        result.error("invalid_channel", null, null)
+                    } else {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                            val manager = getSystemService(NotificationManager::class.java)
+                            if (manager != null) {
+                                val channel = manager.getNotificationChannel(id)
+                                    ?: NotificationChannel(id, name, NotificationManager.IMPORTANCE_LOW).apply {
+                                        setShowBadge(false)
+                                    }
+                                channel.name = name
+                                manager.createNotificationChannel(channel)
+                            }
+                        }
+                        result.success(null)
+                    }
+                }
                 // Le app di musica in cui cercare una canzone salvata.
                 "installedApps" -> {
                     val packages = (call.arguments as? List<*>).orEmpty().filterIsInstance<String>()

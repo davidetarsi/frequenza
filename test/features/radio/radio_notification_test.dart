@@ -96,7 +96,7 @@ void main() {
   ProviderContainer open({RadioAudioHandler? session}) {
     final opened = ProviderContainer(
       overrides: [
-        radioAudioHandlerProvider.overrideWithValue(session),
+        radioMediaSessionProvider.overrideWithValue(session),
         radioRepositoryProvider.overrideWithValue(repository),
         radioAudioServiceProvider.overrideWithValue(audio),
         favoritesRepositoryProvider.overrideWithValue(favorites),
@@ -240,7 +240,7 @@ void main() {
     });
     final live = ProviderContainer(
       overrides: [
-        radioAudioHandlerProvider.overrideWithValue(shared),
+        radioMediaSessionProvider.overrideWithValue(shared),
         radioRepositoryProvider.overrideWithValue(repository),
         radioAudioServiceProvider.overrideWithValue(engine),
         favoritesRepositoryProvider.overrideWithValue(favorites),

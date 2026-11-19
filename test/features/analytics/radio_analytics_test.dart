@@ -37,7 +37,7 @@ void main() {
     analytics = RecordingAnalytics();
     container = ProviderContainer(
       overrides: [
-        radioAudioHandlerProvider.overrideWithValue(handler),
+        radioMediaSessionProvider.overrideWithValue(handler),
         radioRepositoryProvider.overrideWithValue(repository),
         radioAudioServiceProvider.overrideWithValue(audio),
         favoritesRepositoryProvider.overrideWithValue(MemoryFavorites()),

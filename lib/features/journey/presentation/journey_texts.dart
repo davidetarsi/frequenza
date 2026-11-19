@@ -55,23 +55,26 @@ class _FlightDotsState extends State<FlightDots>
 
   @override
   Widget build(BuildContext context) => Semantics(
-    label: '${widget.label}…',
+    label: LocaleKeys.flightAnnouncement.tr(
+      context: context,
+      namedArgs: {'label': widget.label},
+    ),
     child: ExcludeSemantics(
       child: AnimatedBuilder(
         animation: _dots,
         builder: (context, _) {
-          final shown = _dots.value >= 1 ? 3 : (_dots.value * 4).floor();
+          final shown = _dots.value >= 1
+              ? RouteMapDesign.dotsCount
+              : (_dots.value * (RouteMapDesign.dotsCount + 1)).floor();
           return Text.rich(
             TextSpan(
               text: widget.label,
               children: [
                 // Hidden dots keep the width steady while they appear.
-                for (var i = 0; i < 3; i++)
+                for (var i = 0; i < RouteMapDesign.dotsCount; i++)
                   TextSpan(
                     text: '.',
-                    style: i < shown
-                        ? null
-                        : const TextStyle(color: Colors.transparent),
+                    style: i < shown ? null : RouteMapDesign.hiddenDotsText,
                   ),
               ],
             ),
@@ -97,7 +100,7 @@ class LandingFocus extends StatelessWidget {
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: motion ? RouteMapDesign.landingBlur : 0, end: 0),
       duration: motion ? RouteMapDesign.landing : Duration.zero,
-      curve: Curves.easeOutCubic,
+      curve: RouteMapDesign.landingCurve,
       builder: (context, sigma, child) => sigma <= 0
           ? child!
           : ImageFiltered(
@@ -156,7 +159,12 @@ class _LocalTimeTextState extends State<LocalTimeText> {
   Widget build(BuildContext context) {
     final time = localTimeOf(widget.station, DateTime.now().toUtc());
     if (time == null) return const SizedBox.shrink();
-    final shown = '${time.approximate ? '≈ ' : ''}${time.hhmm}';
+    final shown = time.approximate
+        ? LocaleKeys.approximateTime.tr(
+            context: context,
+            namedArgs: {'time': time.hhmm},
+          )
+        : time.hhmm;
     return Semantics(
       label: LocaleKeys.localTime.tr(context: context, args: [shown]),
       child: ExcludeSemantics(

@@ -7,8 +7,9 @@ import 'package:just_audio/just_audio.dart';
 
 import '../domain/radio_audio_service.dart';
 import '../domain/radio_station.dart';
-import 'native_channel.dart';
-import 'radio_media_session.dart';
+import '../domain/station_input.dart';
+import '../../../app/platform/data/native_channel.dart';
+import '../domain/radio_media_session.dart';
 
 class JustAudioService implements RadioAudioService {
   JustAudioService({AudioPlayer? player, RadioMediaSession? mediaSession})
@@ -53,7 +54,10 @@ class JustAudioService implements RadioAudioService {
   void _subscribeToTitles() {
     _subscriptions.add(
       _player.icyMetadataStream.listen((metadata) {
-        final title = metadata?.info?.title?.trim();
+        final raw = metadata?.info?.title;
+        final title = raw != null && raw.length <= StationInput.trackTitle
+            ? raw.trim()
+            : null;
         _trackTitles.add(title == null || title.isEmpty ? null : title);
       }),
     );

@@ -10,7 +10,7 @@ import 'package:frequenza/features/favorites/application/favorites_providers.dar
 import 'package:frequenza/features/radio/application/radio_providers.dart';
 import 'package:frequenza/features/radio/domain/radio_station.dart';
 import 'package:frequenza/features/songs/application/saved_songs.dart';
-import 'package:frequenza/features/songs/data/installed_apps.dart';
+import 'package:frequenza/features/songs/application/installed_apps.dart';
 import 'package:frequenza/features/songs/domain/saved_song.dart';
 import 'package:frequenza/features/songs/domain/song_search.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -47,6 +47,7 @@ Future<Harness> openSongs(
   WidgetTester tester,
   List<SavedSong> saved, {
   Set<String> installed = const {},
+  bool opensLinks = true,
 }) async {
   tester.platformDispatcher.accessibilityFeaturesTestValue =
       const FakeAccessibilityFeatures(disableAnimations: true);
@@ -68,7 +69,7 @@ Future<Harness> openSongs(
         analyticsProvider.overrideWithValue(h.analytics),
         openExternalProvider.overrideWithValue((uri) async {
           h.opened.add(uri);
-          return true;
+          return opensLinks;
         }),
       ],
       child: const StarterApp(locale: Locale('it')),
@@ -138,8 +139,8 @@ void main() {
     ]);
 
     double top(String text) => tester.getTopLeft(find.text(text)).dy;
-    final us = top('The United States Of America');
-    final france = top('France');
+    final us = top("Stati Uniti d'America");
+    final france = top('Francia');
     final unknown = top('Paese sconosciuto');
     expect(us, lessThan(france));
     expect(france, lessThan(unknown));
@@ -243,6 +244,21 @@ void main() {
     expect(h.audio.lastPlayedStation?.id, 'kexp');
   });
 
+  testWidgets('a failed song search uses the shared link error', (
+    tester,
+  ) async {
+    await openSongs(
+      tester,
+      [song('Desfado', kexp, 14)],
+      installed: {'com.spotify.music'},
+      opensLinks: false,
+    );
+    await openMenu(tester, 'Desfado');
+    await tester.tap(find.text('Cerca su Spotify'));
+    await tester.pumpAndSettle();
+    expect(find.text('Impossibile aprire il link'), findsOneWidget);
+  });
+
   testWidgets('the menu counts searches, copies and tuning again', (
     tester,
   ) async {
@@ -265,8 +281,8 @@ void main() {
 
     expect(h.analytics.events, [
       AppEvent.songSearchOpened(SearchService.spotify),
-      const AppEvent.songCopied(),
-      const AppEvent.stationRetuned(),
+      AppEvent.songCopied(),
+      AppEvent.stationRetuned(),
     ]);
   });
 }

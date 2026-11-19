@@ -31,8 +31,8 @@ class _DiaryRoute extends PageRouteBuilder<void> {
           }
           final grow = CurvedAnimation(
             parent: animation,
-            curve: Curves.easeInOutCubic,
-            reverseCurve: Curves.easeInCubic,
+            curve: AppMotion.diaryOpenCurve,
+            reverseCurve: AppMotion.diaryCloseCurve,
           );
           return AnimatedBuilder(
             animation: grow,

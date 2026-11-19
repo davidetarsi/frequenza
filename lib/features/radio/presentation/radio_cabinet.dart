@@ -193,7 +193,10 @@ class RadioCabinet extends StatelessWidget {
                   if (countryDetail case final detail?)
                     bound(
                       Text(
-                        ' · ${detail.toUpperCase()}',
+                        LocaleKeys.countryDetailSuffix.tr(
+                          context: context,
+                          namedArgs: {'detail': detail.toUpperCase()},
+                        ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: RadioCabinetDesign.countryText,
@@ -312,7 +315,7 @@ class RadioCabinet extends StatelessWidget {
                     scaler.scale(RadioCabinetDesign.statusText.fontSize!) *
                     metrics.statusHeightFactor,
                 child: _BoundedRow(
-                  share: .5,
+                  share: RadioCabinetDesign.statusWidthShare,
                   children: (bound) => [
                     Container(
                       width: RadioCabinetDesign.indicatorSize,

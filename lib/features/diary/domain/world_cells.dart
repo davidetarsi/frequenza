@@ -1,6 +1,6 @@
 import 'dart:math' as math;
 
-import '../../journey/data/world_atlas.g.dart';
+import '../../journey/domain/atlas/world_atlas.g.dart';
 
 /// One dot of the diary's map: a land cell, or the extra dot of a country
 /// too small for one.

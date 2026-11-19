@@ -1038,3 +1038,1359 @@ abstract class Failed implements RadioSession {
   _$$FailedImplCopyWith<_$FailedImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
+
+/// @nodoc
+mixin _$RadioEvent {
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function(FlightKind kind, RadioStation? target)
+    flightStarted,
+    required TResult Function(bool retrying) attemptFailed,
+    required TResult Function() retryStarted,
+    required TResult Function(
+      RadioStation station,
+      bool paused,
+      String? trackTitle,
+    )
+    landed,
+    required TResult Function(PlaybackStatus status) playbackChanged,
+    required TResult Function(String? title) trackChanged,
+    required TResult Function() switchedOff,
+  }) => throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(FlightKind kind, RadioStation? target)? flightStarted,
+    TResult? Function(bool retrying)? attemptFailed,
+    TResult? Function()? retryStarted,
+    TResult? Function(RadioStation station, bool paused, String? trackTitle)?
+    landed,
+    TResult? Function(PlaybackStatus status)? playbackChanged,
+    TResult? Function(String? title)? trackChanged,
+    TResult? Function()? switchedOff,
+  }) => throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(FlightKind kind, RadioStation? target)? flightStarted,
+    TResult Function(bool retrying)? attemptFailed,
+    TResult Function()? retryStarted,
+    TResult Function(RadioStation station, bool paused, String? trackTitle)?
+    landed,
+    TResult Function(PlaybackStatus status)? playbackChanged,
+    TResult Function(String? title)? trackChanged,
+    TResult Function()? switchedOff,
+    required TResult orElse(),
+  }) => throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(FlightStarted value) flightStarted,
+    required TResult Function(AttemptFailed value) attemptFailed,
+    required TResult Function(RetryStarted value) retryStarted,
+    required TResult Function(Landed value) landed,
+    required TResult Function(PlaybackChanged value) playbackChanged,
+    required TResult Function(TrackChanged value) trackChanged,
+    required TResult Function(SwitchedOff value) switchedOff,
+  }) => throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(FlightStarted value)? flightStarted,
+    TResult? Function(AttemptFailed value)? attemptFailed,
+    TResult? Function(RetryStarted value)? retryStarted,
+    TResult? Function(Landed value)? landed,
+    TResult? Function(PlaybackChanged value)? playbackChanged,
+    TResult? Function(TrackChanged value)? trackChanged,
+    TResult? Function(SwitchedOff value)? switchedOff,
+  }) => throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(FlightStarted value)? flightStarted,
+    TResult Function(AttemptFailed value)? attemptFailed,
+    TResult Function(RetryStarted value)? retryStarted,
+    TResult Function(Landed value)? landed,
+    TResult Function(PlaybackChanged value)? playbackChanged,
+    TResult Function(TrackChanged value)? trackChanged,
+    TResult Function(SwitchedOff value)? switchedOff,
+    required TResult orElse(),
+  }) => throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $RadioEventCopyWith<$Res> {
+  factory $RadioEventCopyWith(
+    RadioEvent value,
+    $Res Function(RadioEvent) then,
+  ) = _$RadioEventCopyWithImpl<$Res, RadioEvent>;
+}
+
+/// @nodoc
+class _$RadioEventCopyWithImpl<$Res, $Val extends RadioEvent>
+    implements $RadioEventCopyWith<$Res> {
+  _$RadioEventCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of RadioEvent
+  /// with the given fields replaced by the non-null parameter values.
+}
+
+/// @nodoc
+abstract class _$$FlightStartedImplCopyWith<$Res> {
+  factory _$$FlightStartedImplCopyWith(
+    _$FlightStartedImpl value,
+    $Res Function(_$FlightStartedImpl) then,
+  ) = __$$FlightStartedImplCopyWithImpl<$Res>;
+  @useResult
+  $Res call({FlightKind kind, RadioStation? target});
+
+  $RadioStationCopyWith<$Res>? get target;
+}
+
+/// @nodoc
+class __$$FlightStartedImplCopyWithImpl<$Res>
+    extends _$RadioEventCopyWithImpl<$Res, _$FlightStartedImpl>
+    implements _$$FlightStartedImplCopyWith<$Res> {
+  __$$FlightStartedImplCopyWithImpl(
+    _$FlightStartedImpl _value,
+    $Res Function(_$FlightStartedImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of RadioEvent
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({Object? kind = null, Object? target = freezed}) {
+    return _then(
+      _$FlightStartedImpl(
+        null == kind
+            ? _value.kind
+            : kind // ignore: cast_nullable_to_non_nullable
+                  as FlightKind,
+        target: freezed == target
+            ? _value.target
+            : target // ignore: cast_nullable_to_non_nullable
+                  as RadioStation?,
+      ),
+    );
+  }
+
+  /// Create a copy of RadioEvent
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $RadioStationCopyWith<$Res>? get target {
+    if (_value.target == null) {
+      return null;
+    }
+
+    return $RadioStationCopyWith<$Res>(_value.target!, (value) {
+      return _then(_value.copyWith(target: value));
+    });
+  }
+}
+
+/// @nodoc
+
+class _$FlightStartedImpl implements FlightStarted {
+  const _$FlightStartedImpl(this.kind, {this.target});
+
+  @override
+  final FlightKind kind;
+  @override
+  final RadioStation? target;
+
+  @override
+  String toString() {
+    return 'RadioEvent.flightStarted(kind: $kind, target: $target)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$FlightStartedImpl &&
+            (identical(other.kind, kind) || other.kind == kind) &&
+            (identical(other.target, target) || other.target == target));
+  }
+
+  @override
+  int get hashCode => Object.hash(runtimeType, kind, target);
+
+  /// Create a copy of RadioEvent
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$FlightStartedImplCopyWith<_$FlightStartedImpl> get copyWith =>
+      __$$FlightStartedImplCopyWithImpl<_$FlightStartedImpl>(this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function(FlightKind kind, RadioStation? target)
+    flightStarted,
+    required TResult Function(bool retrying) attemptFailed,
+    required TResult Function() retryStarted,
+    required TResult Function(
+      RadioStation station,
+      bool paused,
+      String? trackTitle,
+    )
+    landed,
+    required TResult Function(PlaybackStatus status) playbackChanged,
+    required TResult Function(String? title) trackChanged,
+    required TResult Function() switchedOff,
+  }) {
+    return flightStarted(kind, target);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(FlightKind kind, RadioStation? target)? flightStarted,
+    TResult? Function(bool retrying)? attemptFailed,
+    TResult? Function()? retryStarted,
+    TResult? Function(RadioStation station, bool paused, String? trackTitle)?
+    landed,
+    TResult? Function(PlaybackStatus status)? playbackChanged,
+    TResult? Function(String? title)? trackChanged,
+    TResult? Function()? switchedOff,
+  }) {
+    return flightStarted?.call(kind, target);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(FlightKind kind, RadioStation? target)? flightStarted,
+    TResult Function(bool retrying)? attemptFailed,
+    TResult Function()? retryStarted,
+    TResult Function(RadioStation station, bool paused, String? trackTitle)?
+    landed,
+    TResult Function(PlaybackStatus status)? playbackChanged,
+    TResult Function(String? title)? trackChanged,
+    TResult Function()? switchedOff,
+    required TResult orElse(),
+  }) {
+    if (flightStarted != null) {
+      return flightStarted(kind, target);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(FlightStarted value) flightStarted,
+    required TResult Function(AttemptFailed value) attemptFailed,
+    required TResult Function(RetryStarted value) retryStarted,
+    required TResult Function(Landed value) landed,
+    required TResult Function(PlaybackChanged value) playbackChanged,
+    required TResult Function(TrackChanged value) trackChanged,
+    required TResult Function(SwitchedOff value) switchedOff,
+  }) {
+    return flightStarted(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(FlightStarted value)? flightStarted,
+    TResult? Function(AttemptFailed value)? attemptFailed,
+    TResult? Function(RetryStarted value)? retryStarted,
+    TResult? Function(Landed value)? landed,
+    TResult? Function(PlaybackChanged value)? playbackChanged,
+    TResult? Function(TrackChanged value)? trackChanged,
+    TResult? Function(SwitchedOff value)? switchedOff,
+  }) {
+    return flightStarted?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(FlightStarted value)? flightStarted,
+    TResult Function(AttemptFailed value)? attemptFailed,
+    TResult Function(RetryStarted value)? retryStarted,
+    TResult Function(Landed value)? landed,
+    TResult Function(PlaybackChanged value)? playbackChanged,
+    TResult Function(TrackChanged value)? trackChanged,
+    TResult Function(SwitchedOff value)? switchedOff,
+    required TResult orElse(),
+  }) {
+    if (flightStarted != null) {
+      return flightStarted(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class FlightStarted implements RadioEvent {
+  const factory FlightStarted(
+    final FlightKind kind, {
+    final RadioStation? target,
+  }) = _$FlightStartedImpl;
+
+  FlightKind get kind;
+  RadioStation? get target;
+
+  /// Create a copy of RadioEvent
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$FlightStartedImplCopyWith<_$FlightStartedImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class _$$AttemptFailedImplCopyWith<$Res> {
+  factory _$$AttemptFailedImplCopyWith(
+    _$AttemptFailedImpl value,
+    $Res Function(_$AttemptFailedImpl) then,
+  ) = __$$AttemptFailedImplCopyWithImpl<$Res>;
+  @useResult
+  $Res call({bool retrying});
+}
+
+/// @nodoc
+class __$$AttemptFailedImplCopyWithImpl<$Res>
+    extends _$RadioEventCopyWithImpl<$Res, _$AttemptFailedImpl>
+    implements _$$AttemptFailedImplCopyWith<$Res> {
+  __$$AttemptFailedImplCopyWithImpl(
+    _$AttemptFailedImpl _value,
+    $Res Function(_$AttemptFailedImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of RadioEvent
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({Object? retrying = null}) {
+    return _then(
+      _$AttemptFailedImpl(
+        retrying: null == retrying
+            ? _value.retrying
+            : retrying // ignore: cast_nullable_to_non_nullable
+                  as bool,
+      ),
+    );
+  }
+}
+
+/// @nodoc
+
+class _$AttemptFailedImpl implements AttemptFailed {
+  const _$AttemptFailedImpl({required this.retrying});
+
+  @override
+  final bool retrying;
+
+  @override
+  String toString() {
+    return 'RadioEvent.attemptFailed(retrying: $retrying)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$AttemptFailedImpl &&
+            (identical(other.retrying, retrying) ||
+                other.retrying == retrying));
+  }
+
+  @override
+  int get hashCode => Object.hash(runtimeType, retrying);
+
+  /// Create a copy of RadioEvent
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$AttemptFailedImplCopyWith<_$AttemptFailedImpl> get copyWith =>
+      __$$AttemptFailedImplCopyWithImpl<_$AttemptFailedImpl>(this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function(FlightKind kind, RadioStation? target)
+    flightStarted,
+    required TResult Function(bool retrying) attemptFailed,
+    required TResult Function() retryStarted,
+    required TResult Function(
+      RadioStation station,
+      bool paused,
+      String? trackTitle,
+    )
+    landed,
+    required TResult Function(PlaybackStatus status) playbackChanged,
+    required TResult Function(String? title) trackChanged,
+    required TResult Function() switchedOff,
+  }) {
+    return attemptFailed(retrying);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(FlightKind kind, RadioStation? target)? flightStarted,
+    TResult? Function(bool retrying)? attemptFailed,
+    TResult? Function()? retryStarted,
+    TResult? Function(RadioStation station, bool paused, String? trackTitle)?
+    landed,
+    TResult? Function(PlaybackStatus status)? playbackChanged,
+    TResult? Function(String? title)? trackChanged,
+    TResult? Function()? switchedOff,
+  }) {
+    return attemptFailed?.call(retrying);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(FlightKind kind, RadioStation? target)? flightStarted,
+    TResult Function(bool retrying)? attemptFailed,
+    TResult Function()? retryStarted,
+    TResult Function(RadioStation station, bool paused, String? trackTitle)?
+    landed,
+    TResult Function(PlaybackStatus status)? playbackChanged,
+    TResult Function(String? title)? trackChanged,
+    TResult Function()? switchedOff,
+    required TResult orElse(),
+  }) {
+    if (attemptFailed != null) {
+      return attemptFailed(retrying);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(FlightStarted value) flightStarted,
+    required TResult Function(AttemptFailed value) attemptFailed,
+    required TResult Function(RetryStarted value) retryStarted,
+    required TResult Function(Landed value) landed,
+    required TResult Function(PlaybackChanged value) playbackChanged,
+    required TResult Function(TrackChanged value) trackChanged,
+    required TResult Function(SwitchedOff value) switchedOff,
+  }) {
+    return attemptFailed(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(FlightStarted value)? flightStarted,
+    TResult? Function(AttemptFailed value)? attemptFailed,
+    TResult? Function(RetryStarted value)? retryStarted,
+    TResult? Function(Landed value)? landed,
+    TResult? Function(PlaybackChanged value)? playbackChanged,
+    TResult? Function(TrackChanged value)? trackChanged,
+    TResult? Function(SwitchedOff value)? switchedOff,
+  }) {
+    return attemptFailed?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(FlightStarted value)? flightStarted,
+    TResult Function(AttemptFailed value)? attemptFailed,
+    TResult Function(RetryStarted value)? retryStarted,
+    TResult Function(Landed value)? landed,
+    TResult Function(PlaybackChanged value)? playbackChanged,
+    TResult Function(TrackChanged value)? trackChanged,
+    TResult Function(SwitchedOff value)? switchedOff,
+    required TResult orElse(),
+  }) {
+    if (attemptFailed != null) {
+      return attemptFailed(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class AttemptFailed implements RadioEvent {
+  const factory AttemptFailed({required final bool retrying}) =
+      _$AttemptFailedImpl;
+
+  bool get retrying;
+
+  /// Create a copy of RadioEvent
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$AttemptFailedImplCopyWith<_$AttemptFailedImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class _$$RetryStartedImplCopyWith<$Res> {
+  factory _$$RetryStartedImplCopyWith(
+    _$RetryStartedImpl value,
+    $Res Function(_$RetryStartedImpl) then,
+  ) = __$$RetryStartedImplCopyWithImpl<$Res>;
+}
+
+/// @nodoc
+class __$$RetryStartedImplCopyWithImpl<$Res>
+    extends _$RadioEventCopyWithImpl<$Res, _$RetryStartedImpl>
+    implements _$$RetryStartedImplCopyWith<$Res> {
+  __$$RetryStartedImplCopyWithImpl(
+    _$RetryStartedImpl _value,
+    $Res Function(_$RetryStartedImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of RadioEvent
+  /// with the given fields replaced by the non-null parameter values.
+}
+
+/// @nodoc
+
+class _$RetryStartedImpl implements RetryStarted {
+  const _$RetryStartedImpl();
+
+  @override
+  String toString() {
+    return 'RadioEvent.retryStarted()';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType && other is _$RetryStartedImpl);
+  }
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function(FlightKind kind, RadioStation? target)
+    flightStarted,
+    required TResult Function(bool retrying) attemptFailed,
+    required TResult Function() retryStarted,
+    required TResult Function(
+      RadioStation station,
+      bool paused,
+      String? trackTitle,
+    )
+    landed,
+    required TResult Function(PlaybackStatus status) playbackChanged,
+    required TResult Function(String? title) trackChanged,
+    required TResult Function() switchedOff,
+  }) {
+    return retryStarted();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(FlightKind kind, RadioStation? target)? flightStarted,
+    TResult? Function(bool retrying)? attemptFailed,
+    TResult? Function()? retryStarted,
+    TResult? Function(RadioStation station, bool paused, String? trackTitle)?
+    landed,
+    TResult? Function(PlaybackStatus status)? playbackChanged,
+    TResult? Function(String? title)? trackChanged,
+    TResult? Function()? switchedOff,
+  }) {
+    return retryStarted?.call();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(FlightKind kind, RadioStation? target)? flightStarted,
+    TResult Function(bool retrying)? attemptFailed,
+    TResult Function()? retryStarted,
+    TResult Function(RadioStation station, bool paused, String? trackTitle)?
+    landed,
+    TResult Function(PlaybackStatus status)? playbackChanged,
+    TResult Function(String? title)? trackChanged,
+    TResult Function()? switchedOff,
+    required TResult orElse(),
+  }) {
+    if (retryStarted != null) {
+      return retryStarted();
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(FlightStarted value) flightStarted,
+    required TResult Function(AttemptFailed value) attemptFailed,
+    required TResult Function(RetryStarted value) retryStarted,
+    required TResult Function(Landed value) landed,
+    required TResult Function(PlaybackChanged value) playbackChanged,
+    required TResult Function(TrackChanged value) trackChanged,
+    required TResult Function(SwitchedOff value) switchedOff,
+  }) {
+    return retryStarted(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(FlightStarted value)? flightStarted,
+    TResult? Function(AttemptFailed value)? attemptFailed,
+    TResult? Function(RetryStarted value)? retryStarted,
+    TResult? Function(Landed value)? landed,
+    TResult? Function(PlaybackChanged value)? playbackChanged,
+    TResult? Function(TrackChanged value)? trackChanged,
+    TResult? Function(SwitchedOff value)? switchedOff,
+  }) {
+    return retryStarted?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(FlightStarted value)? flightStarted,
+    TResult Function(AttemptFailed value)? attemptFailed,
+    TResult Function(RetryStarted value)? retryStarted,
+    TResult Function(Landed value)? landed,
+    TResult Function(PlaybackChanged value)? playbackChanged,
+    TResult Function(TrackChanged value)? trackChanged,
+    TResult Function(SwitchedOff value)? switchedOff,
+    required TResult orElse(),
+  }) {
+    if (retryStarted != null) {
+      return retryStarted(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class RetryStarted implements RadioEvent {
+  const factory RetryStarted() = _$RetryStartedImpl;
+}
+
+/// @nodoc
+abstract class _$$LandedImplCopyWith<$Res> {
+  factory _$$LandedImplCopyWith(
+    _$LandedImpl value,
+    $Res Function(_$LandedImpl) then,
+  ) = __$$LandedImplCopyWithImpl<$Res>;
+  @useResult
+  $Res call({RadioStation station, bool paused, String? trackTitle});
+
+  $RadioStationCopyWith<$Res> get station;
+}
+
+/// @nodoc
+class __$$LandedImplCopyWithImpl<$Res>
+    extends _$RadioEventCopyWithImpl<$Res, _$LandedImpl>
+    implements _$$LandedImplCopyWith<$Res> {
+  __$$LandedImplCopyWithImpl(
+    _$LandedImpl _value,
+    $Res Function(_$LandedImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of RadioEvent
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? station = null,
+    Object? paused = null,
+    Object? trackTitle = freezed,
+  }) {
+    return _then(
+      _$LandedImpl(
+        null == station
+            ? _value.station
+            : station // ignore: cast_nullable_to_non_nullable
+                  as RadioStation,
+        paused: null == paused
+            ? _value.paused
+            : paused // ignore: cast_nullable_to_non_nullable
+                  as bool,
+        trackTitle: freezed == trackTitle
+            ? _value.trackTitle
+            : trackTitle // ignore: cast_nullable_to_non_nullable
+                  as String?,
+      ),
+    );
+  }
+
+  /// Create a copy of RadioEvent
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $RadioStationCopyWith<$Res> get station {
+    return $RadioStationCopyWith<$Res>(_value.station, (value) {
+      return _then(_value.copyWith(station: value));
+    });
+  }
+}
+
+/// @nodoc
+
+class _$LandedImpl implements Landed {
+  const _$LandedImpl(this.station, {required this.paused, this.trackTitle});
+
+  @override
+  final RadioStation station;
+  @override
+  final bool paused;
+  @override
+  final String? trackTitle;
+
+  @override
+  String toString() {
+    return 'RadioEvent.landed(station: $station, paused: $paused, trackTitle: $trackTitle)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$LandedImpl &&
+            (identical(other.station, station) || other.station == station) &&
+            (identical(other.paused, paused) || other.paused == paused) &&
+            (identical(other.trackTitle, trackTitle) ||
+                other.trackTitle == trackTitle));
+  }
+
+  @override
+  int get hashCode => Object.hash(runtimeType, station, paused, trackTitle);
+
+  /// Create a copy of RadioEvent
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$LandedImplCopyWith<_$LandedImpl> get copyWith =>
+      __$$LandedImplCopyWithImpl<_$LandedImpl>(this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function(FlightKind kind, RadioStation? target)
+    flightStarted,
+    required TResult Function(bool retrying) attemptFailed,
+    required TResult Function() retryStarted,
+    required TResult Function(
+      RadioStation station,
+      bool paused,
+      String? trackTitle,
+    )
+    landed,
+    required TResult Function(PlaybackStatus status) playbackChanged,
+    required TResult Function(String? title) trackChanged,
+    required TResult Function() switchedOff,
+  }) {
+    return landed(station, paused, trackTitle);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(FlightKind kind, RadioStation? target)? flightStarted,
+    TResult? Function(bool retrying)? attemptFailed,
+    TResult? Function()? retryStarted,
+    TResult? Function(RadioStation station, bool paused, String? trackTitle)?
+    landed,
+    TResult? Function(PlaybackStatus status)? playbackChanged,
+    TResult? Function(String? title)? trackChanged,
+    TResult? Function()? switchedOff,
+  }) {
+    return landed?.call(station, paused, trackTitle);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(FlightKind kind, RadioStation? target)? flightStarted,
+    TResult Function(bool retrying)? attemptFailed,
+    TResult Function()? retryStarted,
+    TResult Function(RadioStation station, bool paused, String? trackTitle)?
+    landed,
+    TResult Function(PlaybackStatus status)? playbackChanged,
+    TResult Function(String? title)? trackChanged,
+    TResult Function()? switchedOff,
+    required TResult orElse(),
+  }) {
+    if (landed != null) {
+      return landed(station, paused, trackTitle);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(FlightStarted value) flightStarted,
+    required TResult Function(AttemptFailed value) attemptFailed,
+    required TResult Function(RetryStarted value) retryStarted,
+    required TResult Function(Landed value) landed,
+    required TResult Function(PlaybackChanged value) playbackChanged,
+    required TResult Function(TrackChanged value) trackChanged,
+    required TResult Function(SwitchedOff value) switchedOff,
+  }) {
+    return landed(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(FlightStarted value)? flightStarted,
+    TResult? Function(AttemptFailed value)? attemptFailed,
+    TResult? Function(RetryStarted value)? retryStarted,
+    TResult? Function(Landed value)? landed,
+    TResult? Function(PlaybackChanged value)? playbackChanged,
+    TResult? Function(TrackChanged value)? trackChanged,
+    TResult? Function(SwitchedOff value)? switchedOff,
+  }) {
+    return landed?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(FlightStarted value)? flightStarted,
+    TResult Function(AttemptFailed value)? attemptFailed,
+    TResult Function(RetryStarted value)? retryStarted,
+    TResult Function(Landed value)? landed,
+    TResult Function(PlaybackChanged value)? playbackChanged,
+    TResult Function(TrackChanged value)? trackChanged,
+    TResult Function(SwitchedOff value)? switchedOff,
+    required TResult orElse(),
+  }) {
+    if (landed != null) {
+      return landed(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class Landed implements RadioEvent {
+  const factory Landed(
+    final RadioStation station, {
+    required final bool paused,
+    final String? trackTitle,
+  }) = _$LandedImpl;
+
+  RadioStation get station;
+  bool get paused;
+  String? get trackTitle;
+
+  /// Create a copy of RadioEvent
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$LandedImplCopyWith<_$LandedImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class _$$PlaybackChangedImplCopyWith<$Res> {
+  factory _$$PlaybackChangedImplCopyWith(
+    _$PlaybackChangedImpl value,
+    $Res Function(_$PlaybackChangedImpl) then,
+  ) = __$$PlaybackChangedImplCopyWithImpl<$Res>;
+  @useResult
+  $Res call({PlaybackStatus status});
+}
+
+/// @nodoc
+class __$$PlaybackChangedImplCopyWithImpl<$Res>
+    extends _$RadioEventCopyWithImpl<$Res, _$PlaybackChangedImpl>
+    implements _$$PlaybackChangedImplCopyWith<$Res> {
+  __$$PlaybackChangedImplCopyWithImpl(
+    _$PlaybackChangedImpl _value,
+    $Res Function(_$PlaybackChangedImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of RadioEvent
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({Object? status = null}) {
+    return _then(
+      _$PlaybackChangedImpl(
+        null == status
+            ? _value.status
+            : status // ignore: cast_nullable_to_non_nullable
+                  as PlaybackStatus,
+      ),
+    );
+  }
+}
+
+/// @nodoc
+
+class _$PlaybackChangedImpl implements PlaybackChanged {
+  const _$PlaybackChangedImpl(this.status);
+
+  @override
+  final PlaybackStatus status;
+
+  @override
+  String toString() {
+    return 'RadioEvent.playbackChanged(status: $status)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$PlaybackChangedImpl &&
+            (identical(other.status, status) || other.status == status));
+  }
+
+  @override
+  int get hashCode => Object.hash(runtimeType, status);
+
+  /// Create a copy of RadioEvent
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$PlaybackChangedImplCopyWith<_$PlaybackChangedImpl> get copyWith =>
+      __$$PlaybackChangedImplCopyWithImpl<_$PlaybackChangedImpl>(
+        this,
+        _$identity,
+      );
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function(FlightKind kind, RadioStation? target)
+    flightStarted,
+    required TResult Function(bool retrying) attemptFailed,
+    required TResult Function() retryStarted,
+    required TResult Function(
+      RadioStation station,
+      bool paused,
+      String? trackTitle,
+    )
+    landed,
+    required TResult Function(PlaybackStatus status) playbackChanged,
+    required TResult Function(String? title) trackChanged,
+    required TResult Function() switchedOff,
+  }) {
+    return playbackChanged(status);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(FlightKind kind, RadioStation? target)? flightStarted,
+    TResult? Function(bool retrying)? attemptFailed,
+    TResult? Function()? retryStarted,
+    TResult? Function(RadioStation station, bool paused, String? trackTitle)?
+    landed,
+    TResult? Function(PlaybackStatus status)? playbackChanged,
+    TResult? Function(String? title)? trackChanged,
+    TResult? Function()? switchedOff,
+  }) {
+    return playbackChanged?.call(status);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(FlightKind kind, RadioStation? target)? flightStarted,
+    TResult Function(bool retrying)? attemptFailed,
+    TResult Function()? retryStarted,
+    TResult Function(RadioStation station, bool paused, String? trackTitle)?
+    landed,
+    TResult Function(PlaybackStatus status)? playbackChanged,
+    TResult Function(String? title)? trackChanged,
+    TResult Function()? switchedOff,
+    required TResult orElse(),
+  }) {
+    if (playbackChanged != null) {
+      return playbackChanged(status);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(FlightStarted value) flightStarted,
+    required TResult Function(AttemptFailed value) attemptFailed,
+    required TResult Function(RetryStarted value) retryStarted,
+    required TResult Function(Landed value) landed,
+    required TResult Function(PlaybackChanged value) playbackChanged,
+    required TResult Function(TrackChanged value) trackChanged,
+    required TResult Function(SwitchedOff value) switchedOff,
+  }) {
+    return playbackChanged(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(FlightStarted value)? flightStarted,
+    TResult? Function(AttemptFailed value)? attemptFailed,
+    TResult? Function(RetryStarted value)? retryStarted,
+    TResult? Function(Landed value)? landed,
+    TResult? Function(PlaybackChanged value)? playbackChanged,
+    TResult? Function(TrackChanged value)? trackChanged,
+    TResult? Function(SwitchedOff value)? switchedOff,
+  }) {
+    return playbackChanged?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(FlightStarted value)? flightStarted,
+    TResult Function(AttemptFailed value)? attemptFailed,
+    TResult Function(RetryStarted value)? retryStarted,
+    TResult Function(Landed value)? landed,
+    TResult Function(PlaybackChanged value)? playbackChanged,
+    TResult Function(TrackChanged value)? trackChanged,
+    TResult Function(SwitchedOff value)? switchedOff,
+    required TResult orElse(),
+  }) {
+    if (playbackChanged != null) {
+      return playbackChanged(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class PlaybackChanged implements RadioEvent {
+  const factory PlaybackChanged(final PlaybackStatus status) =
+      _$PlaybackChangedImpl;
+
+  PlaybackStatus get status;
+
+  /// Create a copy of RadioEvent
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$PlaybackChangedImplCopyWith<_$PlaybackChangedImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class _$$TrackChangedImplCopyWith<$Res> {
+  factory _$$TrackChangedImplCopyWith(
+    _$TrackChangedImpl value,
+    $Res Function(_$TrackChangedImpl) then,
+  ) = __$$TrackChangedImplCopyWithImpl<$Res>;
+  @useResult
+  $Res call({String? title});
+}
+
+/// @nodoc
+class __$$TrackChangedImplCopyWithImpl<$Res>
+    extends _$RadioEventCopyWithImpl<$Res, _$TrackChangedImpl>
+    implements _$$TrackChangedImplCopyWith<$Res> {
+  __$$TrackChangedImplCopyWithImpl(
+    _$TrackChangedImpl _value,
+    $Res Function(_$TrackChangedImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of RadioEvent
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({Object? title = freezed}) {
+    return _then(
+      _$TrackChangedImpl(
+        freezed == title
+            ? _value.title
+            : title // ignore: cast_nullable_to_non_nullable
+                  as String?,
+      ),
+    );
+  }
+}
+
+/// @nodoc
+
+class _$TrackChangedImpl implements TrackChanged {
+  const _$TrackChangedImpl(this.title);
+
+  @override
+  final String? title;
+
+  @override
+  String toString() {
+    return 'RadioEvent.trackChanged(title: $title)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$TrackChangedImpl &&
+            (identical(other.title, title) || other.title == title));
+  }
+
+  @override
+  int get hashCode => Object.hash(runtimeType, title);
+
+  /// Create a copy of RadioEvent
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$TrackChangedImplCopyWith<_$TrackChangedImpl> get copyWith =>
+      __$$TrackChangedImplCopyWithImpl<_$TrackChangedImpl>(this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function(FlightKind kind, RadioStation? target)
+    flightStarted,
+    required TResult Function(bool retrying) attemptFailed,
+    required TResult Function() retryStarted,
+    required TResult Function(
+      RadioStation station,
+      bool paused,
+      String? trackTitle,
+    )
+    landed,
+    required TResult Function(PlaybackStatus status) playbackChanged,
+    required TResult Function(String? title) trackChanged,
+    required TResult Function() switchedOff,
+  }) {
+    return trackChanged(title);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(FlightKind kind, RadioStation? target)? flightStarted,
+    TResult? Function(bool retrying)? attemptFailed,
+    TResult? Function()? retryStarted,
+    TResult? Function(RadioStation station, bool paused, String? trackTitle)?
+    landed,
+    TResult? Function(PlaybackStatus status)? playbackChanged,
+    TResult? Function(String? title)? trackChanged,
+    TResult? Function()? switchedOff,
+  }) {
+    return trackChanged?.call(title);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(FlightKind kind, RadioStation? target)? flightStarted,
+    TResult Function(bool retrying)? attemptFailed,
+    TResult Function()? retryStarted,
+    TResult Function(RadioStation station, bool paused, String? trackTitle)?
+    landed,
+    TResult Function(PlaybackStatus status)? playbackChanged,
+    TResult Function(String? title)? trackChanged,
+    TResult Function()? switchedOff,
+    required TResult orElse(),
+  }) {
+    if (trackChanged != null) {
+      return trackChanged(title);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(FlightStarted value) flightStarted,
+    required TResult Function(AttemptFailed value) attemptFailed,
+    required TResult Function(RetryStarted value) retryStarted,
+    required TResult Function(Landed value) landed,
+    required TResult Function(PlaybackChanged value) playbackChanged,
+    required TResult Function(TrackChanged value) trackChanged,
+    required TResult Function(SwitchedOff value) switchedOff,
+  }) {
+    return trackChanged(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(FlightStarted value)? flightStarted,
+    TResult? Function(AttemptFailed value)? attemptFailed,
+    TResult? Function(RetryStarted value)? retryStarted,
+    TResult? Function(Landed value)? landed,
+    TResult? Function(PlaybackChanged value)? playbackChanged,
+    TResult? Function(TrackChanged value)? trackChanged,
+    TResult? Function(SwitchedOff value)? switchedOff,
+  }) {
+    return trackChanged?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(FlightStarted value)? flightStarted,
+    TResult Function(AttemptFailed value)? attemptFailed,
+    TResult Function(RetryStarted value)? retryStarted,
+    TResult Function(Landed value)? landed,
+    TResult Function(PlaybackChanged value)? playbackChanged,
+    TResult Function(TrackChanged value)? trackChanged,
+    TResult Function(SwitchedOff value)? switchedOff,
+    required TResult orElse(),
+  }) {
+    if (trackChanged != null) {
+      return trackChanged(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class TrackChanged implements RadioEvent {
+  const factory TrackChanged(final String? title) = _$TrackChangedImpl;
+
+  String? get title;
+
+  /// Create a copy of RadioEvent
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$TrackChangedImplCopyWith<_$TrackChangedImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class _$$SwitchedOffImplCopyWith<$Res> {
+  factory _$$SwitchedOffImplCopyWith(
+    _$SwitchedOffImpl value,
+    $Res Function(_$SwitchedOffImpl) then,
+  ) = __$$SwitchedOffImplCopyWithImpl<$Res>;
+}
+
+/// @nodoc
+class __$$SwitchedOffImplCopyWithImpl<$Res>
+    extends _$RadioEventCopyWithImpl<$Res, _$SwitchedOffImpl>
+    implements _$$SwitchedOffImplCopyWith<$Res> {
+  __$$SwitchedOffImplCopyWithImpl(
+    _$SwitchedOffImpl _value,
+    $Res Function(_$SwitchedOffImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of RadioEvent
+  /// with the given fields replaced by the non-null parameter values.
+}
+
+/// @nodoc
+
+class _$SwitchedOffImpl implements SwitchedOff {
+  const _$SwitchedOffImpl();
+
+  @override
+  String toString() {
+    return 'RadioEvent.switchedOff()';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType && other is _$SwitchedOffImpl);
+  }
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function(FlightKind kind, RadioStation? target)
+    flightStarted,
+    required TResult Function(bool retrying) attemptFailed,
+    required TResult Function() retryStarted,
+    required TResult Function(
+      RadioStation station,
+      bool paused,
+      String? trackTitle,
+    )
+    landed,
+    required TResult Function(PlaybackStatus status) playbackChanged,
+    required TResult Function(String? title) trackChanged,
+    required TResult Function() switchedOff,
+  }) {
+    return switchedOff();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(FlightKind kind, RadioStation? target)? flightStarted,
+    TResult? Function(bool retrying)? attemptFailed,
+    TResult? Function()? retryStarted,
+    TResult? Function(RadioStation station, bool paused, String? trackTitle)?
+    landed,
+    TResult? Function(PlaybackStatus status)? playbackChanged,
+    TResult? Function(String? title)? trackChanged,
+    TResult? Function()? switchedOff,
+  }) {
+    return switchedOff?.call();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(FlightKind kind, RadioStation? target)? flightStarted,
+    TResult Function(bool retrying)? attemptFailed,
+    TResult Function()? retryStarted,
+    TResult Function(RadioStation station, bool paused, String? trackTitle)?
+    landed,
+    TResult Function(PlaybackStatus status)? playbackChanged,
+    TResult Function(String? title)? trackChanged,
+    TResult Function()? switchedOff,
+    required TResult orElse(),
+  }) {
+    if (switchedOff != null) {
+      return switchedOff();
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(FlightStarted value) flightStarted,
+    required TResult Function(AttemptFailed value) attemptFailed,
+    required TResult Function(RetryStarted value) retryStarted,
+    required TResult Function(Landed value) landed,
+    required TResult Function(PlaybackChanged value) playbackChanged,
+    required TResult Function(TrackChanged value) trackChanged,
+    required TResult Function(SwitchedOff value) switchedOff,
+  }) {
+    return switchedOff(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(FlightStarted value)? flightStarted,
+    TResult? Function(AttemptFailed value)? attemptFailed,
+    TResult? Function(RetryStarted value)? retryStarted,
+    TResult? Function(Landed value)? landed,
+    TResult? Function(PlaybackChanged value)? playbackChanged,
+    TResult? Function(TrackChanged value)? trackChanged,
+    TResult? Function(SwitchedOff value)? switchedOff,
+  }) {
+    return switchedOff?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(FlightStarted value)? flightStarted,
+    TResult Function(AttemptFailed value)? attemptFailed,
+    TResult Function(RetryStarted value)? retryStarted,
+    TResult Function(Landed value)? landed,
+    TResult Function(PlaybackChanged value)? playbackChanged,
+    TResult Function(TrackChanged value)? trackChanged,
+    TResult Function(SwitchedOff value)? switchedOff,
+    required TResult orElse(),
+  }) {
+    if (switchedOff != null) {
+      return switchedOff(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class SwitchedOff implements RadioEvent {
+  const factory SwitchedOff() = _$SwitchedOffImpl;
+}
