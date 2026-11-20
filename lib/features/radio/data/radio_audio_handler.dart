@@ -45,6 +45,7 @@ class RadioAudioHandler extends BaseAudioHandler implements RadioMediaSession {
   final _commands = StreamController<RadioMediaCommand>.broadcast();
   PlaybackEvent? _event;
   bool _flying = false, _saved = false;
+  Future<void> Function()? _stopRadio;
 
   /// The service stays in the foreground while paused, so the radio can
   /// resume from the background; once it has really stopped (stopped,
@@ -140,6 +141,9 @@ class RadioAudioHandler extends BaseAudioHandler implements RadioMediaSession {
   }
 
   @override
+  void setStopHandler(Future<void> Function()? stop) => _stopRadio = stop;
+
+  @override
   Stream<RadioMediaCommand> get commands => _commands.stream;
 
   @override
@@ -219,16 +223,24 @@ class RadioAudioHandler extends BaseAudioHandler implements RadioMediaSession {
   }
 
   @override
-  Future<void> stop() => player.stop();
-
-  /// The app swiped away from the recent apps: a radio that is not playing
-  /// (paused, or a stream that ended on its own) closes with it; one that
-  /// plays or flies carries on. Read from what the notification shows,
-  /// which already counts a flight as playing.
-  @override
-  Future<void> onTaskRemoved() async {
-    if (!playbackState.value.playing) await stop();
+  Future<void> stop() async {
+    final stopRadio = _stopRadio;
+    if (stopRadio == null) {
+      await player.stop();
+    } else {
+      await stopRadio();
+    }
+    _flying = false;
+    // Explicit idle also closes a flight notification and does not depend on
+    // a later player event arriving before Android disposes the service.
+    _show(PlaybackState(processingState: AudioProcessingState.idle));
+    mediaItem.add(null);
   }
+
+  /// Removing the app from recents is an explicit stop, even during a flight.
+  /// Backgrounding/locking do not call this callback and keep playing.
+  @override
+  Future<void> onTaskRemoved() => stop();
 
   @override
   Future<void> skipToNext() async => _send(RadioMediaCommand.next);
@@ -250,6 +262,7 @@ class RadioAudioHandler extends BaseAudioHandler implements RadioMediaSession {
   }
 
   Future<void> dispose() async {
+    _stopRadio = null;
     await _events.cancel();
     await _commands.close();
   }

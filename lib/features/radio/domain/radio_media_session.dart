@@ -21,6 +21,11 @@ abstract interface class RadioMediaSession {
   /// station's keys, the heart filled when the station is [saved].
   void showControls({required bool flying, required bool saved});
 
+  /// Registers the application stop operation. The service waits until the
+  /// controller has cancelled flights, stopped static and closed the stream.
+  /// Clear on disposal so a detached session cannot call a disposed controller.
+  void setStopHandler(Future<void> Function()? stop);
+
   /// Back, next and heart pressed in the notification.
   Stream<RadioMediaCommand> get commands;
 }

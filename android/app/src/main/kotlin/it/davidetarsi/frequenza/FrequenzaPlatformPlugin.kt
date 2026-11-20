@@ -46,6 +46,7 @@ class FrequenzaPlatformPlugin : FlutterPlugin {
         tuningChannel?.setMethodCallHandler { call, result ->
             when (call.method) {
                 "start" -> {
+                    RadioForeground.reconnect()
                     startTuningSound()
                     result.success(null)
                 }

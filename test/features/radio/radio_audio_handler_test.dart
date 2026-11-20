@@ -309,17 +309,27 @@ void main() {
     },
   );
 
-  test('removing the app while playing keeps it', () async {
+  test('removing the app while playing closes it', () async {
     await emit(ProcessingState.ready, playing: true);
     await handler.onTaskRemoved();
-    expect(player.stops, 0);
+    expect(player.stops, 1);
+    expect(
+      handler.playbackState.value.processingState,
+      AudioProcessingState.idle,
+    );
+    expect(handler.playbackState.value.playing, false);
   });
 
-  test('removing the app during a flight keeps it', () async {
+  test('removing the app during a flight closes it', () async {
     handler.showControls(flying: true, saved: false);
     await emit(ProcessingState.idle, playing: false);
     await handler.onTaskRemoved();
-    expect(player.stops, 0);
+    expect(player.stops, 1);
+    expect(
+      handler.playbackState.value.processingState,
+      AudioProcessingState.idle,
+    );
+    expect(handler.playbackState.value.playing, false);
   });
 
   test('play on a closed stream asks the radio', () async {
