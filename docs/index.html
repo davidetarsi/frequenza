@@ -11,7 +11,8 @@
 <meta property="og:title" content="Frequenza">
 <meta property="og:description" content="Gira la manopola e viaggia per il mondo, una stazione radio alla volta.">
 <meta property="og:url" content="https://davidetarsi.github.io/frequenza/">
-<meta property="og:image" content="https://davidetarsi.github.io/frequenza/img/anteprima.jpg">
+<meta property="og:image" content="https://davidetarsi.github.io/frequenza/img/anteprima-radio-diario.png">
+<meta property="og:image:alt" content="Frequenza: la radio in riproduzione e il diario di viaggio.">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:locale" content="it_IT">
@@ -71,13 +72,16 @@
   .tagline { color: var(--muted); font-size: 1.1rem; margin: 0 auto; max-width: 26rem; }
 
   .shots { display: flex; gap: .75rem; justify-content: center; margin: 0 0 2.5rem; }
+  .shots figure { width: calc(50% - .375rem); max-width: 252px; margin: 0; }
   .shots img {
-    width: calc(50% - .375rem);
-    max-width: 240px;
+    width: 100%;
     height: auto;
     border-radius: 14px;
     box-shadow: 0 6px 20px rgb(0 0 0 / .15);
   }
+
+  .shots figcaption { margin-top: .65rem; text-align: center; color: var(--muted); font-size: .9rem; }
+  .shots figcaption strong { display: block; color: var(--ink); font-weight: 600; }
 
   /* The steps sit on the radio's green screen. */
   .screen {
@@ -147,8 +151,22 @@
   </header>
 
   <div class="shots">
-    <img src="img/screen-1.jpg" width="540" height="960" alt="">
-    <img src="img/screen-2.jpg" width="540" height="960" alt="">
+    <figure>
+      <img data-lang="it" src="img/radio-it.png" width="780" height="1688" alt="La radio Frequenza in riproduzione su FIP, con il brano in onda e la mappa della Francia.">
+      <img data-lang="en" src="img/radio-en.png" width="780" height="1688" alt="Frequenza playing FIP, showing the song on air and the map of France.">
+      <figcaption>
+        <span data-lang="it"><strong>Una radio, tutto il mondo</strong>Gira, ascolta, salva ciò che ami.</span>
+        <span data-lang="en"><strong>One radio, the whole world</strong>Turn, listen, save what you love.</span>
+      </figcaption>
+    </figure>
+    <figure>
+      <img data-lang="it" src="img/diario-it.png" width="780" height="1688" alt="Il diario di viaggio con sei paesi visitati, 148 minuti di ascolto e il mini player attivo.">
+      <img data-lang="en" src="img/diario-en.png" width="780" height="1688" alt="The travel diary with six visited countries, 148 listening minutes and the active mini player.">
+      <figcaption>
+        <span data-lang="it"><strong>Il tuo diario di viaggio</strong>Paesi e ascolti di esempio.</span>
+        <span data-lang="en"><strong>Your travel diary</strong>Sample countries and listening history.</span>
+      </figcaption>
+    </figure>
   </div>
 
   <section class="screen">

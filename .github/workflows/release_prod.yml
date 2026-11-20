@@ -3,6 +3,13 @@ name: 🚀 Android Release Candidate
 on:
   push:
     branches: [main]
+    # As with the dev build, site/docs changes do not produce a new Android app.
+    paths:
+      - 'lib/**'
+      - 'assets/**'
+      - 'android/**'
+      - 'pubspec.yaml'
+      - 'pubspec.lock'
 
 concurrency:
   group: android-release-candidate

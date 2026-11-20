@@ -1,7 +1,7 @@
 // node --test .github/scripts/
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { parseVersion, selectedLabel, nextVersion, formatVersion } = require('./version.cjs');
+const { parseVersion, selectedLabel, nextVersion, formatVersion, requiresAppVersion } = require('./version.cjs');
 
 test('parseVersion reads MAJOR.MINOR.PATCH+BUILD', () => {
   assert.deepEqual(parseVersion('name: frequenza\nversion: 0.1.0+1\n'), [0, 1, 0, 1]);
@@ -30,4 +30,14 @@ test('selectedLabel wants exactly one version label', () => {
   assert.equal(selectedLabel(['bug', 'version:patch']), 'version:patch');
   assert.equal(selectedLabel(['version:major', 'version:minor']), null);
   assert.equal(selectedLabel([]), null);
+});
+
+test('website-only changes need no app version; app changes still do', () => {
+  const website = ['docs/index.html', 'docs/img/radio-it.png', 'tool/preview/capture_test.dart',
+    '.github/workflows/ci.yml', '.github/workflows/release_prod.yml'];
+  assert.equal(requiresAppVersion(website), false);
+  for (const path of ['lib/main.dart', 'assets/translations/it.json', 'android/app/build.gradle.kts',
+    'pubspec.yaml', 'pubspec.lock']) {
+    assert.equal(requiresAppVersion([...website, path]), true, path);
+  }
 });

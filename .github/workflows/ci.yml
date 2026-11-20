@@ -27,9 +27,19 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         with:
           script: |
-            const { LABELS, parseVersion, selectedLabel, nextVersion, formatVersion } =
+            const { LABELS, parseVersion, selectedLabel, nextVersion, formatVersion, requiresAppVersion } =
               require(`${process.env.GITHUB_WORKSPACE}/.github/scripts/version.cjs`);
             const pr = context.payload.pull_request;
+            const files = await github.paginate(github.rest.pulls.listFiles, {
+              owner: context.repo.owner, repo: context.repo.repo,
+              pull_number: pr.number, per_page: 100,
+            });
+            // Include old paths too: moving app files into docs still changes the app.
+            const paths = files.flatMap((f) => [f.filename, f.previous_filename].filter(Boolean));
+            if (!requiresAppVersion(paths)) {
+              core.info('No installed app changes: no Android version bump required.');
+              return;
+            }
             const label = selectedLabel(pr.labels.map((l) => l.name));
             if (!label) {
               core.setFailed(`Choose exactly one version label: ${LABELS.join(', ')}`);

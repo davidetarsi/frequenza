@@ -29,4 +29,11 @@ function formatVersion([major, minor, patch, build]) {
   return `${major}.${minor}.${patch}+${build}`;
 }
 
-module.exports = { LABELS, parseVersion, selectedLabel, nextVersion, formatVersion };
+// Same app inputs as the Android build workflows. Website, screenshots and
+// documentation do not change the installed app and need no release number.
+function requiresAppVersion(paths) {
+  return paths.some((path) => ['lib/', 'assets/', 'android/'].some((prefix) => path.startsWith(prefix)) ||
+    path === 'pubspec.yaml' || path === 'pubspec.lock');
+}
+
+module.exports = { LABELS, parseVersion, selectedLabel, nextVersion, formatVersion, requiresAppVersion };
