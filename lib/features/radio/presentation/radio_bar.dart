@@ -7,6 +7,7 @@ import '../../../l10n/locale_keys.g.dart';
 import '../../../ui/theme/travel_radio_design.dart';
 import '../../../ui/theme/travel_radio_palette.dart';
 import '../../favorites/application/favorites_controller.dart';
+import '../../favorites/presentation/toggle_favorite.dart';
 import '../../songs/presentation/save_song.dart';
 import '../application/radio_controller.dart';
 import '../domain/radio_bar_state.dart';
@@ -152,7 +153,7 @@ class RadioBar extends ConsumerWidget {
       tooltip: (saved ? LocaleKeys.barRemoveStation : LocaleKeys.barSaveStation)
           .tr(context: context),
       onPressed: favorites.hasValue && !favorites.isLoading
-          ? () => ref.read(favoritesProvider.notifier).toggle(station)
+          ? () => toggleFavorite(context, ref, station)
           : null,
     );
   }

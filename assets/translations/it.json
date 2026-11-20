@@ -15,6 +15,7 @@
   "favoritesError": "Non è stato possibile aggiornare i preferiti. Riprova.",
   "savedOnDevice": "Salvate su questo dispositivo",
   "removeFavorite": "Rimuovi dai preferiti",
+  "favoriteRemoved": "Radio rimossa dai preferiti",
   "tapToListen": "Tocca per ascoltare",
   "close": "Chiudi",
   "playing": "In ascolto",

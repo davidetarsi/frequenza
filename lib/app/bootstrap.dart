@@ -95,11 +95,15 @@ Future<void> bootstrap({AppConfig config = const AppConfig()}) async {
 /// The service stays in the foreground, paused too: Android forbids
 /// going back to it from the background, so a play from the headphones
 /// would leave the radio muted and then frozen. A paused radio closes
-/// after ten minutes, or when the app is swiped away from the recents.
+/// after ten minutes. Removing the app from recents always stops it,
+/// whether paused, playing or tuning.
 AudioServiceConfig radioServiceConfig({required String channelName}) =>
     AudioServiceConfig(
       androidNotificationChannelId: radioNotificationChannelId,
       androidNotificationChannelName: channelName,
       androidNotificationIcon: 'drawable/ic_stat_frequenza',
       androidStopForegroundOnPause: false,
+      // A deliberate stop removes the notification and cannot wake playback.
+      // Pause keeps the running service and its active controls available.
+      androidResumeOnClick: false,
     );

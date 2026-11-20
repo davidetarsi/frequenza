@@ -11,6 +11,7 @@ import '../../../ui/widgets/app_icon_button.dart';
 import '../../../ui/widgets/adaptive_fit.dart';
 import '../../diary/presentation/diary_route.dart';
 import '../../favorites/application/favorites_controller.dart';
+import '../../favorites/presentation/toggle_favorite.dart';
 import '../../favorites/presentation/favorites_sheet.dart';
 import '../../journey/presentation/journey_texts.dart';
 import '../../journey/presentation/route_map.dart';
@@ -245,9 +246,7 @@ class RadioPage extends ConsumerWidget {
                           favorites == null ||
                           favoritesState.isLoading
                       ? null
-                      : () => ref
-                            .read(favoritesProvider.notifier)
-                            .toggle(station),
+                      : () => toggleFavorite(context, ref, station),
                 ),
                 isBusy: display.busy,
                 isPlaying: display.playing,

@@ -40,6 +40,9 @@ class LocalSession implements RadioMediaSession {
   void updateLocalization(RadioMediaLocalization labels) =>
       this.labels = labels;
   @override
+  void setStopHandler(Future<void> Function()? stop) {}
+
+  @override
   Stream<RadioMediaCommand> get commands => const Stream.empty();
   @override
   void showStation(RadioStation station) {}

@@ -31,6 +31,11 @@ void radioNotification(Ref ref) {
   ref.listen(favoritesProvider, (_, _) => publish());
   publish();
 
+  session.setStopHandler(
+    () => ref.read(radioControllerProvider.notifier).stop(),
+  );
+  ref.onDispose(() => session.setStopHandler(null));
+
   final commands = session.commands.listen((command) {
     final radio = ref.read(radioControllerProvider.notifier);
     switch (command) {

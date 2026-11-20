@@ -22,6 +22,10 @@ android {
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
+    testOptions {
+        unitTests.isReturnDefaultValues = true
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
@@ -100,5 +104,16 @@ val validateProdReleaseSigningInputs = tasks.register("validateProdReleaseSignin
 }
 
 tasks.configureEach {
-    if (name == "preProdReleaseBuild") dependsOn(validateProdReleaseSigningInputs)
+    // Flutter native assets can visit preProdReleaseBuild during a dev build.
+    // Guard the actual prod signing/packaging tasks instead of that shared path.
+    if (name in setOf("validateSigningProdRelease", "packageProdRelease", "packageProdReleaseBundle")) {
+        dependsOn(validateProdReleaseSigningInputs)
+    }
+}
+
+// Native regression tests exercise the installed audio_service callback bridge.
+dependencies {
+    testImplementation("junit:junit:4.13.2")
+    // audio_service already uses this version; expose its base type to the adapter.
+    implementation("androidx.media:media:1.7.0")
 }
