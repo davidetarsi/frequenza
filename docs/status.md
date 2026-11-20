@@ -4,14 +4,23 @@ Il punto di ripresa di ogni sessione: si legge questo, poi solo il piano attivo.
 
 ## Dove siamo
 
-- `main`: versione 0.4.1+6, dopo il merge della PR #46. Questo indica lo stato del repository; la pubblicazione sul Play Store resta gestita da Davide.
+- `main`: versione 0.4.2+7, dopo il merge patch della PR #52 (`7ad171b`). Questo indica lo stato del repository; la pubblicazione sul Play Store resta gestita da Davide.
 - `develop`: include il segnalibro come toggle (PR #51, `2ee0339`) e il bump patch automatico a 0.4.2+7.
-- Rilascio autorizzato: PR #52 da develop a main, etichetta version:patch, versione 0.4.2+7. Davide ha richiesto anche il merge. Il controllo versione è passato; in attesa dei controlli sul commit finale.
+- Rilascio autorizzato: PR #52 da develop a main, etichetta version:patch, versione 0.4.2+7. Davide ha richiesto anche il merge. PR #52 unita con tutti i controlli verdi (inclusa la scheda Play).
 - Audit del 19 novembre: completati i blocchi su persistenza/stati, sicurezza/privacy, confini architetturali e localizzazione. Completato anche il blocco UI condivisa/token; resta il punto di manutenzione P3 nativo descritto sotto. Il rapporto è nell'area di lavoro `../audit/2026-11-19/rapporto.md` (non versionata nel repository).
 
 ## Piano attivo
 
-Rilascio patch 0.4.2+7 — [PR #52](https://github.com/davidetarsi/frequenza/pull/52). La validazione della scheda Play ha rilevato un crash di Fastlane 2.225.0: cerca una release nel canale production vuoto anche con solo metadata e skip_upload_changelogs. Corretto il canale della scheda per usare PLAY_TRACK con fallback alpha, come il caricamento AAB esistente; nessuna promozione o modifica delle release. 58 test Python (inclusa la regressione del canale) e 6 test Node superati; CI applicativa della PR passata prima della correzione. Nessun nuovo vincolo CI. Pubblicazione della scheda resta una prova a vuoto nelle PR.
+Aggiornamento della pagina di anteprima GitHub Pages (`docs/index.html`), richiesto da Davide.
+
+- Nuove schermate dai widget Flutter correnti: radio su FIP in riproduzione e diario con sei paesi/148 minuti di ascolti di esempio, player sospeso attivo. IT/EN seguono il selettore lingua del sito, con didascalie e testi alternativi tradotti.
+- Nuova immagine social 1200×630 con entrambe le schermate. Nuovi nomi di file per evitare la cache delle immagini precedenti.
+- Generatori ripetibili in `tool/preview`: rendering Flutter con repository in memoria e font del SDK, composizione social tramite Chromium. Nessuna variazione a codice prodotto o versione. Main protetto richiede PR e due controlli: il controllo versione ora richiede il bump solo quando cambiano gli input dell’app (anche in caso di rinomina); il workflow prod usa gli stessi filtri di build-dev per evitare release Android dai soli aggiornamenti al sito. Nessuna modifica alle protezioni del branch e nessun nuovo vincolo CI.
+- Verificati rendering delle quattro schermate, analisi statica e pagina su Chromium a 390/1280 px, IT/EN, chiaro/scuro: otto combinazioni senza immagini mancanti o overflow orizzontale. Pubblicazione tramite PR verso main autorizzata dalla richiesta; verificare CI e sito dopo il merge.
+
+## Rilascio patch completato — PR #52
+
+Rilascio 0.4.2+7 unito da develop a main. La validazione della scheda Play inizialmente falliva su production vuoto: corretto il workflow per usare PLAY_TRACK con fallback alpha, lo stesso canale del caricamento AAB. Verifica remota verde dopo la correzione, insieme ai controlli applicativi e della versione patch. La scheda resta una prova a vuoto nelle PR.
 
 ## Segnalibro completato e unito in develop — PR #51
 

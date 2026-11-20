@@ -140,6 +140,9 @@ class ReleaseProdTest(unittest.TestCase):
     def setUp(self):
         self.workflow = load('release_prod.yml')
 
+    def test_site_changes_do_not_trigger_an_android_release(self):
+        self.assertEqual(self.workflow['on']['push']['paths'], load('build_dev.yml')['on']['push']['paths'])
+
     def test_prerelease_has_no_files(self):
         release = step_using(self.workflow, 'softprops/action-gh-release')['with']
         self.assertIs(release['prerelease'], True)
