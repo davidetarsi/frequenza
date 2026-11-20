@@ -12,6 +12,7 @@ part 'favorites_controller.g.dart';
 @Riverpod(keepAlive: true)
 class Favorites extends _$Favorites {
   final _save = LatestSave();
+  Future<void>? _pendingWrite;
 
   @override
   Future<FavoritesState> build() {
@@ -49,6 +50,33 @@ class Favorites extends _$Favorites {
         );
   }
 
-  Future<void> _update(Future<FavoritesState> Function() action) =>
-      _save.run(shown: state, emit: (value) => state = value, action: action);
+  /// Undo restores the original order without overwriting other changes or
+  /// removing a station that has already been saved again.
+  Future<void> restore(RadioStation station, int index) async {
+    // Another favorite may be saving when Undo is pressed. Read the list only
+    // after that write completes, and recheck if another write has started.
+    while (state.isLoading) {
+      final pending = _pendingWrite;
+      if (pending == null) return;
+      await pending;
+    }
+    final current = state.valueOrNull;
+    if (current == null || current.contains(station.id)) return;
+    final next = [...current.stations]
+      ..insert(index.clamp(0, current.stations.length), station);
+    await _update(() async {
+      await ref.read(favoritesRepositoryProvider).save(next);
+      return FavoritesState(next);
+    });
+  }
+
+  Future<void> _update(Future<FavoritesState> Function() action) {
+    final pending = _save
+        .run(shown: state, emit: (value) => state = value, action: action)
+        .then<void>((_) {});
+    _pendingWrite = pending;
+    return pending.whenComplete(() {
+      if (identical(_pendingWrite, pending)) _pendingWrite = null;
+    });
+  }
 }

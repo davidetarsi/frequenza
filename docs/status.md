@@ -5,11 +5,20 @@ Il punto di ripresa di ogni sessione: si legge questo, poi solo il piano attivo.
 ## Dove siamo
 
 - `main`: versione 0.4.2+7, inclusa la pagina di anteprima aggiornata (PR #53, `3ee7252`). Questo indica lo stato del repository; la pubblicazione sul Play Store resta gestita da Davide.
-- `develop`: allineato a main (`3ee7252`) dopo la PR #53; è anche la sorgente di GitHub Pages.
+- `develop`: include la PR #54 (`00d7786`) sui comandi media e la chiusura del task; è anche la sorgente di GitHub Pages.
 - Rilascio autorizzato: PR #52 da develop a main, etichetta version:patch, versione 0.4.2+7. Davide ha richiesto anche il merge. PR #52 unita con tutti i controlli verdi (inclusa la scheda Play).
 - Audit del 19 novembre: completati i blocchi su persistenza/stati, sicurezza/privacy, confini architetturali e localizzazione. Completato anche il blocco UI condivisa/token; resta il punto di manutenzione P3 nativo descritto sotto. Il rapporto è nell'area di lavoro `../audit/2026-11-19/rapporto.md` (non versionata nel repository).
 
 ## Piano attivo
+
+Snackbar per la rimozione delle radio preferite — branch `feat/annulla-rimozione-preferiti`, da develop dopo la PR #54.
+
+- Richiesta di Davide: riutilizzare la snackbar con Annulla quando si rimuove una radio dai preferiti. Esplicitamente richiesto di non eseguire test: collaudo sul suo telefono.
+- Riutilizzato appSnackBar (4 secondi, persist false) e introdotto un solo helper di presentazione per home, mini player ed elenco. Il feedback compare dopo la rimozione riuscita; aggiunte e rimozioni dalla notifica mantengono il percorso esistente.
+- Annulla ripristina la radio nella posizione precedente senza duplicarla se già riaggiunta; attende eventuali scritture in corso e preserva le altre radio. Il messenger della sheet viene catturato dal contesto della riga prima della rimozione, per mostrare il feedback sopra il bottom sheet anche quando la riga sparisce.
+- Copy IT/EN nel dizionario, con Annulla e token esistenti. Nessun cambiamento a stile, durata o versione. Formattazione e rigenerazione completate, analisi statica pulita; nessun test locale eseguito su richiesta dell'utente. Davide ha autorizzato apertura PR e merge verso develop dopo i controlli obbligatori GitHub.
+
+## Comandi media e chiusura — PR #54 unita in develop
 
 Comandi della notifica e chiusura esplicita dell'app — branch `fix/notifica-e-chiusura-app`, da develop.
 
