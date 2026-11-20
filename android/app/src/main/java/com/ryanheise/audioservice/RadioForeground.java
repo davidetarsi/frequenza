@@ -12,9 +12,22 @@ import java.lang.reflect.Method;
 public final class RadioForeground {
     private RadioForeground() {}
 
+    /**
+     * AudioService.onDestroy clears its listener even when an Activity keeps
+     * the Flutter engine (and its AudioHandlerInterface) alive. Reattach the
+     * existing interface before a new tune; no new engine or media session.
+     */
+    public static boolean reconnect() {
+        try {
+            AudioService.init(AudioServicePlugin.audioHandlerInterface());
+            return true;
+        } catch (Exception notReady) {
+            return false;
+        }
+    }
+
     public static void leave() {
-        // As a plain Object: the plugin's base classes are not on the app's
-        // compile classpath.
+        // Keep the fallback in terms of the Android Service interface.
         Object service = AudioService.instance;
         if (service == null) return;
         try {

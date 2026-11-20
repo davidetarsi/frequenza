@@ -9,5 +9,6 @@ void main() {
     final config = radioServiceConfig(channelName: 'x');
     expect(config.androidStopForegroundOnPause, isFalse);
     expect(config.androidNotificationOngoing, isFalse);
+    expect(config.androidResumeOnClick, isFalse);
   });
 }

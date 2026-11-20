@@ -71,6 +71,9 @@ class RecordingSession implements RadioMediaSession {
   void showControls({required bool flying, required bool saved}) {}
 
   @override
+  void setStopHandler(Future<void> Function()? stop) {}
+
+  @override
   Stream<RadioMediaCommand> get commands => const Stream.empty();
 }
 

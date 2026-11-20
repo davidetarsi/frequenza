@@ -4,19 +4,33 @@ Il punto di ripresa di ogni sessione: si legge questo, poi solo il piano attivo.
 
 ## Dove siamo
 
-- `main`: versione 0.4.2+7, dopo il merge patch della PR #52 (`7ad171b`). Questo indica lo stato del repository; la pubblicazione sul Play Store resta gestita da Davide.
-- `develop`: include il segnalibro come toggle (PR #51, `2ee0339`) e il bump patch automatico a 0.4.2+7.
+- `main`: versione 0.4.2+7, inclusa la pagina di anteprima aggiornata (PR #53, `3ee7252`). Questo indica lo stato del repository; la pubblicazione sul Play Store resta gestita da Davide.
+- `develop`: allineato a main (`3ee7252`) dopo la PR #53; è anche la sorgente di GitHub Pages.
 - Rilascio autorizzato: PR #52 da develop a main, etichetta version:patch, versione 0.4.2+7. Davide ha richiesto anche il merge. PR #52 unita con tutti i controlli verdi (inclusa la scheda Play).
 - Audit del 19 novembre: completati i blocchi su persistenza/stati, sicurezza/privacy, confini architetturali e localizzazione. Completato anche il blocco UI condivisa/token; resta il punto di manutenzione P3 nativo descritto sotto. Il rapporto è nell'area di lavoro `../audit/2026-11-19/rapporto.md` (non versionata nel repository).
 
 ## Piano attivo
+
+Comandi della notifica e chiusura esplicita dell'app — branch `fix/notifica-e-chiusura-app`, da develop.
+
+- Davide segnala tutti i comandi inattivi su Pixel 10 Pro/Android 17, sia con app aperta sia in background e blocco schermo. Richiede stop e rimozione notifica chiudendo l'app, anche durante l'ascolto. La chiusura qui è la rimozione dai recenti; Home e blocco schermo conservano l'ascolto.
+- La configurazione precedente manteneva intenzionalmente l'audio dopo onTaskRemoved se playing/flying. Ora il callback attende lo stop completo del RadioController: annulla il volo, spegne il fruscio e lo stream; l'handler pubblica idle esplicito e cancella i metadati. Disabilitata la riattivazione della sessione già fermata via media button; la pausa conserva il servizio foreground.
+- Riprodotta una causa nativa compatibile con tutti i comandi muti: audio_service 0.18.19 cancella il listener statico in AudioService.onDestroy; un'Activity può conservare il FlutterEngine e la sua AudioHandlerInterface. Il bridge nativo ripristina l'interfaccia esistente al ritorno nell'Activity e prima della sintonizzazione, senza nuovi motori/sessioni o aggiornamenti della libreria.
+- Due test JVM esercitano i veri callback Java di audio_service: tutti i comandi smettono di arrivare dopo la cancellazione del listener e tornano dopo reconnect; caso motore non pronto gestito. Test falliti togliendo reconnect e superati ripristinandolo. Dipendenza androidx.media 1.7.0 già usata dal plugin resa esplicita nel classpath del bridge; JUnit solo per i test locali, nessun nuovo vincolo CI.
+- Nuovo test del canale MethodChannel reale del plugin (in precedenza i test chiamavano solo l'handler) copre play, pausa, avanti, indietro, preferiti e onTaskRemoved, incluso server che risponde dopo la chiusura. 102 test mirati superati. I due pacchetti Dart aggiunti solo ai dev_dependencies erano già transitivi: nessun cambio di versione o dipendenza runtime nuova.
+- Script completo tool/check.sh superato: generazione, formattazione, analisi statica pulita, 7 test Node, 59 Python e 536 Flutter. APK Dev release arm64 compilato con R8 (26,2 MB); 2 test JVM Android superati. Nessun telefono collegato: il difetto specifico di Android 17 non è ancora confermato risolto sul Pixel. La causa nativa riprodotta è concreta, ma non prova che sia l'unica sul dispositivo. Collaudo fisico prima del merge/rilascio.
+- Durante la build Dev release è emerso il controllo firma Prod agganciato a preProdReleaseBuild, raggiunto anche dagli asset nativi condivisi. Spostato sui task di firma/confezionamento Prod. Grafi verificati: Dev esclude la validazione Prod; APK e AAB Prod la richiedono prima del packaging. Il validatore continua a rifiutare la build senza credenziali. Nessun file di firma creato o controllo escluso.
+- Comando nativo locale: `cd android && ./gradlew :app:testDevDebugUnitTest --tests com.ryanheise.audioservice.RadioForegroundTest`. Il test del listener usa i callback reali Java con stub JVM Android: non è un test del SystemUI di Android 17.
+- Accoppiamento interno ad audio_service confinato al bridge Android già esistente (P3); ripetere i test nativi aggiornando il plugin. Nessun dato diagnostico aggiuntivo, nessuna modifica a UI/copy/privacy, nessun bump versione.
+
+## Pagina di anteprima pubblicata — PR #53
 
 Aggiornamento della pagina di anteprima GitHub Pages (`docs/index.html`), richiesto da Davide.
 
 - Nuove schermate dai widget Flutter correnti: radio su FIP in riproduzione e diario con sei paesi/148 minuti di ascolti di esempio, player sospeso attivo. IT/EN seguono il selettore lingua del sito, con didascalie e testi alternativi tradotti.
 - Nuova immagine social 1200×630 con entrambe le schermate. Nuovi nomi di file per evitare la cache delle immagini precedenti.
 - Generatori ripetibili in `tool/preview`: rendering Flutter con repository in memoria e font del SDK, composizione social tramite Chromium. Nessuna variazione a codice prodotto o versione. Main protetto richiede PR e due controlli: il controllo versione ora richiede il bump solo quando cambiano gli input dell’app (anche in caso di rinomina); il workflow prod usa gli stessi filtri di build-dev per evitare release Android dai soli aggiornamenti al sito. Nessuna modifica alle protezioni del branch e nessun nuovo vincolo CI.
-- Verificati rendering delle quattro schermate, analisi statica e pagina su Chromium a 390/1280 px, IT/EN, chiaro/scuro: otto combinazioni senza immagini mancanti o overflow orizzontale. Pubblicazione tramite PR verso main autorizzata dalla richiesta; verificare CI e sito dopo il merge.
+- Verificati rendering delle quattro schermate, analisi statica e pagina su Chromium a 390/1280 px, IT/EN, chiaro/scuro: otto combinazioni senza immagini mancanti o overflow orizzontale. PR #53 unita con CI verde; develop allineato a main e pubblicazione Pages verificata. Tutte e cinque le immagini servite dal sito corrispondono byte per byte a quelle generate.
 
 ## Rilascio patch completato — PR #52
 
