@@ -1,3 +1,5 @@
+import '../../journey/presentation/country_name.dart';
+import '../../../app/localization/presentation/detail_text.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -6,6 +8,7 @@ import '../../../l10n/locale_keys.g.dart';
 import '../../../ui/theme/app_spacing.dart';
 import '../../../ui/theme/travel_radio_design.dart';
 import '../../../ui/widgets/app_icon_button.dart';
+import '../../../ui/widgets/adaptive_fit.dart';
 import '../../diary/presentation/diary_route.dart';
 import '../../favorites/application/favorites_controller.dart';
 import '../../favorites/presentation/favorites_sheet.dart';
@@ -13,6 +16,8 @@ import '../../journey/presentation/journey_texts.dart';
 import '../../journey/presentation/route_map.dart';
 import '../../songs/presentation/save_song.dart';
 import '../application/radio_controller.dart';
+import '../domain/radio_session.dart';
+import '../domain/journey.dart';
 import 'radio_display.dart';
 import 'copy_track_title.dart';
 import 'radio_cabinet.dart';
@@ -65,11 +70,31 @@ class RadioPage extends ConsumerWidget {
     String text(DisplayText text) => switch (text) {
       Translated(:final key) => key.tr(context: context),
       Verbatim(:final text) => text,
+      CountryText(:final code, :final fallback) => countryName(
+        context,
+        code,
+        fallback: fallback,
+      ),
     };
     final distance = display.leg?.distance;
-    final countryDetail = distance == null
+    final distanceLabel = distance == null
         ? null
-        : '${distance.approximate ? '≈ ' : ''}${LocaleKeys.distanceKm.tr(context: context, args: [NumberFormat.decimalPattern(context.locale.toLanguageTag()).format(distance.km)])}';
+        : LocaleKeys.distanceKm.tr(
+            context: context,
+            args: [
+              NumberFormat.decimalPattern(
+                context.locale.toLanguageTag(),
+              ).format(distance.km),
+            ],
+          );
+    final countryDetail = distanceLabel == null
+        ? null
+        : distance!.approximate
+        ? LocaleKeys.approximateDistance.tr(
+            context: context,
+            namedArgs: {'distance': distanceLabel},
+          )
+        : distanceLabel;
     final screenWidth = MediaQuery.sizeOf(context).width;
     return Scaffold(
       body: SafeArea(
@@ -82,32 +107,24 @@ class RadioPage extends ConsumerWidget {
             final wide =
                 constraints.maxWidth >= TravelRadioLayout.landscapeMinWidth &&
                 constraints.maxHeight < TravelRadioLayout.landscapeMaxHeight;
-            final largeText =
-                MediaQuery.textScalerOf(
-                  context,
-                ).scale(TravelRadioLayout.referenceTextSize) >
-                TravelRadioLayout.largeTextThreshold;
-            final compact =
-                wide ||
-                constraints.maxHeight <
-                    (largeText
-                        ? TravelRadioLayout.compactHeightWithLargeText
-                        : TravelRadioLayout.compactHeight);
-            final heading = Text(
+            Widget heading(double density) => Text(
               appName.toLowerCase(),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style:
-                  (compact
-                          ? theme.textTheme.titleMedium
-                          : theme.textTheme.headlineMedium)
-                      ?.copyWith(
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: TravelRadioLayout.headingTracking,
-                      ),
+              style: TextStyle.lerp(
+                theme.textTheme.titleMedium,
+                theme.textTheme.headlineMedium,
+                density,
+              )?.merge(TravelRadioLayout.headingText),
             );
-            final favoritesLabel =
-                '${LocaleKeys.favorites.tr(context: context)} · $favoritesCount';
+            final favoritesLabel = LocaleKeys.favoritesCount.tr(
+              context: context,
+              namedArgs: {
+                'count': NumberFormat.decimalPattern(
+                  context.locale.toLanguageTag(),
+                ).format(favoritesCount),
+              },
+            );
             final favoritesButton = AppIconButton(
               key: tourTargets?.favorites ?? const ValueKey('favorites-open'),
               tooltip: favoritesLabel,
@@ -136,11 +153,15 @@ class RadioPage extends ConsumerWidget {
                 children: [favoritesButton, diaryButton, settingsAction],
               ),
             );
-            final cabinet = RadioCabinetHero(
+            Widget cabinet({
+              required bool compact,
+              double density = 1,
+            }) => RadioCabinetHero(
               child: RadioCabinet(
                 screenKey: tourTargets?.screen ?? radioScreenKey,
                 dialKey: tourTargets?.dial,
                 compact: compact,
+                density: density,
                 horizontal: wide,
                 country: text(display.country),
                 countryDetail: countryDetail,
@@ -148,14 +169,16 @@ class RadioPage extends ConsumerWidget {
                 detail: display.busy
                     ? ''
                     : song ??
-                          station?.tags.take(2).join(' · ') ??
+                          (station == null
+                              ? null
+                              : detailText(context, station.tags.take(2))) ??
                           LocaleKeys.firstTrip.tr(context: context),
                 onDetailTap: track == null || station == null
                     ? null
                     : () => saveSong(context, ref, track, station),
                 onDetailLongPress: song == null
                     ? null
-                    : () => copyTrackTitle(context, song),
+                    : () => copyTrackTitle(context, ref, song),
                 detailAction: track == null || station == null
                     ? null
                     : SongBookmark(track: track, station: station),
@@ -164,6 +187,8 @@ class RadioPage extends ConsumerWidget {
                 landings: journey.trips,
                 map: RouteMap(
                   flight: display.phase,
+                  reconnecting:
+                      session is Flying && session.kind == FlightKind.reconnect,
                   playing: display.playing,
                   departure: journey.departure,
                   leg: journey.leg,
@@ -181,7 +206,11 @@ class RadioPage extends ConsumerWidget {
                     ? null
                     : LocaleKeys.tripNumber.tr(
                         context: context,
-                        args: ['${journey.trips}'],
+                        args: [
+                          NumberFormat.decimalPattern(
+                            context.locale.toLanguageTag(),
+                          ).format(journey.trips),
+                        ],
                       ),
                 knobLabel: display.knobKey.tr(context: context).toUpperCase(),
                 tuneLabel: LocaleKeys.tuneAccessibility.tr(context: context),
@@ -249,61 +278,104 @@ class RadioPage extends ConsumerWidget {
                   constraints: const BoxConstraints(
                     maxWidth: TravelRadioLayout.landscapeContentWidth,
                   ),
-                  child: Column(
-                    children: [
-                      nextStop,
-                      Expanded(
-                        child: Row(
-                          children: [
-                            SizedBox(
-                              width: TravelRadioLayout.landscapeControlsWidth,
-                              child: Column(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [heading, actions],
+                  child: AdaptiveFit(
+                    builder: (context, density, compact, freeSpace) {
+                      final gap =
+                          (compact ? 0 : TravelRadioLayout.minPageGap) +
+                          freeSpace / TravelRadioLayout.landscapeGapCount;
+                      return Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          SizedBox(height: gap),
+                          nextStop,
+                          SizedBox(height: gap),
+                          Row(
+                            children: [
+                              SizedBox(
+                                width: TravelRadioLayout.landscapeControlsWidth,
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
+                                  children: [
+                                    heading(density),
+                                    const SizedBox(height: AppSpacing.large),
+                                    actions,
+                                  ],
+                                ),
                               ),
-                            ),
-                            const SizedBox(width: AppSpacing.standard),
-                            Expanded(child: cabinet),
-                          ],
-                        ),
-                      ),
-                      credits,
-                    ],
+                              const SizedBox(width: AppSpacing.standard),
+                              Expanded(
+                                child: cabinet(
+                                  compact: compact,
+                                  density: density,
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(
+                            height:
+                                gap +
+                                (compact
+                                    ? 0
+                                    : TravelRadioLayout.mapFooterClearance),
+                          ),
+                          credits,
+                          SizedBox(height: gap),
+                        ],
+                      );
+                    },
                   ),
                 ),
               );
             }
-            // The header follows the cabinet width.
-            return SizedBox(
-              width: constraints.maxWidth,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  SizedBox(
-                    width: TravelRadioLayout.cabinetWidth(
-                      screenWidth,
-                      constraints.maxWidth,
-                    ),
-                    child: Row(
-                      children: [
-                        Expanded(child: heading),
-                        actions,
-                      ],
-                    ),
+            return AdaptiveFit(
+              builder: (context, density, compact, freeSpace) {
+                final gap =
+                    (compact ? 0 : TravelRadioLayout.minPageGap) +
+                    freeSpace / TravelRadioLayout.pageGapCount;
+                final width = TravelRadioLayout.fittingWidth(
+                  TravelRadioLayout.cabinetWidth(
+                    screenWidth,
+                    constraints.maxWidth,
                   ),
-                  nextStop,
-                  SizedBox(
-                    width: TravelRadioLayout.cabinetWidth(
-                      screenWidth,
-                      constraints.maxWidth,
-                    ),
-                    child: cabinet,
+                  density,
+                );
+                return SizedBox(
+                  width: constraints.maxWidth,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SizedBox(height: gap),
+                      SizedBox(
+                        width: width,
+                        child: Row(
+                          children: [
+                            Expanded(child: heading(density)),
+                            actions,
+                          ],
+                        ),
+                      ),
+                      SizedBox(height: gap),
+                      nextStop,
+                      SizedBox(height: gap),
+                      SizedBox(
+                        width: width,
+                        child: cabinet(compact: compact, density: density),
+                      ),
+                      SizedBox(
+                        height:
+                            gap +
+                            (compact
+                                ? 0
+                                : TravelRadioLayout.mapFooterClearance),
+                      ),
+                      credits,
+                      SizedBox(height: gap),
+                    ],
                   ),
-                  credits,
-                ],
-              ),
+                );
+              },
             );
           },
         ),

@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter/material.dart';
+import 'package:frequenza/app/platform/data/native_channel.dart';
 import 'package:frequenza/features/favorites/application/favorites_controller.dart';
 import 'package:frequenza/features/favorites/application/favorites_providers.dart';
 import 'package:frequenza/features/radio/application/flight_timing.dart';
@@ -32,6 +34,7 @@ RadioStation numbered(int n) => RadioStation(
 /// a phone.
 class SharedPlayer extends EventPlayer {
   final states = StreamController<PlayerState>.broadcast();
+  final volumes = <double>[];
 
   void _publish(ProcessingState state, {required bool playing}) {
     processingState = state;
@@ -47,7 +50,7 @@ class SharedPlayer extends EventPlayer {
   Stream<IcyMetadata?> get icyMetadataStream => const Stream.empty();
 
   @override
-  Future<void> setVolume(double volume) async {}
+  Future<void> setVolume(double volume) async => volumes.add(volume);
 
   @override
   Future<Duration?> setAudioSource(
@@ -96,7 +99,7 @@ void main() {
   ProviderContainer open({RadioAudioHandler? session}) {
     final opened = ProviderContainer(
       overrides: [
-        radioAudioHandlerProvider.overrideWithValue(session),
+        radioMediaSessionProvider.overrideWithValue(session),
         radioRepositoryProvider.overrideWithValue(repository),
         radioAudioServiceProvider.overrideWithValue(audio),
         favoritesRepositoryProvider.overrideWithValue(favorites),
@@ -240,7 +243,7 @@ void main() {
     });
     final live = ProviderContainer(
       overrides: [
-        radioAudioHandlerProvider.overrideWithValue(shared),
+        radioMediaSessionProvider.overrideWithValue(shared),
         radioRepositoryProvider.overrideWithValue(repository),
         radioAudioServiceProvider.overrideWithValue(engine),
         favoritesRepositoryProvider.overrideWithValue(favorites),
@@ -276,6 +279,79 @@ void main() {
       reason: 'an idle state would close the notification mid-flight',
     );
   });
+
+  testWidgets(
+    'notification next and previous keep the new stream muted for one second in background',
+    (tester) async {
+      final sounds = <String>[];
+      final messenger = tester.binding.defaultBinaryMessenger;
+      messenger.setMockMethodCallHandler(nativeChannel, (call) async {
+        sounds.add(call.method);
+        return null;
+      });
+      addTearDown(
+        () => messenger.setMockMethodCallHandler(nativeChannel, null),
+      );
+      final player = SharedPlayer();
+      final shared = RadioAudioHandler(
+        player,
+        flightTitle: 'Frequenza',
+        flightSubtitle: 'In volo…',
+        saveLabel: 'Salva',
+        removeLabel: 'Togli',
+      );
+      final engine = JustAudioService(player: player, mediaSession: shared);
+      final live = ProviderContainer(
+        overrides: [
+          radioMediaSessionProvider.overrideWithValue(shared),
+          radioRepositoryProvider.overrideWithValue(repository),
+          radioAudioServiceProvider.overrideWithValue(engine),
+          favoritesRepositoryProvider.overrideWithValue(favorites),
+          flightTimingProvider.overrideWithValue(const FlightTiming()),
+        ],
+      );
+      addTearDown(() async {
+        live.dispose();
+        await engine.dispose();
+        await shared.dispose();
+        await player.states.close();
+        await player.events.close();
+      });
+      live.read(radioNotificationProvider);
+      repository.stationToReturn = numbered(1);
+      final first = live.read(radioControllerProvider.notifier).tuneRandom();
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
+      await first;
+      await tester.pump(const Duration(milliseconds: 400));
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+      addTearDown(
+        () => tester.binding.handleAppLifecycleStateChanged(
+          AppLifecycleState.resumed,
+        ),
+      );
+      repository.stationToReturn = numbered(2);
+      for (final command in [shared.skipToNext, shared.skipToPrevious]) {
+        sounds.clear();
+        player.volumes.clear();
+        await command();
+        await tester.pump();
+        expect(live.read(radioControllerProvider), isFlying());
+        expect(sounds, contains('start'));
+        expect(player.volumes.last, 0);
+        await tester.pump(const Duration(milliseconds: 999));
+        expect(live.read(radioControllerProvider), isFlying());
+        expect(player.volumes.last, 0);
+        expect(sounds, isNot(contains('fadeOut')));
+        await tester.pump(const Duration(milliseconds: 1));
+        expect(live.read(radioControllerProvider), isNot(isFlying()));
+        expect(sounds, contains('fadeOut'));
+        expect(player.volumes.last, greaterThan(0));
+        await tester.pump(const Duration(milliseconds: 400));
+      }
+      expect(live.read(radioControllerProvider).station, numbered(1));
+    },
+  );
 
   test('heart before any station does nothing', () async {
     await handler.customAction('favorite');

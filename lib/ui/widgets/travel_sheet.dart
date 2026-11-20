@@ -2,7 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import '../../l10n/locale_keys.g.dart';
 import '../theme/app_spacing.dart';
-import '../theme/travel_radio_design.dart';
+import '../theme/travel_sheet_design.dart';
 import '../theme/travel_radio_palette.dart';
 import 'app_icon_button.dart';
 
@@ -18,8 +18,8 @@ Future<void> showTravelSheet(
   elevation: 0,
   barrierColor: TravelRadioPalette.of(
     context,
-  ).ink.withValues(alpha: RadioFavoritesDesign.barrierOpacity),
-  constraints: const BoxConstraints(maxWidth: RadioFavoritesDesign.maxWidth),
+  ).ink.withValues(alpha: TravelSheetDesign.barrierOpacity),
+  constraints: const BoxConstraints(maxWidth: TravelSheetDesign.maxWidth),
   builder: builder,
 );
 
@@ -67,7 +67,7 @@ class _TravelSheetState extends State<TravelSheet> {
       case OverscrollNotification(:final overscroll, dragDetails: _?)
           when overscroll < 0:
         _pulled -= overscroll;
-        if (_pulled >= RadioFavoritesDesign.pullToClose) {
+        if (_pulled >= TravelSheetDesign.pullToClose) {
           _pulled = 0;
           _close();
         }
@@ -85,9 +85,9 @@ class _TravelSheetState extends State<TravelSheet> {
     }
     return DraggableScrollableSheet(
       expand: false,
-      initialChildSize: RadioFavoritesDesign.initialHeight,
-      minChildSize: RadioFavoritesDesign.minHeight,
-      maxChildSize: RadioFavoritesDesign.maxHeight,
+      initialChildSize: TravelSheetDesign.initialHeight,
+      minChildSize: TravelSheetDesign.minHeight,
+      maxChildSize: TravelSheetDesign.maxHeight,
       // A route sheet has a messenger so undo notices appear above it.
       builder: (context, scroll) => ScaffoldMessenger(
         child: Scaffold(
@@ -104,24 +104,24 @@ class _TravelSheetState extends State<TravelSheet> {
     final ink = widget.foregroundColor ?? palette.ink;
     final muted = widget.foregroundColor == null
         ? palette.muted
-        : ink.withValues(alpha: RadioFavoritesDesign.mutedOpacity);
+        : ink.withValues(alpha: TravelSheetDesign.mutedOpacity);
     return Container(
       decoration: BoxDecoration(
         color: background,
-        borderRadius: RadioFavoritesDesign.sheetRadius,
+        borderRadius: TravelSheetDesign.radius,
         border: Border(top: BorderSide(color: palette.metalLight)),
         boxShadow: [
           BoxShadow(
             color: palette.ink.withValues(
-              alpha: RadioFavoritesDesign.shadowOpacity,
+              alpha: TravelSheetDesign.shadowOpacity,
             ),
-            blurRadius: RadioFavoritesDesign.shadowBlur,
-            offset: RadioFavoritesDesign.shadowOffset,
+            blurRadius: TravelSheetDesign.shadowBlur,
+            offset: TravelSheetDesign.shadowOffset,
           ),
         ],
       ),
       child: ClipRRect(
-        borderRadius: RadioFavoritesDesign.sheetRadius,
+        borderRadius: TravelSheetDesign.radius,
         child: Material(
           color: background,
           child: SafeArea(
@@ -151,14 +151,17 @@ class _TravelSheetState extends State<TravelSheet> {
                       shrinkWrap:
                           widget.presentation ==
                           TravelSheetPresentation.embedded,
-                      padding: RadioFavoritesDesign.sheetPadding,
+                      padding: TravelSheetDesign.padding,
                       children: [
                         _TravelSheetHeader(
                           onClose: _close,
                           foregroundColor: ink,
                           closeBackgroundColor: widget.foregroundColor == null
                               ? palette.paperRaised
-                              : ink.withValues(alpha: 0.08),
+                              : ink.withValues(
+                                  alpha:
+                                      TravelSheetDesign.closeBackgroundOpacity,
+                                ),
                           title: Row(
                             children: [
                               if (widget.leading case final leading?) ...[
@@ -174,17 +177,13 @@ class _TravelSheetState extends State<TravelSheet> {
                                       style: Theme.of(context)
                                           .textTheme
                                           .headlineSmall
-                                          ?.copyWith(
-                                            color: ink,
-                                            fontWeight: FontWeight.w600,
-                                            letterSpacing: RadioFavoritesDesign
-                                                .titleTracking,
-                                          ),
+                                          ?.merge(TravelSheetDesign.titleText)
+                                          .copyWith(color: ink),
                                     ),
                                     if (widget.subtitle
                                         case final subtitle?) ...[
                                       const SizedBox(
-                                        height: RadioFavoritesDesign.titleGap,
+                                        height: TravelSheetDesign.titleGap,
                                       ),
                                       Text(
                                         subtitle,
@@ -201,7 +200,7 @@ class _TravelSheetState extends State<TravelSheet> {
                             ],
                           ),
                         ),
-                        const SizedBox(height: RadioFavoritesDesign.contentGap),
+                        const SizedBox(height: TravelSheetDesign.contentGap),
                         ...widget.children,
                       ],
                     ),
@@ -244,11 +243,13 @@ class _TravelSheetHeader extends StatelessWidget {
                 dimension: kMinInteractiveDimension,
                 child: Center(
                   child: Container(
-                    width: RadioFavoritesDesign.handleSize.width,
-                    height: RadioFavoritesDesign.handleSize.height,
+                    width: TravelSheetDesign.handleSize.width,
+                    height: TravelSheetDesign.handleSize.height,
                     decoration: BoxDecoration(
-                      color: ink.withValues(alpha: 0.6),
-                      borderRadius: RadioFavoritesDesign.handleRadius,
+                      color: ink.withValues(
+                        alpha: TravelSheetDesign.handleOpacity,
+                      ),
+                      borderRadius: TravelSheetDesign.handleRadius,
                     ),
                   ),
                 ),
@@ -270,7 +271,7 @@ class _TravelSheetHeader extends StatelessWidget {
                 onPressed: onClose,
                 icon: const Icon(
                   Icons.close,
-                  size: RadioFavoritesDesign.closeIconSize,
+                  size: TravelSheetDesign.closeIconSize,
                 ),
               ),
             ),

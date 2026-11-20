@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../app/state/latest_save.dart';
+import '../../../app/state/serial_tasks.dart';
+import '../domain/song_save_result.dart';
 import '../../radio/domain/radio_station.dart';
 import '../../radio/domain/track_title.dart';
 import '../data/preferences_songs_repository.dart';
@@ -19,12 +21,14 @@ SongsRepository songsRepository(Ref ref) => PreferencesSongsRepository();
 @Riverpod(keepAlive: true)
 class SavedSongs extends _$SavedSongs {
   final _save = LatestSave();
+  final _tasks = SerialTasks();
 
   @override
   Future<List<SavedSong>> build() {
     final repository = ref.watch(songsRepositoryProvider);
     _save.start(ref);
-    return repository.load();
+    _tasks.start(ref);
+    return _tasks.settled.then((_) => repository.load());
   }
 
   bool contains(TrackTitle track, RadioStation station) {
@@ -32,42 +36,87 @@ class SavedSongs extends _$SavedSongs {
     return state.valueOrNull?.any((song) => song.key == key) ?? false;
   }
 
-  /// Saves [track] heard on [station]; false when it was already saved, or
-  /// the songs are not loaded.
-  Future<bool> save(TrackTitle track, RadioStation station) async {
-    final current = state.valueOrNull;
-    if (current == null || contains(track, station)) return false;
-    final song = SavedSong(
-      artist: track.artist,
-      title: track.title,
-      station: station,
-      savedAt: DateTime.now(),
-    );
-    final result = await _update([...current, song]);
-    if (result.hasError) return false;
-    ref.read(analyticsProvider).track(AppEvent.songSaved(station));
-    return true;
-  }
+  /// Compatibility convenience; presentation uses the typed result below.
+  Future<bool> save(TrackTitle track, RadioStation station) async =>
+      await saveResult(track, station) is SongSaved;
+
+  Future<SongSaveResult> saveResult(
+    TrackTitle track,
+    RadioStation station,
+  ) async =>
+      await _tasks.run<SongSaveResult>((currentTask) async {
+        final current = state.valueOrNull;
+        if (current == null) return const SongSaveResult.unavailable();
+        if (contains(track, station)) return const SongSaveResult.duplicate();
+        final song = _songFor(track, station);
+        final result = await _update([...current, song]);
+        if (!currentTask()) return const SongSaveResult.unavailable();
+        if (result.hasError) return const SongSaveResult.failed();
+        ref.read(analyticsProvider).track(AppEvent.songSaved(station));
+        return const SongSaveResult.saved();
+      }) ??
+      const SongSaveResult.unavailable();
+
+  /// Checks membership when this task reaches the queue, so rapid taps toggle
+  /// the latest persisted state and never overwrite unrelated songs.
+  Future<bool> toggle(TrackTitle track, RadioStation station) async =>
+      await _tasks.run<bool>((currentTask) async {
+        final current = state.valueOrNull;
+        if (current == null) return false;
+        final key = SavedSong.keyOf(track, station);
+        final saved = current.any((song) => song.key == key);
+        final next = saved
+            ? [
+                for (final song in current)
+                  if (song.key != key) song,
+              ]
+            : [...current, _songFor(track, station)];
+        final result = await _update(next);
+        if (!currentTask() || result.hasError) return false;
+        ref
+            .read(analyticsProvider)
+            .track(
+              saved
+                  ? AppEvent.songRemoved(station)
+                  : AppEvent.songSaved(station),
+            );
+        return true;
+      }) ??
+      false;
+
+  SavedSong _songFor(TrackTitle track, RadioStation station) => SavedSong(
+    artist: track.artist,
+    title: track.title,
+    station: station,
+    savedAt: DateTime.now(),
+  );
 
   Future<void> remove(SavedSong song) async {
-    final current = state.valueOrNull;
-    if (current == null) return;
-    final result = await _update([
-      for (final saved in current)
-        if (saved.key != song.key) saved,
-    ]);
-    if (result.hasError) return;
-    ref.read(analyticsProvider).track(AppEvent.songRemoved(song.station));
+    await _tasks.run<bool>((currentTask) async {
+      final current = state.valueOrNull;
+      if (current == null || !current.any((saved) => saved.key == song.key)) {
+        return false;
+      }
+      final result = await _update([
+        for (final saved in current)
+          if (saved.key != song.key) saved,
+      ]);
+      if (!currentTask() || result.hasError) return false;
+      ref.read(analyticsProvider).track(AppEvent.songRemoved(song.station));
+      return true;
+    });
   }
 
-  /// Puts [song] back at [index], as it was before a removal.
   Future<void> restore(SavedSong song, int index) async {
-    final current = state.valueOrNull;
-    if (current == null || current.any((saved) => saved.key == song.key)) {
-      return;
-    }
-    final next = [...current]..insert(index.clamp(0, current.length), song);
-    await _update(next);
+    await _tasks.run<bool>((currentTask) async {
+      final current = state.valueOrNull;
+      if (current == null || current.any((saved) => saved.key == song.key)) {
+        return false;
+      }
+      final next = [...current]..insert(index.clamp(0, current.length), song);
+      final result = await _update(next);
+      return currentTask() && !result.hasError;
+    });
   }
 
   Future<AsyncValue<List<SavedSong>>> _update(List<SavedSong> next) =>

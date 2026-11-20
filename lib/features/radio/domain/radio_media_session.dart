@@ -1,4 +1,5 @@
-import '../domain/radio_station.dart';
+import 'radio_station.dart';
+import 'radio_media_localization.dart';
 
 /// What the notification's keys ask of the radio.
 ///
@@ -8,6 +9,7 @@ enum RadioMediaCommand { next, previous, toggleFavorite, resume }
 
 /// The system media session: notification, lock screen and media buttons.
 abstract interface class RadioMediaSession {
+  void updateLocalization(RadioMediaLocalization localization);
   void showStation(RadioStation station);
 
   /// A placeholder that never reveals the destination. Whether the radio

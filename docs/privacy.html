@@ -46,12 +46,15 @@
 
 <p>Frequenza è una radio: giri la manopola e ascolti stazioni in diretta da tutto il mondo. L'app non ha account né pubblicità. Include un sistema di logging degli eventi d'uso, per capire come viene utilizzata e migliorare il funzionamento della radio. Puoi disattivare queste statistiche dalle Impostazioni. Gli eventi non contengono nome, email o identificativi pubblicitari.</p>
 
-<h2>Cosa resta sul telefono</h2>
+<h2>Dati salvati dall'app</h2>
 <p>Le stazioni preferite, le canzoni salvate, il tema scelto (chiaro o scuro) e gli ascolti per il diario di viaggio (stazione, paese, inizio e durata) sono conservati negli archivi locali dell'app. Questi archivi non vengono caricati sul server delle statistiche. Alcune azioni, come salvare un preferito o terminare un ascolto, generano gli eventi descritti sotto. Le impostazioni locali comprendono anche la lingua, la scelta sulle statistiche e la versione della guida iniziale già vista.</p>
+
+<h2>Backup e trasferimento su un altro telefono</h2>
+<p>Se abilitati nelle impostazioni di Android, i dati locali dell'app possono essere inclusi nel backup del sistema e ripristinati su un altro dispositivo. Le regole dell'app includono preferiti, canzoni salvate, impostazioni e diario di viaggio; escludono gli altri file. Il backup e il trasferimento sono gestiti da Android e dal servizio di backup configurato sul dispositivo, secondo le sue impostazioni e condizioni. Lo sviluppatore non riceve queste copie. Disponibilità e ripristino dipendono dal sistema e dalle dimensioni dei dati; l'app non offre una sincronizzazione o un backup proprio. Per dettagli: <a href="https://support.google.com/android/answer/2819582?hl=it">backup e ripristino su Android</a>.</p>
 
 <h2>Con chi si collega l'app</h2>
 <ul>
-  <li><strong>Radio Browser</strong> (<a href="https://www.radio-browser.info">radio-browser.info</a>), l'archivio libero da cui arrivano le stazioni. L'app chiede l'elenco delle stazioni indicando solo il proprio nome e la versione.</li>
+  <li><strong>Radio Browser</strong> (<a href="https://www.radio-browser.info">radio-browser.info</a>), l'archivio libero da cui arrivano le stazioni. L'app chiede l'elenco delle stazioni inviando un identificativo tecnico dell'app e i parametri necessari alla richiesta, come il codice del paese.</li>
   <li><strong>Le stazioni radio</strong>: l'audio e i loghi arrivano direttamente dai server di ciascuna stazione.</li>
   <li><strong>Il servizio di statistiche</strong>: gli eventi d'uso sono inviati tramite HTTPS al servizio gestito <a href="https://tgram-analytics.com/">tgram-analytics</a> (<code>api.tgram-analytics.com</code>), ospitato dal fornitore.</li>
 </ul>
@@ -64,12 +67,16 @@
   <li><strong>Codice temporaneo:</strong> ogni avvio, e ogni volta che riaccendi le statistiche, ha un codice casuale nuovo che vive solo in memoria. Serve a raggruppare gli eventi dello stesso avvio; non viene salvato un identificativo statistico persistente sul dispositivo.</li>
   <li><strong>Indirizzo IP:</strong> secondo l'informativa del fornitore, IP e User-Agent sono elaborati in memoria e non conservati in forma originale. Il servizio conserva un hash visitatore giornaliero, specifico del progetto, e ricava informazioni generiche su sistema operativo e tipo di dispositivo.</li>
   <li><strong>Dove e per quanto tempo:</strong> sull'infrastruttura di tgram-analytics nell'Unione europea. Il fornitore dichiara una conservazione predefinita degli eventi di 90 giorni, riducibile nelle impostazioni del progetto, con cancellazione automatica.</li>
-  <li><strong>Come spegnerle:</strong> Impostazioni → Privacy → «Statistiche anonime». La disattivazione impedisce la registrazione di nuovi eventi statistici; non cancella quelli già ricevuti dal server. L'ascolto delle radio e i collegamenti necessari alla riproduzione continuano a funzionare.</li>
+  <li><strong>Come spegnerle:</strong> Impostazioni → Privacy → «Statistiche d'uso». La disattivazione impedisce la registrazione di nuovi eventi statistici; non cancella quelli già ricevuti dal server. L'ascolto delle radio e i collegamenti necessari alla riproduzione continuano a funzionare.</li>
 </ul>
 
 <p>Lo sviluppatore consulta report e statistiche tramite il bot Telegram del servizio. Per il trattamento effettuato dal fornitore, consulta la sua <a href="https://tgram-analytics.com/privacy.html">informativa sulla privacy</a> e l'<a href="https://tgram-analytics.com/dpa.html">accordo sul trattamento dei dati</a>.</p>
 
 <p>Negli eventi non vengono inviati titoli delle canzoni, testi di ricerca, nome, email, posizione precisa o identificativi pubblicitari. Il logging descritto registra azioni predefinite dell'app; non registra schermate, audio o il contenuto dei tuoi archivi locali.</p>
+
+<h2>Segnalazioni e ricerche esterne facoltative</h2>
+<p>Il tasto «Segnala un problema o un&#x27;idea» apre un modulo Google Forms nel browser. Il collegamento contiene la versione dell'app e il modello del dispositivo con la versione di Android, per precompilare i campi della segnalazione: Google riceve questi valori già all'apertura del modulo, prima di un eventuale invio. Se invii il modulo, lo sviluppatore riceve la segnalazione e i campi inviati. Per il trattamento da parte di Google si applica la sua <a href="https://policies.google.com/privacy?hl=it">informativa sulla privacy</a>.</p>
+<p>Solo quando scegli una ricerca dal menu di una canzone salvata, il titolo e l'eventuale artista vengono passati al servizio scelto: Spotify, YouTube, Amazon Music o la ricerca web di Google, nell'app corrispondente o nel browser. Questi servizi ricevono la ricerca e i dati necessari alla connessione e applicano le proprie informative (<a href="https://www.spotify.com/it/legal/privacy-policy/">Spotify</a>, <a href="https://policies.google.com/privacy?hl=it">Google e YouTube</a>, <a href="https://www.amazon.it/gp/help/customer/display.html?nodeId=201909010">Amazon</a>). Il server delle statistiche riceve soltanto il nome del servizio scelto, non il testo della ricerca. Le ricerche e l'invio di feedback non sono necessari per ascoltare le radio.</p>
 
 <h2>Cosa l'app non usa</h2>
 <p>L'app non richiede accesso alla tua posizione, ai contatti, alla fotocamera, al microfono o ai tuoi file personali. La «rotta» sulla mappa è calcolata sul telefono dalle coordinate pubbliche delle stazioni. La notifica serve solo a mostrare i comandi della riproduzione.</p>
@@ -89,12 +96,15 @@
 
 <p>Frequenza is a radio: turn the dial and listen to live stations from all over the world. The app has no accounts and no ads. It includes usage event logging to understand how the app is used and improve the radio's operation. You can turn these statistics off in Settings. Events do not contain names, email addresses or advertising identifiers.</p>
 
-<h2>What stays on your phone</h2>
+<h2>Data saved by the app</h2>
 <p>Your favourite stations, saved songs, the chosen theme (light or dark) and your listening for the travel diary (station, country, start and duration) are kept in the app's local records. These records are not uploaded to the statistics server. Some actions, such as saving a favourite or ending a listen, generate the events described below. Local settings also include your language, statistics preference and the revision of the introductory guide you have already seen.</p>
+
+<h2>Backup and transfer to another phone</h2>
+<p>If enabled in Android settings, the app's local data may be included in system backups and restored on another device. The app's rules include favourites, saved songs, settings and the travel diary, excluding other files. Android and the backup service configured on the device handle backups and transfers under their settings and terms. The developer does not receive these copies. Availability and restoration depend on the system and the size of the data; the app does not provide its own sync or backup service. Details: <a href="https://support.google.com/android/answer/2819582?hl=en">Android backup and restore</a>.</p>
 
 <h2>What the app connects to</h2>
 <ul>
-  <li><strong>Radio Browser</strong> (<a href="https://www.radio-browser.info">radio-browser.info</a>), the free directory the stations come from. The app requests the station list, identifying itself only by its name and version.</li>
+  <li><strong>Radio Browser</strong> (<a href="https://www.radio-browser.info">radio-browser.info</a>), the free directory the stations come from. The app requests station lists using a technical app identifier and the parameters needed for the request, such as a country code.</li>
   <li><strong>The radio stations</strong>: audio and logos come directly from each station's servers.</li>
   <li><strong>The statistics service</strong>: usage events are sent over HTTPS to the managed <a href="https://tgram-analytics.com/">tgram-analytics</a> service (<code>api.tgram-analytics.com</code>), hosted by the provider.</li>
 </ul>
@@ -107,12 +117,16 @@
   <li><strong>Temporary code:</strong> every launch, and every time you turn statistics back on, gets a new random code that lives only in memory. It groups events from the same launch; no persistent statistics identifier is stored on the device.</li>
   <li><strong>IP address:</strong> according to the provider's policy, IP addresses and User-Agent strings are processed in memory and not stored in their original form. The service stores a project-specific daily visitor hash and derives general operating-system and device-type information.</li>
   <li><strong>Where and for how long:</strong> on tgram-analytics infrastructure in the European Union. The provider states that events have a default retention of 90 days, which can be shortened in project settings, with automatic deletion.</li>
-  <li><strong>How to turn them off:</strong> Settings → Privacy → "Anonymous statistics". Turning them off stops new statistical events from being recorded; it does not delete events already received by the server. Listening to radio stations and the connections needed for playback continue to work.</li>
+  <li><strong>How to turn them off:</strong> Settings → Privacy → "Usage statistics". Turning them off stops new statistical events from being recorded; it does not delete events already received by the server. Listening to radio stations and the connections needed for playback continue to work.</li>
 </ul>
 
 <p>The developer views reports and statistics through the service's Telegram bot. For processing performed by the provider, see its <a href="https://tgram-analytics.com/privacy.html">privacy policy</a> and <a href="https://tgram-analytics.com/dpa.html">Data Processing Agreement</a>.</p>
 
 <p>Events do not include song titles, search text, names, email addresses, precise location or advertising identifiers. This logging records predefined app actions; it does not record screens, audio or the contents of your local records.</p>
+
+<h2>Optional feedback and external searches</h2>
+<p>"Report a bug or share an idea" opens a Google Forms page in the browser. The link includes the app version and the device model with the Android version to prefill the report fields: Google receives these values when the form opens, before any submission. If you submit the form, the developer receives the report and its submitted fields. Google's processing is covered by its <a href="https://policies.google.com/privacy?hl=en">privacy policy</a>.</p>
+<p>Only when you select a search from a saved song's menu are the title and any artist passed to the chosen service: Spotify, YouTube, Amazon Music or Google web search, in its app or the browser. These services receive the query and the data needed for the connection and apply their own policies (<a href="https://www.spotify.com/legal/privacy-policy/">Spotify</a>, <a href="https://policies.google.com/privacy?hl=en">Google and YouTube</a>, <a href="https://www.amazon.com/gp/help/customer/display.html?nodeId=201909010">Amazon</a>). The statistics server receives only the name of the selected service, not the search text. Searches and feedback submission are not required to listen to the radio.</p>
 
 <h2>What the app does not use</h2>
 <p>The app does not request access to your location, contacts, camera, microphone or personal files. The "route" on the map is computed on the phone from the stations' public coordinates. The notification only shows playback controls.</p>

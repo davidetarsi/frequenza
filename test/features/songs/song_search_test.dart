@@ -1,7 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:frequenza/features/radio/data/native_channel.dart';
-import 'package:frequenza/features/songs/data/installed_apps.dart';
+import 'package:frequenza/app/platform/data/native_channel.dart';
+import 'package:frequenza/app/platform/data/method_channel_app_platform.dart';
 import 'package:frequenza/features/songs/domain/song_search.dart';
 
 void main() {
@@ -58,11 +58,16 @@ void main() {
       return ['com.spotify.music'];
     });
     addTearDown(() => messenger.setMockMethodCallHandler(nativeChannel, null));
-    expect(await installedPackages(everyApp), {'com.spotify.music'});
+    expect(await MethodChannelAppPlatform().installedPackages(everyApp), {
+      'com.spotify.music',
+    });
   });
 
   test('no channel means no apps', () async {
-    expect(await installedPackages(everyApp), <String>{});
+    expect(
+      await MethodChannelAppPlatform().installedPackages(everyApp),
+      <String>{},
+    );
   });
 
   test('a channel error means no apps', () async {
@@ -73,6 +78,9 @@ void main() {
       (call) async => throw PlatformException(code: 'boom'),
     );
     addTearDown(() => messenger.setMockMethodCallHandler(nativeChannel, null));
-    expect(await installedPackages(everyApp), <String>{});
+    expect(
+      await MethodChannelAppPlatform().installedPackages(everyApp),
+      <String>{},
+    );
   });
 }

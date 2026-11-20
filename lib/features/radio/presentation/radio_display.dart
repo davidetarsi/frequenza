@@ -1,72 +1,60 @@
+import 'package:freezed_annotation/freezed_annotation.dart';
+
 import '../../journey/domain/travel_leg.dart';
 import '../../../l10n/locale_keys.g.dart';
 import '../domain/radio_session.dart';
 import '../domain/radio_station.dart';
 import '../domain/track_title.dart';
 
+part 'radio_display.freezed.dart';
+
 /// The journey on the map: the flight hides the destination until landing.
 enum FlightPhase { grounded, flying, signalLost }
 
 /// A text on the radio: a translation key, or words that come with the
 /// station.
-sealed class DisplayText {
-  const DisplayText();
-}
-
-final class Translated extends DisplayText {
-  const Translated(this.key);
-  final String key;
-
-  @override
-  bool operator ==(Object other) => other is Translated && other.key == key;
-
-  @override
-  int get hashCode => key.hashCode;
-}
-
-final class Verbatim extends DisplayText {
-  const Verbatim(this.text);
-  final String text;
-
-  @override
-  bool operator ==(Object other) => other is Verbatim && other.text == text;
-
-  @override
-  int get hashCode => text.hashCode;
+@freezed
+sealed class DisplayText with _$DisplayText {
+  const factory DisplayText.translated(String key) = Translated;
+  const factory DisplayText.verbatim(String text) = Verbatim;
+  const factory DisplayText.country(String code, {String? fallback}) =
+      CountryText;
 }
 
 /// What the radio shows for a session, without widgets: one exhaustive
 /// switch, so a new state names every text it needs.
-class RadioDisplay {
-  const RadioDisplay._({
-    required this.title,
-    required this.country,
-    required this.statusKey,
-    required this.knobKey,
-    required this.phase,
-    this.station,
-    this.leg,
-    this.track,
-    this.busy = false,
-    this.flying = false,
-    this.playing = false,
-    this.knobEnabled = true,
-    this.playKeyEnabled = false,
-    this.playKeyOn = false,
-    this.playKeyDown = false,
-    this.saveEnabled = false,
-    this.nextStopPending = false,
-  });
+@freezed
+class RadioDisplay with _$RadioDisplay {
+  const RadioDisplay._();
+  const factory RadioDisplay({
+    required DisplayText title,
+    required DisplayText country,
+    required String statusKey,
+    required String knobKey,
+    required FlightPhase phase,
+    RadioStation? station,
+    TravelLeg? leg,
+    TrackTitle? track,
+    @Default(false) bool busy,
+    @Default(false) bool flying,
+    @Default(false) bool playing,
+    @Default(true) bool knobEnabled,
+    @Default(false) bool playKeyEnabled,
+    @Default(false) bool playKeyOn,
+    @Default(false) bool playKeyDown,
+    @Default(false) bool saveEnabled,
+    @Default(false) bool nextStopPending,
+  }) = _RadioDisplay;
 
   factory RadioDisplay.of(RadioSession session) => switch (session) {
-    Off() => const RadioDisplay._(
+    Off() => const RadioDisplay(
       title: Translated(LocaleKeys.whereTo),
       country: Translated(LocaleKeys.worldAwaits),
       statusKey: LocaleKeys.ready,
       knobKey: LocaleKeys.powerOn,
       phase: FlightPhase.grounded,
     ),
-    Flying(:final signalLost) => RadioDisplay._(
+    Flying(:final signalLost) => RadioDisplay(
       title: Translated(
         signalLost ? LocaleKeys.signalLost : LocaleKeys.flyingTo,
       ),
@@ -80,11 +68,11 @@ class RadioDisplay {
       nextStopPending: true,
     ),
     OnAir(:final journey, :final station, :final playback, :final trackTitle) =>
-      RadioDisplay._(
+      RadioDisplay(
         title: Verbatim(station.name),
-        country: station.country.isEmpty
+        country: station.country.isEmpty && station.countryCode.isEmpty
             ? const Translated(LocaleKeys.unknownCountry)
-            : Verbatim(station.country),
+            : CountryText(station.countryCode, fallback: station.country),
         statusKey: switch (playback) {
           OnAirPlayback.playing => LocaleKeys.playing,
           OnAirPlayback.paused => LocaleKeys.paused,
@@ -113,7 +101,7 @@ class RadioDisplay {
         playKeyDown: playback == OnAirPlayback.paused,
         saveEnabled: true,
       ),
-    Failed() => const RadioDisplay._(
+    Failed() => const RadioDisplay(
       title: Translated(LocaleKeys.signalLost),
       country: Translated(LocaleKeys.worldAwaits),
       statusKey: LocaleKeys.stationError,
@@ -122,27 +110,6 @@ class RadioDisplay {
     ),
   };
 
-  final DisplayText title, country;
-  final String statusKey, knobKey;
-  final FlightPhase phase;
-
-  /// The station on air, and the leg that brought it.
-  final RadioStation? station;
-  final TravelLeg? leg;
-
-  /// The song, cleaned, while the station plays or rests.
-  final TrackTitle? track;
-
   /// The song as the radio writes it.
   String? get song => track?.display;
-
-  /// A flight, or a station refilling its stream: no song, no local time.
-  final bool busy;
-
-  /// Flying with the signal: the destination is hidden.
-  final bool flying;
-  final bool playing;
-  final bool knobEnabled, playKeyEnabled, playKeyOn, playKeyDown;
-  final bool saveEnabled;
-  final bool nextStopPending;
 }

@@ -212,7 +212,7 @@ void main() {
       find.bySemanticsLabel('2 paesi; il più ascoltato: Brasile'),
       findsOneWidget,
     );
-    expect(analytics.events, [const AppEvent.diaryOpened()]);
+    expect(analytics.events, [AppEvent.diaryOpened()]);
   });
 
   testWidgets('a shorter period counts again, and is counted', (tester) async {
@@ -241,7 +241,7 @@ void main() {
     await openRadio(tester);
     for (var i = 0; i < 3; i++) {
       await openDiaryPage(tester);
-      await tester.tap(find.byTooltip('Torna alla radio'));
+      await tester.tap(find.bySemanticsLabel(RegExp('^Torna alla radio:')));
       await tester.pumpAndSettle();
       expect(onlyRadio(tester), isTrue);
       await openDiaryPage(tester);
@@ -343,18 +343,29 @@ void main() {
     expect(list.height, greaterThanOrEqualTo(64));
   });
 
-  testWidgets('a notice from the bar sits above the bar', (tester) async {
-    await openRadio(tester, title: 'Ana Moura - Desfado');
-    await openDiaryPage(tester);
-    await tester.tap(find.byTooltip('Salva canzone'));
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 500));
-    final notice = tester.getRect(find.byType(SnackBar));
-    final bar = tester.getRect(
-      find.bySemanticsLabel(RegExp('^Torna alla radio:')),
-    );
-    expect(notice.bottom, lessThanOrEqualTo(bar.top));
-  });
+  testWidgets(
+    'the bar and home share a bookmark toggle without a confirmation snackbar',
+    (tester) async {
+      final (_, _, songs) = await openRadio(
+        tester,
+        title: 'Ana Moura - Desfado',
+      );
+      await openDiaryPage(tester);
+      await tester.tap(find.byTooltip('Salva canzone'));
+      await tester.pumpAndSettle();
+      expect(songs.items.single.title, 'Desfado');
+      expect(find.byType(SnackBar), findsNothing);
+      await tester.tap(find.bySemanticsLabel(RegExp('^Torna alla radio:')));
+      await tester.pumpAndSettle();
+      expect(find.byIcon(Icons.bookmark_added), findsOneWidget);
+      await tester.tap(find.byIcon(Icons.bookmark_added));
+      await tester.pumpAndSettle();
+      expect(songs.items, isEmpty);
+      expect(find.byType(SnackBar), findsNothing);
+      await openDiaryPage(tester);
+      expect(find.byTooltip('Salva canzone'), findsOneWidget);
+    },
+  );
 
   testWidgets('the map stays free of the tap invitation', (tester) async {
     await openRadio(tester);
@@ -382,6 +393,32 @@ void main() {
     expect(find.text('2 paesi · 843 min'), findsOneWidget);
     expect(find.textContaining('Il diario si riempie'), findsNothing);
   });
+
+  testWidgets(
+    'a failed period change reports the error instead of stale totals',
+    (tester) async {
+      final log = HeldDiary();
+      await openRadio(tester, log: log);
+      await openDiaryPage(tester);
+      expect(find.text('2 paesi · 843 min'), findsOneWidget);
+      log.broken = true;
+      await tester.tap(find.text('7 giorni'));
+      await tester.pumpAndSettle();
+      expect(
+        find.text('Non è stato possibile leggere il diario.'),
+        findsOneWidget,
+      );
+      expect(find.text('2 paesi · 843 min'), findsNothing);
+      log.broken = false;
+      await tester.tap(find.text('Riprova'));
+      await tester.pumpAndSettle();
+      expect(find.text('1 paese · 543 min'), findsOneWidget);
+      expect(
+        find.text('Non è stato possibile leggere il diario.'),
+        findsNothing,
+      );
+    },
+  );
 
   testWidgets('a diary that cannot be read says so', (tester) async {
     await openRadio(tester, log: HeldDiary()..broken = true);

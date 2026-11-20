@@ -100,7 +100,7 @@ void main() {
       tester,
       onAir(OnAirPlayback.playing, title: 'Ana Moura - Desfado'),
     );
-    expect(find.text('KEXP · The United States Of America'), findsOneWidget);
+    expect(find.text("KEXP · Stati Uniti d'America"), findsOneWidget);
     expect(find.text('Ana Moura — Desfado'), findsOneWidget);
     expect(find.byTooltip('Salva la stazione'), findsOneWidget);
     expect(find.byTooltip('Salva canzone'), findsOneWidget);
@@ -173,6 +173,12 @@ void main() {
     await tester.tap(find.byTooltip('Salva canzone'));
     await tester.pumpAndSettle();
     expect(songs.items.single.title, 'Desfado');
-    expect(find.text('Canzone salvata'), findsOneWidget);
+    expect(find.byType(SnackBar), findsNothing);
+    await tester.tap(find.byTooltip('Togli'));
+    await tester.pumpAndSettle();
+    expect(songs.items, isEmpty);
+    expect(favorites.items.map((s) => s.id), ['kexp']);
+    expect(find.byTooltip('Salva canzone'), findsOneWidget);
+    expect(find.byType(SnackBar), findsNothing);
   });
 }

@@ -20,3 +20,46 @@ Obiettivo: contenere token, tempo e lavoro duplicato senza sacrificare correttez
 - Leggere docs/status.md per il punto di ripresa, poi solo il piano attivo.
 - Non aggiungere integrazioni esterne senza necessità concreta. Ognuna è una feature: il contratto nel domain, senza Flutter né Riverpod; il servizio esterno nel data.
 - Non commettere segreti, chiavi di firma o percorsi locali di SDK.
+
+## Regole vincolanti per il lavoro dell'assistente
+
+Queste regole guidano il lavoro locale dell'assistente. Non introdurre nuovi
+vincoli automatici in CI, branch protection o PR per farle rispettare: Davide ha
+esplicitamente escluso questo approccio il 19 novembre 2026.
+
+- Prima di modificare una feature, leggere i suoi contratti, stati, componenti e
+  token esistenti. Riutilizzarli prima di creare nuove astrazioni o widget.
+- Domain: Dart puro, senza Flutter, Riverpod, plugin o import da data/application/
+  presentation. Modelli e stati strutturati del prodotto con Freezed. I flussi
+  del prodotto hanno stati nominati, eventi e transizioni pure documentate.
+- Application: provider Riverpod annotati e controller che orchestrano gli
+  effetti. AsyncValue per letture/salvataggi asincroni. Le mutazioni concorrenti
+  devono preservare tutti i dati e gestire risultati obsoleti ed errori.
+- Data: implementazioni dei repository/gateway. Accessi a preferenze, database,
+  rete e plugin passano da contratti iniettati. I dettagli della piattaforma
+  non devono essere raggiunti direttamente dai widget.
+- Presentation: mostra lo stato e invia intenzioni. Controller di animazioni,
+  coordinate e dettagli effimeri dei gesti restano qui, senza decidere lo stato
+  del prodotto o introdurre logica di persistenza.
+- UI: palette, tipografia, pesi, dimensioni, spaziature, raggi, opacità e tempi
+  grafici appartengono a lib/ui/theme. Nei widget usare token/stili semantici.
+  Costanti matematiche, dati esterni e codici tecnici non sono token grafici.
+- Copy applicativo e testi di accessibilità nel dizionario IT/EN, con
+  segnaposto coerenti. Dati esterni e nomi propri non si traducono arbitrariamente.
+  La lingua scelta nell'app deve essere usata coerentemente dalle sue superfici.
+- Sicurezza prima: validare gli ingressi, minimizzare i dati, non esporre segreti,
+  mantenere firma e configurazioni prod corrette. Non cambiare scelte di prodotto
+  come backup, consenso o fornitori per una propria preferenza tecnica.
+- Prima di dichiarare concluso un intervento, confrontare il diff con queste
+  regole, eseguire controlli proporzionati e registrare risultati e limiti.
+  Non correggere le deviazioni esistenti con refactor indiscriminati fuori fase.
+
+### Deroghe
+
+Se una soluzione richiede una deroga, fermare solo la parte dipendente e chiedere
+approvazione a Davide spiegando la regola interessata, il caso concreto, le
+alternative e la conseguenza della deroga. Il silenzio non è approvazione.
+Non usare annotazioni, commenti, allowlist o debito preesistente come autorizzazione.
+Una deroga approvata va registrata in docs/deroghe.md con data, ambito preciso,
+motivazione, approvazione e condizioni di riesame. Non generalizzarla ad altri casi.
+Le regole valgono anche per il codice scritto di recente dall'assistente.

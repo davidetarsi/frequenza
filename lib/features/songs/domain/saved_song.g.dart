@@ -9,7 +9,7 @@ part of 'saved_song.dart';
 _$SavedSongImpl _$$SavedSongImplFromJson(Map<String, dynamic> json) =>
     _$SavedSongImpl(
       artist: _text(json['artist']),
-      title: json['title'] as String,
+      title: _title(json['title']),
       station: const StationRecordConverter().fromJson(
         json['station'] as Map<String, Object?>,
       ),

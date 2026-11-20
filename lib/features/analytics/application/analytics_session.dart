@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../app/links/app_version.dart';
 import '../../../app/theme/app_theme_mode.dart';
-import '../../radio/data/native_channel.dart';
+import '../../../app/platform/application/app_platform_provider.dart';
 import '../domain/app_event.dart';
 import 'analytics_consent.dart';
 import 'analytics_providers.dart';
@@ -21,7 +21,7 @@ Future<void> startAnalytics(
   final (version, theme, sdk) = await (
     _appVersion(container),
     _theme(container),
-    _androidSdk(),
+    _androidSdk(container),
   ).wait;
   container.read(analyticsSessionDetailsProvider.notifier).describe({
     'app_version': version,
@@ -55,13 +55,5 @@ Future<ThemeMode> _theme(ProviderContainer container) async {
   }
 }
 
-Future<int> _androidSdk() async {
-  try {
-    return await nativeChannel
-            .invokeMethod<int>('sdkInt')
-            .timeout(const Duration(seconds: 1)) ??
-        0;
-  } catch (_) {
-    return 0;
-  }
-}
+Future<int> _androidSdk(ProviderContainer container) =>
+    container.read(appPlatformProvider).androidSdk();

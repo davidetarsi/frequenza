@@ -206,6 +206,16 @@ class StoreListingWorkflowTest(unittest.TestCase):
         self.assertIn('--package_name it.davidetarsi.frequenza', runs(workflow))
         self.assertIs(workflow['on']['workflow_dispatch']['inputs']['pubblica']['default'], False)
 
+    def test_metadata_uses_existing_closed_track_without_updating_releases(self):
+        workflow = load('store_listing.yml')
+        upload = next(s for s in steps(workflow) if 'VALIDATE_ONLY' in s.get('env', {}))
+        release = step_using(load('release_prod.yml'), 'r0adkll/upload-google-play')
+        self.assertEqual(upload['env']['PLAY_TRACK'], release['with']['tracks'])
+        self.assertIn('--track "$PLAY_TRACK"', upload['run'])
+        for option in ('--skip_upload_apk true', '--skip_upload_aab true',
+                       '--skip_upload_changelogs true', '--validate_only "$VALIDATE_ONLY"'):
+            self.assertIn(option, upload['run'])
+
 
 if __name__ == '__main__':
     unittest.main()

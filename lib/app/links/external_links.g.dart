@@ -6,7 +6,7 @@ part of 'external_links.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$openExternalHash() => r'501533538aa21494e5f5c6c1cae10c42fd7067b8';
+String _$openExternalHash() => r'a7dd3758f3c7905b76d9eeea4e240025cfe6c76d';
 
 /// See also [openExternal].
 @ProviderFor(openExternal)

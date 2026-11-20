@@ -7,12 +7,17 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:frequenza/app/app.dart';
 import 'package:frequenza/features/favorites/application/favorites_providers.dart';
 import 'package:frequenza/features/radio/application/radio_providers.dart';
+import 'package:frequenza/features/songs/application/saved_songs.dart';
+import 'package:frequenza/features/songs/domain/songs_repository.dart';
 import '../favorites/favorites_test.dart';
 import 'radio_controller_test.dart';
 
 /// Opens the radio on air at phone size and records what reaches the
 /// clipboard.
-Future<(FakeAudioService, List<String>)> onAir(WidgetTester tester) async {
+Future<(FakeAudioService, List<String>)> onAir(
+  WidgetTester tester, {
+  SongsRepository? songsRepository,
+}) async {
   tester.platformDispatcher.accessibilityFeaturesTestValue =
       const FakeAccessibilityFeatures(disableAnimations: true);
   addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
@@ -41,6 +46,8 @@ Future<(FakeAudioService, List<String>)> onAir(WidgetTester tester) async {
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
+        if (songsRepository != null)
+          songsRepositoryProvider.overrideWithValue(songsRepository),
         radioRepositoryProvider.overrideWithValue(
           FakeRadioRepository()..stationToReturn = station,
         ),

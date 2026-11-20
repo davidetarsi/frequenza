@@ -1,26 +1,134 @@
-# Frequenza — stato verificato al 18 novembre 2026
+# Frequenza — stato verificato al 20 novembre 2026
 
 Il punto di ripresa di ogni sessione: si legge questo, poi solo il piano attivo. Le regole per le idee nuove sono in [principi.md](principi.md).
 
 ## Dove siamo
 
-- **In produzione:** la versione 0.3.0+4 (`main`). Sul Play Store resta il test chiuso: mancano i passi 4–6 di [azioni-manuali.md](azioni-manuali.md).
-- **In `develop`, non ancora rilasciati:**
-  - canzoni salvate (segnalibro sul titolo, scheda «Canzoni» nei preferiti, ricerca su Spotify / YouTube / Amazon Music / web);
-  - titolo della canzone pulito.
-- **Prove sul telefono aperte:** canzoni salvate (link di ricerca, segnalibro, trascinamento, «Annulla»).
-- **Verifica:** `bash tool/check.sh`, verde il 17/11, 264 test.
+- `main`: versione 0.4.1+6, dopo il merge della PR #46. Questo indica lo stato del repository; la pubblicazione sul Play Store resta gestita da Davide.
+- `develop`: include il segnalibro come toggle (PR #51, `2ee0339`) e il bump patch automatico a 0.4.2+7.
+- Rilascio autorizzato: PR #52 da develop a main, etichetta version:patch, versione 0.4.2+7. Davide ha richiesto anche il merge. Il controllo versione è passato; in attesa dei controlli sul commit finale.
+- Audit del 19 novembre: completati i blocchi su persistenza/stati, sicurezza/privacy, confini architetturali e localizzazione. Completato anche il blocco UI condivisa/token; resta il punto di manutenzione P3 nativo descritto sotto. Il rapporto è nell'area di lavoro `../audit/2026-11-19/rapporto.md` (non versionata nel repository).
 
 ## Piano attivo
 
-- **Diario di viaggio, parte 2: la pagina e la barra** (branch `feat/diario-pagina`, sopra `feat/diario-registro`). Design `superpowers/specs/2026-11-17-diario-pagina-design.md`, piano `superpowers/plans/2026-11-17-diario-pagina.md`, mock-up https://claude.ai/artifact/HUKaij9foXqCQnQyxvqbUQ.
-  - L'atlante sa di quale paese è ogni puntino e i nomi IT/EN; riassunto del periodo puro (`DiarySummary`, `CountryCard`, soglia max(5 min, 1%)); barra `RadioBar` (stato da `radioBarOf`); pagina con mappa che si ingrandisce, classifica e scheda del paese nei tre casi; tre eventi anonimi nuovi.
-- **Prove sul telefono:**
-  - apertura dalla mappa ripiegata nella barra superiore e chiusura con Indietro o con la barra: il pannello cresce e rientra nello schermo, la barra sale e scende; mai due diari impilati;
-  - pizzico, trascinamento e tasti + e − sulla mappa; tocco su un paese acceso, di passaggio e mai ascoltato;
-  - «Volaci» e «Vola in …» restano nel diario e la barra mostra il volo;
-  - cuore, segnalibro e pausa dalla barra; testo grande e tema scuro.
-- **Prima:** diario parte 1 (`feat/diario-registro`), statistiche (`feat/analisi`).
+Rilascio patch 0.4.2+7 — [PR #52](https://github.com/davidetarsi/frequenza/pull/52). La validazione della scheda Play ha rilevato un crash di Fastlane 2.225.0: cerca una release nel canale production vuoto anche con solo metadata e skip_upload_changelogs. Corretto il canale della scheda per usare PLAY_TRACK con fallback alpha, come il caricamento AAB esistente; nessuna promozione o modifica delle release. 58 test Python (inclusa la regressione del canale) e 6 test Node superati; CI applicativa della PR passata prima della correzione. Nessun nuovo vincolo CI. Pubblicazione della scheda resta una prova a vuoto nelle PR.
+
+## Segnalibro completato e unito in develop — PR #51
+
+Segnalibro delle canzoni come toggle: implementazione e verifiche locali completate; PR e merge verso develop autorizzati da Davide.
+
+- Davide richiede di rendere il pulsante già salvato cliccabile per rimuovere il brano, usando lo stato dell'icona al posto della snackbar di conferma. Autorizzati anche PR e merge in develop dopo i controlli.
+- Toggle serializzato in SavedSongs, con lettura dello stato quando il task raggiunge la coda, persistenza AsyncValue e gestione dei risultati obsoleti. Gli eventi analytics esistenti vengono emessi solo dopo il successo; dati/chiavi e normalizzazione delle identità conservati.
+- Un solo componente SongBookmark con presentazioni per radio e mini player, stessi token, icona piena/vuota, stato semantico toggled e label IT/EN esistenti per salvare/togliere. Durante la scrittura il pulsante è disabilitato, poi torna utilizzabile anche se pieno. Nessuna snackbar di conferma del salvataggio/rimozione dal pulsante; errori con messaggio esistente e possibilità di riprovare.
+- Il tocco sul titolo resta additivo e idempotente. Rimozione dalla lista e Annulla conservati: quando la riga sparisce, l'undo mantiene il proprio ruolo.
+- 74 test mirati superati: tocchi in coda senza perdita di altri brani, errori/riprova, ICY che cambia durante la scrittura, sincronizzazione tra mini player/diario e home, assenza di conferme. Script completo tool/check.sh superato: generazione dizionari/provider/schema coerente, formattazione, analisi statica senza problemi, 6 test Node, 57 test Python e 535 test Flutter. Nessuna modifica nativa, alla versione o ai vincoli CI/PR. PR #51 unita in develop con CI GitHub verde; collaudo del gesto su telefono non eseguito in questa sessione.
+
+## Scadenza snackbar completata — 20 novembre 2026
+
+Scadenza snackbar completata — segnalazione del 20 novembre.
+
+- Davide segnala che l'avviso resta aperto dopo i 4 secondi. Nel componente comune era rimasta l'eccezione `persist: true` quando MediaQuery.accessibleNavigation era attivo; il flag del telefono non è stato rilevato direttamente, ma il comportamento è stato riprodotto nei test per salvataggio e rimozione.
+- Rimossa l'eccezione: `persist: false` esplicito in appSnackBar, durata sempre dal token condiviso di 4 secondi. Il componente non legge più MediaQuery e non richiede BuildContext; i due consumatori sono aggiornati. Nessuna modifica alle azioni Annulla o ai dati salvati.
+- Due regressioni falliscono prima della correzione e passano dopo. Verificato Annulla prima della scadenza con flag sia attivo sia disattivo. **42 test della feature canzoni superati**, analisi statica pulita, formattazione/diff verificati. Nessuna build nativa aggiuntiva per questa modifica Dart/UI; collaudo sul telefono da ripetere.
+
+## Radio adattiva completata — 19 novembre 2026
+
+Radio adattiva completata, autorizzata da Davide.
+
+- Sostituire il passaggio rigido a 740/900 punti con adattamento progressivo basato sulle dimensioni reali del contenuto, mantenendo la mappa fino all'ingombro minimo leggibile. `AdaptiveFit` misura un solo sottoalbero e sceglie la densità più grande che entra, senza trasformare testo o aree di tocco.
+- RadioCabinet usa metriche interpolate nei token tra configurazione regolare e minima con mappa; larghezza e intestazione si riducono insieme. Mappa da 84 a 56 punti, pulsanti sempre almeno 44 punti e text scaler di sistema conservato. Niente misure/font locali.
+- Solo se la radio minima con mappa non entra, usare la variante compatta esistente. Solo per viewport estremi in cui non entra neanche quella, consentire scorrimento della pagina conservando la posizione.
+- Adattamento applicato anche alla variante orizzontale: la mappa viene mantenuta quando il contenuto entra. Margine dedicato tra ombra della scocca e testo in fondo alla pagina. Identità della mappa conservata durante le riduzioni progressive; posizione di scorrimento conservata nei casi estremi.
+- Verifiche completate con Flutter 3.38.5: **530 test Flutter superati**, analisi statica pulita, formattazione/diff coerenti e APK dev debug arm64 compilato. Cinque regressioni responsive coprono riduzione continua con mappa a 740/720 punti, fallback e ripristino della mappa, orizzontale, scala del testo e controlli ancora utilizzabili dopo uno scorrimento/aggiornamento.
+- Controllo visivo tramite renderer Flutter con font Roboto/MaterialIcons su viewport 390×900, 390×740 e 390×560, con barre di sistema simulate. Nessun telefono collegato; collaudo reale ancora da fare. Correzioni snackbar/notifica precedenti conservate nello stesso branch; nessun cambiamento a versione o regole CI/PR.
+
+## Snackbar e sintonizzazione dalla notifica — 19 novembre 2026
+
+Snackbar temporanee e sintonizzazione dalla notifica: correzioni completate.
+
+- Snackbar con Annulla: la versione Flutter in uso rende persistenti per default gli avvisi con un'azione. Componente `appSnackBar` condiviso per salvataggio e rimozione della canzone, durata nel token AppMessageDesign a 4 secondi e persistenza solo con navigazione accessibile attiva, per mantenere utilizzabile Annulla.
+- Il cambio radio dalla notifica usa già lo stesso RadioController della manopola: avvio della connessione in parallelo, volume a zero fino al minimo di 1 secondo e dissolvenza all'arrivo. Nessuna modifica ai tempi o al controller.
+- Causa del fruscio assente: MainActivity vietava start fuori dal primo piano e fermava l'effetto in onStop. Il canale piattaforma e il MediaPlayer ora appartengono a FrequenzaPlatformPlugin, registrato una volta sul motore condiviso di audio_service, con applicationContext e rilascio al distacco del motore. Nessun riferimento all'Activity nel player o nel canale, nessun nuovo servizio o permesso Android.
+- 29 test mirati superati: scadenza del salvataggio/rimozione senza gesto, Annulla/accessibilità, notifica Avanti/Indietro con lifecycle paused e audio effettivamente muto a 999 ms, udibile dopo 1000 ms. APK dev debug arm64 compilato, analisi pulita e suite completa con **525 test Flutter superati**. Formattazione e diff verificati.
+- Nessun dispositivo collegato: fruscio con schermo spento e Activity ricreata da collaudare su telefono. Non sono stati cambiati firma, versione, dati o regole CI/PR.
+
+## Correzione mondo → paese completata — 19 novembre 2026
+
+Correzione animazione mondo → paese completata, segnalata da Davide.
+
+- Riprodotto con regressioni: la scala si riduceva geometricamente ma il centro avanzava linearmente, lasciando il paese fuori dall'inquadratura durante l'avvicinamento. Il confine iniziava a disegnarsi prima della fine dello zoom; un arrivo rapido nello stesso paese ereditava inoltre il contorno precedente.
+- CountryShape: centraggio accoppiato alla variazione della scala su entrambi gli assi, estremi esatti e scorrimento lineare quando la scala resta uguale. Il paese rimane in vista durante l'avvicinamento. RouteMap conserva la vista corrente nelle interruzioni e azzera il tratto disegnato a ogni nuova sintonizzazione, anche nello stesso paese.
+- Token centrali: durata totale di arrivo invariata a 1800 ms; prima metà per centraggio/zoom, seconda per il disegno lineare del confine a vista ferma. Colori, tratto e opacità originali conservati. Riconnessione e movimento ridotto continuano a evitare il riavvio dell'animazione o a mostrare subito l'esito, rispettivamente.
+- Quattro nuove regressioni: permanenza nell'inquadratura per paesi lontani/piccoli, scorrimento senza zoom, disegno successivo al centraggio e arrivo rapido nello stesso paese. Suite completa Flutter: **521 test superati**. Dopo il controllo dei frame renderizzati e il ripristino dell'opacità originale del tratto, ripetuti tutti i **38 test della mappa/geografia**, superati, e analisi statica pulita. Formattazione/diff verificati. Nessuna nuova regola CI/PR, variazione della versione o build nativa in questa fase.
+- Da verificare su telefono la fluidità percepita e la leggibilità del tracciamento; controllo visivo dei frame eseguito tramite renderer Flutter, senza dispositivo fisico. Resta il punto P3 di manutenzione nativa già documentato sotto.
+
+## Sesta fase dell'audit completata — 19 novembre 2026
+
+Sesta fase dell'audit: componenti condivisi e token UI completati.
+
+- Valori grafici del diario, selettore dei periodi, scheda paese, bookmark, player e intestazione nei token di `lib/ui/theme`. Anche i coefficienti di disegno e le curve mondo/paese sono ora nei token, con gli stessi valori. Sorgenti delle schermate verificati senza font numerici, pesi, colori esadecimali, opacità fisse o spaziature numeriche locali; restano calcoli geometrici e valori dinamici del tema. Seed di AppConfig dalla palette condivisa.
+- `TravelSheetDesign` dedicato al foglio comune: geometria, ombre, maniglia, tipografia e chiusura condivise da tutte le istanze. `RadioFavoritesDesign` contiene gli stili specifici dei preferiti.
+- `AppMessage.error` e `AppMessage.emptyPanel` riusati in preferiti e canzoni; errori con la stessa composizione e azione Riprova allineata all'inizio. `AppButton.emphasized` sostituisce la CTA locale della scheda paese, con gli stessi colori e altezza. `CodeBadge` riutilizzato anche per le targhette dei preferiti, conservando misure, bordi, colori e il globo per il codice assente.
+- Colori, misure e tipografia approvati conservati; tempi e curve delle animazioni trasferiti senza modificarli. Nessuna correzione dei problemi dell'animazione mondo/paese in questa fase. Nessun nuovo controllo CI/PR.
+- `tool/check.sh` completo con Flutter 3.38.5: generazione/schema coerenti, formattazione e analisi pulite, 6 test Node, 57 test Python e **517 test Flutter superati**. Inclusi due nuovi test di integrazione: errore di lettura → Riprova → stato vuoto e chiusura del foglio per preferiti e canzoni con testo al doppio della dimensione. Collaudo visivo su telefono ancora da fare; APK non ricompilato in questa fase, che modifica solo Dart/UI.
+- Prossimo lavoro: le anomalie nelle animazioni segnalate da Davide, da precisare prima di modificarne il comportamento. Resta il punto P3 di manutenzione nativa già documentato sotto.
+
+## Quinta fase dell'audit completata — 19 novembre 2026
+
+Localizzazione completata, autorizzata da Davide.
+
+- Lingua salvata tramite il repository delle preferenze e AsyncValue, mantenendo la chiave `locale` esistente. Priorità alla scelta salvata, poi alla lingua del dispositivo, con inglese per le lingue non supportate. Scritture serializzate e messaggio IT/EN in caso di errore; la lingua mostrata cambia solo dopo il salvataggio riuscito.
+- Una sorgente della lingua effettivamente visualizzata aggiorna il gestore della notifica, i controlli e i metadati analytics, senza riavviare la radio. Il codice della sessione analytics resta invariato quando cambia la lingua; consenso e dati raccolti invariati.
+- Canale Android rinominato tramite API pubblica, conservando ID e impostazioni dell'utente. La libreria di traduzione rende i testi; la persistenza resta nel repository. Il primo frame attende la lingua corretta anche con la cache della libreria valorizzata da una versione precedente.
+- Lookup geografico IT/EN condiviso fra diario, home, player, preferiti, canzoni e notifica. Nomi propri di stazioni e brani conservati; i dati del catalogo non vengono riscritti. Composizioni e accessibilità nel dizionario con parametri; numeri formattati per lingua. Informativa aperta alla sezione IT/EN scelta nell'app.
+- Verificati 78 test mirati, inclusi migrazione delle preferenze, cambi rapidi, errore/riprova, cambio lingua durante l'ascolto senza nuova sintonizzazione e continuità della sessione analytics. Poi `tool/check.sh` completo con Flutter 3.38.5: generazione/schema coerenti, formattazione e analisi pulite, 6 test Node, 57 test Python e **515 test Flutter superati**. Controllate tutte le 157 chiavi IT/EN e la corrispondenza dei parametri. APK dev debug arm64 compilato. Da collaudare su telefono il cambio lingua della notifica e del nome del canale Android, incluse le impostazioni personalizzate dell'utente.
+- Prossimo blocco: UI condivisa e token. Nessuna modifica alle animazioni o nuove regole automatiche in CI/PR.
+
+## Quarta fase dell'audit completata — 19 novembre 2026
+
+Separazione dei livelli completata; localizzazione e UI condivisa restano blocchi separati, come consentito da Davide.
+
+- Atlante e contorni statici in `journey/domain/atlas`, senza I/O né dipendenze da implementazioni. Generatore aggiornato ai nuovi percorsi; dati geografici verificati identici a HEAD (solo l'import di DstRule cambia). Nessun cambiamento all'animazione mondo/paese.
+- `RadioMediaSession` nel dominio; application usa il contratto. Bootstrap collega un solo player al motore e alla notifica e ne registra lo smaltimento, senza esporre il concreto RadioAudioHandler tramite provider pubblici di application.
+- `AppPlatform` Dart puro, implementazione nel data e provider Riverpod: versioni, SDK, app installate, cache della notifica, clipboard/haptic e apertura esterna. Widget senza accessi diretti al canale; metadati opzionali con timeout e valori neutri. Provider delle app musicali spostato da data ad application.
+- `TrackTitle`, `AppEvent`, gli eventi `RadioEvent`, `DisplayText` e `RadioDisplay` con Freezed, conservando i dati e i comportamenti. Eliminata `WelcomeDemo`, senza riferimenti attivi.
+- Rete: validazione HTTPS condivisa tra catalogo, preferiti e snapshot del diario; limiti a URL/metadati e titoli ICY. Risposte JSON limitate a 1 MiB anche senza Content-Length; timeout con cancellazione e annullamento delle richieste alla chiusura. Client creato dal repository chiuso dal provider; un client iniettato resta di proprietà del chiamante. Redirect del catalogo disattivati: si usa il mirror successivo senza scendere a HTTP. User-Agent con versione installata, senza il vecchio valore fisso 0.1.0; vincolo http aggiornato a ^1.6.0 per l'API AbortableRequest già presente nel lockfile, senza cambio di versione risolta.
+- Apertura link con messaggio di errore comune a impostazioni e canzoni, inclusi false/exception. Regole UI e testi esistenti riutilizzati.
+- Verificati 340 test mirati, generazione/schema e formattazione, 6 test Node e 57 test Python. Dopo la correzione del record URL canonico: analisi statica pulita e suite Flutter completa ripetuta, **504 test superati**; APK dev debug arm64 ricompilato con Flutter 3.38.5. Controllo manuale degli import: zero dipendenze improprie nel dominio e zero accessi diretti ai plugin nei widget. Nessun dispositivo collegato per il collaudo reale.
+- Punto P3 ancora aperto: RadioForeground usa il metodo privato `exitForegroundState` di audio_service 0.18.19 (versione del lockfile), protetto dalla regola ProGuard già caricata dal plugin Flutter. Non esiste un equivalente pubblico che lasci invariati foreground durante la pausa e rilascio del wake lock. Chiesta a Davide una scelta tra mantenere il workaround o modificare il plugin; nessuna risposta/deroga registrata. Chiarito che AGENTS impone l'isolamento, non vieta esplicitamente la reflection: non è una deroga automatica né un'autorizzazione a creare un fork. Implementazione nativa conservata.
+- Prossimo blocco: localizzazione (lingua salvata/notifiche/analytics, paesi e testi parametrizzati), poi UI condivisa. Nessuna nuova regola automatica in CI/PR.
+
+## Terza fase dell'audit completata — 19 novembre 2026
+
+Terza fase dell'audit: firma release, backup e informative, autorizzata da Davide il 19 novembre.
+
+- Firma: ogni flavor definisce la propria configurazione. `prodRelease` usa sempre quella esplicita di release; la build verifica file e campi necessari prima di produrre gli artefatti. Dev conserva il ripiego debug se manca `key.properties`; debug non richiede chiavi prod. Workflow e requisiti PR invariati.
+- Backup Android mantenuto attivo, con elenco esplicito dei soli archivi utente per Android fino a 11, cloud e trasferimento dispositivo da Android 12. Preferenze in `FlutterSharedPreferences.xml`; diario Drift in `root/app_flutter/frequenza.sqlite`, con WAL/journal per il recupero SQLite, senza file temporanei SHM. Percorso verificato nelle dipendenze installate drift_flutter/path_provider e nel motore Flutter 3.38.5.
+- Informativa IT/EN in `docs/privacy.html`: backup del sistema, metadati precompilati nella URL Google Forms già all'apertura e testo delle ricerche passato ai servizi esterni solo su azione dell'utente. Descrizione Radio Browser corretta per includere i parametri della richiesta; terminologia aggiornata anche nei testi locali della scheda Play Store.
+- Dizionario IT/EN: «Statistiche d'uso», con indicazione di eventi e dati tecnici; rimossa la promessa assoluta «Nessun dato su di te». Fornitore tgram-analytics gestito e comportamento del consenso conservati.
+- Fase completata: 44 test mirati, poi `tool/check.sh` con Flutter 3.38.5: generazione/schema coerenti, formattazione e analisi pulite, 6 test Node, **57 test Python e 486 test Flutter** superati. APK dev debug arm64 compilato; manifest, risorse backup e firma debug verificati anche nell’APK. Gradle verificato con configurazione prod assente/incompleta, keystore mancante e una chiave temporanea valida; verificati grafo APK/AAB e configurazioni dev/debug. Chiave temporanea rimossa, nessun artefatto prod generato.
+- Nessun dispositivo Android collegato: ripristino reale del backup da collaudare su telefono. Informativa modificata nel repository locale, senza pubblicazione o merge.
+- Prossimo blocco: confini architetturali. Restano aperti anche validazione URL, limiti delle risposte/metadati, ciclo di vita HTTP e le altre voci dell'audit. Nessun nuovo vincolo CI/PR.
+
+## Seconda fase dell'audit completata — 19 novembre 2026
+
+Seconda fase dell'audit: onboarding e preferenze, autorizzata da Davide il 19 novembre.
+
+- Dominio: `WelcomeSession` e `WelcomeEvent` Freezed, con stati radio/preferiti/diario/chiusura/completato e funzione pura `nextWelcome`; tabella delle transizioni accanto al codice.
+- Application: `WelcomeController` Riverpod esegue gli effetti (avvio radio e registrazione del completamento), ignora tap/Indietro ripetuti durante la chiusura e scarta completamenti dopo la propria distruzione. La UI mantiene misure, animazioni e navigazione.
+- Preferenze: contratto Dart puro `AppPreferencesRepository`, implementazione SharedPreferences e provider iniettato comuni a tema, consenso analytics e tour. Chiavi esistenti e revisione del tour **2** conservate. Nessun accesso diretto a SharedPreferences nei tre controller.
+- Persistenza attraverso AsyncValue: errori di scrittura visibili allo stato; consenso disattivato anche se il salvataggio fallisce, radio raggiungibile anche se il completamento del tour non può essere scritto. Nessuna modifica alle scelte di prodotto su consenso o ripresentazione del tour.
+- Stili già approvati del tour spostati in `WelcomeTourDesign`: tipografia, geometria, padding, colori e tratti delle frecce centralizzati, senza restyle.
+- Fase completata: 78 test mirati superati, poi `tool/check.sh` completo con Flutter 3.38.5: generazione/schema coerenti, formattazione e analisi pulite, 6 test Node, 56 test Python e **486 test Flutter** superati. Build APK e collaudo su telefono non eseguiti in questa fase.
+- Prossimo blocco concordato: sicurezza e privacy (firma release, backup, informative e copy analytics). Restano poi confini architetturali, localizzazione e UI condivisa. Nessun nuovo vincolo CI/PR.
+
+## Prima fase dell'audit completata — 19 novembre 2026
+
+- Regole in `AGENTS.md`, applicate al lavoro dell'assistente. Deroghe solo con approvazione esplicita di Davide, registrate in `docs/deroghe.md`. Nessun nuovo vincolo in CI, PR o branch protection, per sua richiesta.
+- Salvataggi canzoni serializzati: ogni operazione legge il risultato della precedente; duplicati, rimozioni e ripristini usano la stessa coda. Un ricaricamento aspetta la scrittura già in corso senza applicare risultati obsoleti.
+- Esito del salvataggio tipizzato con Freezed. La home comunica il fallimento con una stringa IT/EN, anziché trattarlo come un duplicato.
+- Diario: un cambio di periodo fallito mostra l'errore e «Riprova», senza mostrare i totali del periodo precedente. Durante il caricamento si conserva la continuità visiva già prevista.
+- Verifiche completate con Flutter 3.38.5 e lo script esistente `tool/check.sh`: generazione e schema coerenti, formattazione e analisi pulite, 6 test Node, 56 test Python e 469 test Flutter superati. Non sono stati aggiunti controlli automatici. Build APK e collaudo su telefono non eseguiti in questa fase.
 
 ## Rifiniture radio e diario — 18 novembre 2026
 
@@ -185,7 +293,7 @@ Passo 2 del design `superpowers/specs/2026-11-12-rotta-sul-mondo-design.md`; pia
 
 - Manopola e Preferiti seguono lo stesso volo. Il volo dura almeno 1 s, con il fruscio e la stazione a volume zero. L'atterraggio avviene solo con la riproduzione avviata e solo allora la notifica mostra la stazione. Dopo 12 s senza riproduzione compare «Segnale perso»: la manopola fa fino a 2 nuovi tentativi, il preferito nessuno. Una pausa di sistema durante il volo (cuffie, chiamata) annulla il volo.
 - Display: mappa a puntini (Natural Earth) al posto delle barre nel layout normale, con scia radar, arco, storico di 5 rotte e «Viaggio n. X». Mostra anche distanza del tratto e ora locale con icona. Nel layout compatto l'ora prende il posto delle barre.
-- L'atlante (`lib/features/journey/data/world_atlas.g.dart`) si rigenera con `bash tool/world_atlas/generate.sh`, che usa la tzdata del sistema. L'Egitto e Lord Howe usano l'ora solare. Il Cile può sbagliare l'ora legale di una settimana in alcuni anni.
+- L'atlante (`lib/features/journey/domain/atlas/world_atlas.g.dart`) si rigenera con `bash tool/world_atlas/generate.sh`, che usa la tzdata del sistema. L'Egitto e Lord Howe usano l'ora solare. Il Cile può sbagliare l'ora legale di una settimana in alcuni anni.
 - Flutter 3.38.5 del progetto è installato sulla VPS in `/srv/claude/workspaces/.tools/flutter-3.38.5`. Verificati `tool/check.sh` (lock invariato), analisi pulita e suite 69/69, più una revisione indipendente del branch con quattro correzioni. APK non compilato sulla VPS.
 - Limiti noti: su iOS il volo è muto. Pausa dalla notifica durante il volo: la stazione resta muta, il volo scade in «Segnale perso» e la manopola può riprovare.
 - Prossimo passo: push dei due branch e PR, collaudo su telefono (checklist del passo 1, volo da manopola e Preferiti, niente audio prima dell'atterraggio, notifica «In volo…», modalità aereo, riduzione del movimento), poi aggiornamento di Flutter.
@@ -353,3 +461,11 @@ Branch `feat/informazioni-e-vite`, sopra `feat/suono-sintonia`.
 - Logging esplicito nell'introduzione e nella sezione dedicata; finalità, attivazione predefinita, eventi e dati esclusi. Distinti archivi locali ed eventi inviati, codice temporaneo e identificativi persistenti, disattivazione delle statistiche e connessioni per la radio. Rimossi assoluti non adatti al trattamento descritto, come «nessun dato personale» e «l'app non manda più nulla».
 - Data aggiornata al 19 novembre 2026. HTML controllato per struttura, sezioni IT/EN e navigazione fra le lingue. Pubblicazione autorizzata da Davide tramite GitHub Pages, alimentato dal branch `develop`.
 - Correzione di Davide: Frequenza usa il piano gratuito del servizio gestito tgram-analytics, non un server dello sviluppatore. Questa indicazione sostituisce l'ipotesi di hosting proprio presente nei vecchi piani. Corretti informativa IT/EN e istruzioni operative: endpoint del fornitore `https://api.tgram-analytics.com`, collegamenti a privacy e DPA, report tramite Telegram, infrastruttura UE e conservazione predefinita di 90 giorni attribuita al fornitore, senza dichiararla verificata sul singolo progetto. IP/User-Agent originali non conservati e hash giornaliero descritti secondo la documentazione ufficiale verificata il 19/11/2026 (https://tgram-analytics.com/privacy.html e https://tgram-analytics.com/dpa.html).
+
+## Animazione mondo → paese → mondo — 19 novembre 2026
+
+- Branch `feat/animazione-paese`, da `develop`. Prima versione da valutare visivamente con Davide, ripartendo dalla conversazione del 16/11: la direzione paese/cartolina era stata discussa, ma il movimento del vecchio mockup non era approvato. In questa fase si lavora solo sulla mappa della home.
+- `RouteMap` torna al mondo al cambio stazione (800 ms) e all'arrivo avvicina il paese tracciandone il contorno (1800 ms, con sovrapposizione alla rotta esistente). Curve senza rimbalzo. I confini restano visibili durante l'ascolto e la pausa. Le riconnessioni mantengono l'inquadratura; un cambio interrotto riparte dalla vista corrente. Nessun ritardo aggiunto all'audio, nessuna modifica al motore della radio.
+- Sagome offline da Natural Earth 1:50m, con la stessa divisione dei territori già usata nell'atlante. Nuovo generatore `tool/world_atlas/outlines.py`, richiamato da `generate.sh`; coordinate semplificate e codificate a delta, circa 274 KB complessivi. Decodifica e tracciati memorizzati al primo utilizzo. Gestiti paesi piccoli, linea del cambio data e dati mancanti (restano mondo e rotta). Nessuna richiesta di rete aggiuntiva.
+- Movimento ridotto: inquadratura finale immediata, senza zoom né disegno animato. Prove native di Brasile e Giappone catturate per l'anteprima; sagome offline verificate anche per Singapore, Fiji, Russia e Guyana francese. Controllo completo `bash tool/check.sh` superato con 462 test Flutter, analisi statica pulita e controlli Node/Python verdi. Dopo una rifinitura per il ritorno dal background su una stazione senza posizione, ripetuti analisi e 34 test mirati dell’atlante/mappa, tutti verdi. Anteprima GIF nativa di 10,6 secondi disponibile nel workspace, fuori dal repository.
+- Prossimo passo: giudizio di Davide sul movimento e collaudo della fluidità su telefono. Cartolina, foto e collezione restano nella fase successiva. Davide ha approvato l’anteprima e richiesto il merge in `develop`.

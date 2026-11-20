@@ -43,7 +43,27 @@ final analyticsHttpClientProvider = Provider<http.Client?>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef AnalyticsHttpClientRef = ProviderRef<http.Client?>;
-String _$analyticsHash() => r'6f7808a198a9e9d7502b08f5ab9aa58b6b4db305';
+String _$analyticsSessionIdHash() =>
+    r'a68d1429c4b54b6f7c0cd04befb87b12c321ac98';
+
+/// Stable while statistics remain enabled; metadata changes keep the launch.
+///
+/// Copied from [analyticsSessionId].
+@ProviderFor(analyticsSessionId)
+final analyticsSessionIdProvider = Provider<String?>.internal(
+  analyticsSessionId,
+  name: r'analyticsSessionIdProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$analyticsSessionIdHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef AnalyticsSessionIdRef = ProviderRef<String?>;
+String _$analyticsHash() => r'03bec2762c6f88590c111a814fbed777e5401f40';
 
 /// Where the events go: nowhere without the keys, or with the statistics
 /// off or not yet read. Every time they start, a new launch code.

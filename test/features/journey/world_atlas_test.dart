@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:frequenza/features/journey/data/world_atlas.g.dart';
+import 'package:frequenza/features/journey/domain/atlas/world_atlas.g.dart';
 
 void main() {
   test('every land cell has its country, sea cells none', () {

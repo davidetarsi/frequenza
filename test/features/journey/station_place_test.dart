@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:frequenza/features/journey/data/world_atlas.g.dart';
+import 'package:frequenza/features/journey/domain/atlas/world_atlas.g.dart';
 import 'package:frequenza/features/journey/domain/geo_point.dart';
 import 'package:frequenza/features/journey/domain/station_place.dart';
 import 'package:frequenza/features/journey/domain/travel_leg.dart';

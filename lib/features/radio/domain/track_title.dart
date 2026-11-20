@@ -1,10 +1,16 @@
+import 'package:freezed_annotation/freezed_annotation.dart';
+
+import 'station_input.dart';
+
+part 'track_title.freezed.dart';
+
 /// A song title as a station sends it, cleaned: no on-air prefixes, no
 /// adverts, the artist apart when the station writes "artist - title".
-final class TrackTitle {
-  const TrackTitle({required this.title, this.artist});
-
-  final String? artist;
-  final String title;
+@freezed
+class TrackTitle with _$TrackTitle {
+  const TrackTitle._();
+  const factory TrackTitle({required String title, String? artist}) =
+      _TrackTitle;
 
   /// "Artist — Title", or the title alone.
   String get display => artist == null ? title : '$artist — $title';
@@ -27,6 +33,7 @@ final class TrackTitle {
   /// Null when [raw] is not a song: empty, digits or punctuation only, an
   /// advert, or just the station's name.
   static TrackTitle? parse(String raw, {String? stationName}) {
+    if (raw.length > StationInput.trackTitle) return null;
     final text = _collapse(raw).replaceFirst(_prefix, '');
     if (_noLetters.hasMatch(text) || _advert.hasMatch(text)) return null;
     if (stationName != null &&
@@ -44,11 +51,4 @@ final class TrackTitle {
   }
 
   static String _collapse(String text) => text.trim().replaceAll(_spaces, ' ');
-
-  @override
-  bool operator ==(Object other) =>
-      other is TrackTitle && other.artist == artist && other.title == title;
-
-  @override
-  int get hashCode => Object.hash(artist, title);
 }

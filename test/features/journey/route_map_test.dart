@@ -5,6 +5,7 @@ import 'package:frequenza/features/journey/domain/geo_point.dart';
 import 'package:frequenza/features/journey/domain/station_place.dart';
 import 'package:frequenza/features/journey/domain/travel_leg.dart';
 import 'package:frequenza/features/journey/presentation/route_map.dart';
+import 'package:frequenza/features/journey/presentation/country_shape.dart';
 import 'package:frequenza/features/radio/presentation/radio_display.dart';
 
 const paris = StationPlace(
@@ -21,6 +22,213 @@ Widget host(RouteMap map, {bool reduceMotion = false}) => MediaQuery(
 void main() {
   LeakTesting.enable();
   LeakTesting.settings = LeakTesting.settings.withIgnoredAll();
+  RouteMapPainter frame(WidgetTester tester) =>
+      tester
+              .widget<CustomPaint>(find.byKey(const ValueKey('route-map')))
+              .painter!
+          as RouteMapPainter;
+  RouteMap map({
+    FlightPhase phase = FlightPhase.grounded,
+    int trips = 1,
+    StationPlace? to = paris,
+    bool reconnecting = false,
+  }) => RouteMap(
+    flight: phase,
+    playing: false,
+    departure: to ?? homePlace,
+    leg: TravelLeg(from: homePlace, to: to),
+    history: const [],
+    trips: trips,
+    reconnecting: reconnecting,
+  );
+
+  testWidgets(
+    'arrival zooms progressively; the next flight returns to the world',
+    (tester) async {
+      await tester.pumpWidget(
+        host(map(phase: FlightPhase.flying, trips: 0, to: null)),
+      );
+      expect(frame(tester).country, isNull);
+      await tester.pumpWidget(host(map()));
+      expect(frame(tester).viewport.width, closeTo(360, 1e-8));
+      expect(frame(tester).outline, 0);
+      await tester.pump(const Duration(milliseconds: 450));
+      expect(
+        frame(tester).viewport.width,
+        inExclusiveRange(CountryShape.of('FR')!.viewport.width, 360),
+      );
+      await tester.pump(const Duration(milliseconds: 1500));
+      expect(frame(tester).outline, 1);
+      final arrived = frame(tester).viewport;
+      await tester.pumpWidget(host(map(phase: FlightPhase.flying)));
+      expect(frame(tester).viewport.width, closeTo(arrived.width, 1e-8));
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(
+        frame(tester).viewport.width,
+        inExclusiveRange(arrived.width, 360),
+      );
+      await tester.pump(const Duration(milliseconds: 450));
+      expect(frame(tester).viewport.width, closeTo(360, 1e-8));
+      expect(frame(tester).outline, 0);
+      await tester.pumpWidget(const SizedBox.shrink());
+    },
+  );
+
+  testWidgets('the country is framed before its border is drawn', (
+    tester,
+  ) async {
+    const singapore = StationPlace(
+      point: GeoPoint(1.35, 103.82),
+      approximate: false,
+      countryCode: 'SG',
+    );
+    await tester.pumpWidget(
+      host(map(phase: FlightPhase.flying, trips: 0, to: null)),
+    );
+    await tester.pumpWidget(host(map(to: singapore)));
+    await tester.pump(const Duration(milliseconds: 600));
+    final approaching = frame(tester);
+    expect(
+      approaching.viewport
+          .inflate(1e-8)
+          .contains(CountryShape.of('SG')!.bounds.center),
+      isTrue,
+    );
+    expect(approaching.outline, 0);
+    await tester.pump(const Duration(milliseconds: 500));
+    final drawing = frame(tester);
+    expect(
+      drawing.viewport.center.dx,
+      closeTo(CountryShape.of('SG')!.viewport.center.dx, 1e-8),
+    );
+    expect(
+      drawing.viewport.width,
+      closeTo(CountryShape.of('SG')!.viewport.width, 1e-8),
+    );
+    expect(drawing.outline, inExclusiveRange(0, 1));
+    final view = drawing.viewport;
+    final outline = drawing.outline;
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(frame(tester).viewport, view);
+    expect(frame(tester).outline, greaterThan(outline));
+    await tester.pumpAndSettle();
+    expect(frame(tester).outline, 1);
+  });
+
+  testWidgets('a new station in the same country starts a fresh border', (
+    tester,
+  ) async {
+    await tester.pumpWidget(host(map()));
+    expect(frame(tester).outline, 1);
+    await tester.pumpWidget(host(map(phase: FlightPhase.flying)));
+    await tester.pump(const Duration(milliseconds: 100));
+    // The next station can arrive before the previous zoom-out ends.
+    await tester.pumpWidget(host(map(trips: 2)));
+    expect(frame(tester).outline, 0);
+    await tester.pump(const Duration(milliseconds: 1100));
+    expect(frame(tester).outline, inExclusiveRange(0, 1));
+    await tester.pumpAndSettle();
+    expect(frame(tester).outline, 1);
+  });
+
+  testWidgets(
+    'interrupted zooms continue from the current view without a jump',
+    (tester) async {
+      await tester.pumpWidget(
+        host(map(phase: FlightPhase.flying, trips: 0, to: null)),
+      );
+      await tester.pumpWidget(host(map()));
+      await tester.pump(const Duration(milliseconds: 700));
+      final before = frame(tester).viewport;
+      await tester.pumpWidget(host(map(phase: FlightPhase.flying)));
+      expect(frame(tester).viewport.width, closeTo(before.width, 1e-8));
+      expect(frame(tester).viewport.center.dx, closeTo(before.center.dx, 1e-8));
+      await tester.pump(const Duration(milliseconds: 100));
+      final leaving = frame(tester).viewport;
+      const brazil = StationPlace(
+        point: GeoPoint(-15.8, -47.9),
+        approximate: false,
+        countryCode: 'BR',
+      );
+      await tester.pumpWidget(host(map(to: brazil, trips: 2)));
+      expect(frame(tester).viewport.width, closeTo(leaving.width, 1e-8));
+      await tester.pumpAndSettle();
+      expect(
+        frame(tester).viewport.width,
+        closeTo(CountryShape.of('BR')!.viewport.width, 1e-8),
+      );
+    },
+  );
+
+  testWidgets(
+    'a reconnect preserves country focus and does not replay the arrival',
+    (tester) async {
+      await tester.pumpWidget(host(map()));
+      final before = frame(tester).viewport;
+      await tester.pumpWidget(
+        host(map(phase: FlightPhase.flying, reconnecting: true)),
+      );
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(frame(tester).viewport, before);
+      await tester.pumpWidget(host(map()));
+      await tester.pumpAndSettle();
+      expect(frame(tester).viewport, before);
+      expect(tester.binding.hasScheduledFrame, isFalse);
+    },
+  );
+
+  testWidgets(
+    'reduced motion shows the final country immediately, then the world',
+    (tester) async {
+      await tester.pumpWidget(
+        host(map(phase: FlightPhase.flying, trips: 0), reduceMotion: true),
+      );
+      await tester.pumpWidget(host(map(), reduceMotion: true));
+      expect(frame(tester).outline, 1);
+      expect(
+        frame(tester).viewport.width,
+        closeTo(CountryShape.of('FR')!.viewport.width, 1e-8),
+      );
+      await tester.pumpWidget(
+        host(map(phase: FlightPhase.flying), reduceMotion: true),
+      );
+      expect(frame(tester).outline, 0);
+      expect(frame(tester).viewport.width, closeTo(360, 1e-8));
+      await tester.pump();
+      expect(tester.binding.hasScheduledFrame, isFalse);
+    },
+  );
+
+  testWidgets('a country without geometry keeps the world and route visible', (
+    tester,
+  ) async {
+    const unknown = StationPlace(
+      point: GeoPoint(0, 0),
+      approximate: true,
+      countryCode: 'ZZ',
+    );
+    await tester.pumpWidget(host(map(to: unknown)));
+    expect(frame(tester).country, isNull);
+    expect(frame(tester).outline, 0);
+    expect(frame(tester).viewport.width, closeTo(360, 1e-8));
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets(
+    'resuming after an unplaced landing clears the previous country',
+    (tester) async {
+      await tester.pumpWidget(host(map(), reduceMotion: true));
+      expect(frame(tester).outline, 1);
+      // In background a whole flight can happen without a visible frame.
+      await tester.pumpWidget(
+        host(map(to: null, trips: 2), reduceMotion: true),
+      );
+      expect(frame(tester).viewport.width, closeTo(360, 1e-8));
+      expect(frame(tester).outline, 0);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
   testWidgets('reduced motion keeps the flight still', (tester) async {
     await tester.pumpWidget(
       host(

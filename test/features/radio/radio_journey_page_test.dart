@@ -99,14 +99,14 @@ void main() {
     expect(find.textContaining('In volo verso'), findsOneWidget);
     expect(find.text('Prossima fermata: …'), findsOneWidget);
     expect(find.textContaining('FIP'), findsNothing);
-    expect(find.textContaining('FRANCE'), findsNothing);
+    expect(find.textContaining('FRANCIA'), findsNothing);
 
     await landFlight(tester, audio);
     final km = NumberFormat.decimalPattern(
       'it',
     ).format(TravelLeg(from: homePlace, to: placeOf(fip)).distance!.km);
     expect(find.text('FIP Paris'), findsOneWidget);
-    expect(find.text('FRANCE'), findsOneWidget);
+    expect(find.text('FRANCIA'), findsOneWidget);
     expect(find.text(' · ≈ $km KM'), findsOneWidget);
     expect(find.bySemanticsLabel(RegExp('ora locale')), findsOneWidget);
     final label = find.text('ORA LOCALE');
@@ -202,7 +202,7 @@ void main() {
   testWidgets('a station without a country says so in the language', (
     tester,
   ) async {
-    final audio = await openRadio(tester, blank);
+    final audio = await openRadio(tester, blank.copyWith(countryCode: ''));
     await tester.tap(find.byKey(const ValueKey('tune-knob')));
     await tester.pump();
     await landFlight(tester, audio);

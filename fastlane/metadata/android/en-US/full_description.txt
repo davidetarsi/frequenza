@@ -16,4 +16,4 @@ LISTEN YOUR WAY
 • light or dark theme, in English or Italian.
 
 SIMPLE AND FREE
-No account, no ads, only anonymous statistics you can turn off. Stations come from the free Radio Browser directory, and the app's code is open on GitHub.
+No account, no ads, only usage statistics you can turn off. Stations come from the free Radio Browser directory, and the app's code is open on GitHub.

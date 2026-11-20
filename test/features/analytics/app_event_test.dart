@@ -120,7 +120,7 @@ void main() {
       AppEvent.favoriteAdded(station),
       AppEvent.songSaved(station),
       AppEvent.listenEnded(station, seconds: 300),
-      const AppEvent.diaryOpened(),
+      AppEvent.diaryOpened(),
       for (final period in DiaryPeriod.values)
         AppEvent.diaryPeriodChosen(period),
       AppEvent.diaryCountryOpened('IT', const CountryCard.unvisited('IT')),
@@ -167,7 +167,7 @@ void main() {
   });
 
   test('the diary events: opened has nothing, a period carries its name', () {
-    expect(const AppEvent.diaryOpened(), const AppEvent('diary_opened'));
+    expect(AppEvent.diaryOpened(), const AppEvent('diary_opened'));
     expect(
       AppEvent.diaryPeriodChosen(DiaryPeriod.week),
       const AppEvent('diary_period_chosen', {'period': 'week'}),

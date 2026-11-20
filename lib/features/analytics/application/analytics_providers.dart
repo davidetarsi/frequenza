@@ -49,6 +49,13 @@ class AnalyticsSessionDetails extends _$AnalyticsSessionDetails {
       state = Map.unmodifiable(details);
 }
 
+/// Stable while statistics remain enabled; metadata changes keep the launch.
+@Riverpod(keepAlive: true)
+String? analyticsSessionId(Ref ref) =>
+    analyticsOn(ref.watch(analyticsConsentProvider))
+    ? newAnalyticsSessionId()
+    : null;
+
 /// Where the events go: nowhere without the keys, or with the statistics
 /// off or not yet read. Every time they start, a new launch code.
 @Riverpod(keepAlive: true)
@@ -59,7 +66,7 @@ Analytics analytics(Ref ref) {
   final analytics = TgramAnalytics(
     apiKey: keys.apiKey,
     serverUrl: keys.serverUrl,
-    sessionId: newAnalyticsSessionId(),
+    sessionId: ref.watch(analyticsSessionIdProvider)!,
     details: ref.watch(analyticsSessionDetailsProvider),
     client: ref.watch(analyticsHttpClientProvider),
   );

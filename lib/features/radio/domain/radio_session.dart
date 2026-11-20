@@ -34,51 +34,26 @@ sealed class RadioSession with _$RadioSession {
 }
 
 /// What happened to the radio.
-sealed class RadioEvent {
-  const RadioEvent();
-}
+@freezed
+sealed class RadioEvent with _$RadioEvent {
+  const factory RadioEvent.flightStarted(
+    FlightKind kind, {
+    RadioStation? target,
+  }) = FlightStarted;
+  const factory RadioEvent.attemptFailed({required bool retrying}) =
+      AttemptFailed;
+  const factory RadioEvent.retryStarted() = RetryStarted;
 
-final class FlightStarted extends RadioEvent {
-  const FlightStarted(this.kind, {this.target});
-  final FlightKind kind;
-
-  /// The station chosen, when the flight is not random.
-  final RadioStation? target;
-}
-
-final class AttemptFailed extends RadioEvent {
-  const AttemptFailed({required this.retrying});
-  final bool retrying;
-}
-
-final class RetryStarted extends RadioEvent {
-  const RetryStarted();
-}
-
-final class Landed extends RadioEvent {
-  const Landed(this.station, {required this.paused, this.trackTitle});
-  final RadioStation station;
-
-  /// A pause that arrived during the flight.
-  final bool paused;
-
-  /// The title the station sent while it played silent under the static:
-  /// most stations send it once, as soon as they connect.
-  final String? trackTitle;
-}
-
-final class PlaybackChanged extends RadioEvent {
-  const PlaybackChanged(this.status);
-  final PlaybackStatus status;
-}
-
-final class TrackChanged extends RadioEvent {
-  const TrackChanged(this.title);
-  final String? title;
-}
-
-final class SwitchedOff extends RadioEvent {
-  const SwitchedOff();
+  /// Includes a pause/title received during flight before landing.
+  const factory RadioEvent.landed(
+    RadioStation station, {
+    required bool paused,
+    String? trackTitle,
+  }) = Landed;
+  const factory RadioEvent.playbackChanged(PlaybackStatus status) =
+      PlaybackChanged;
+  const factory RadioEvent.trackChanged(String? title) = TrackChanged;
+  const factory RadioEvent.switchedOff() = SwitchedOff;
 }
 
 /// The radio's transitions. Every other pair keeps the same session.

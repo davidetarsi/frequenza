@@ -1,3 +1,4 @@
+import '../../journey/presentation/country_name.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -6,12 +7,10 @@ import '../../../l10n/locale_keys.g.dart';
 import '../../../ui/theme/travel_radio_design.dart';
 import '../../../ui/theme/travel_radio_palette.dart';
 import '../../favorites/application/favorites_controller.dart';
-import '../../songs/application/saved_songs.dart';
 import '../../songs/presentation/save_song.dart';
 import '../application/radio_controller.dart';
 import '../domain/radio_bar_state.dart';
 import '../domain/radio_station.dart';
-import '../domain/track_title.dart';
 
 /// The player bar under a page opened over the radio. Touching the station
 /// goes back to the radio; the keys do what the radio's keys do. No next
@@ -31,8 +30,17 @@ class RadioBar extends ConsumerWidget {
     final title = switch (state) {
       BarPlaying(:final station) ||
       BarPaused(:final station) ||
-      BarStopped(:final station) =>
-        '${station.name} · ${station.country.isEmpty ? t(LocaleKeys.unknownCountry) : station.country}',
+      BarStopped(:final station) => LocaleKeys.stationCountry.tr(
+        context: context,
+        namedArgs: {
+          'station': station.name,
+          'country': countryName(
+            context,
+            station.countryCode,
+            fallback: station.country,
+          ),
+        },
+      ),
       BarFlying() => t(LocaleKeys.barFlying),
       BarFailed() => t(LocaleKeys.barNoSignal),
       BarHidden() => '',
@@ -50,7 +58,7 @@ class RadioBar extends ConsumerWidget {
     final keys = <Widget>[
       if (state.station case final station?) _heart(context, ref, station),
       if ((state.station, state.track) case (final station?, final track?))
-        _bookmark(context, ref, track, station),
+        SongBookmark.player(track: track, station: station),
       if (state.mainKey case final key?)
         _key(
           icon: switch (key) {
@@ -94,7 +102,7 @@ class RadioBar extends ConsumerWidget {
                 button: true,
                 label: LocaleKeys.barBackToRadio.tr(
                   context: context,
-                  args: ['$title, $detail'],
+                  namedArgs: {'title': title, 'detail': detail},
                 ),
                 excludeSemantics: true,
                 child: InkWell(
@@ -149,23 +157,6 @@ class RadioBar extends ConsumerWidget {
     );
   }
 
-  Widget _bookmark(
-    BuildContext context,
-    WidgetRef ref,
-    TrackTitle track,
-    RadioStation station,
-  ) {
-    ref.watch(savedSongsProvider);
-    final saved = ref
-        .read(savedSongsProvider.notifier)
-        .contains(track, station);
-    return _icon(
-      icon: saved ? Icons.bookmark_added : Icons.bookmark_add_outlined,
-      tooltip: LocaleKeys.saveSong.tr(context: context),
-      onPressed: saved ? null : () => saveSong(context, ref, track, station),
-    );
-  }
-
   Widget _icon({
     required IconData icon,
     required String tooltip,
@@ -200,7 +191,7 @@ class RadioBar extends ConsumerWidget {
       backgroundColor: TravelRadioPalette.screen,
       foregroundColor: TravelRadioPalette.screenInk,
       disabledBackgroundColor: TravelRadioPalette.screen.withValues(
-        alpha: 0.45,
+        alpha: RadioBarDesign.disabledKeyOpacity,
       ),
       disabledForegroundColor: TravelRadioPalette.screenInk,
     ),

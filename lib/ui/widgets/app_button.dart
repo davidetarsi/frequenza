@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../theme/app_spacing.dart';
+import '../theme/app_component_design.dart';
 
 enum AppButtonVariant { filled, outlined, text }
 
@@ -12,22 +12,32 @@ class AppButton extends StatelessWidget {
     this.isLoading = false,
     this.variant = AppButtonVariant.filled,
     this.icon,
-  });
+  }) : _emphasized = false;
+
+  const AppButton.emphasized({
+    super.key,
+    required this.label,
+    required this.onPressed,
+    this.isLoading = false,
+    this.icon,
+  }) : variant = AppButtonVariant.filled,
+       _emphasized = true;
 
   final String label;
   final VoidCallback? onPressed;
   final bool isLoading;
   final AppButtonVariant variant;
   final Widget? icon;
+  final bool _emphasized;
 
   @override
   Widget build(BuildContext context) {
     final action = isLoading ? null : onPressed;
     final content = isLoading
         ? SizedBox.square(
-            dimension: 24,
+            dimension: AppButtonDesign.loadingSize,
             child: CircularProgressIndicator(
-              strokeWidth: 2,
+              strokeWidth: AppButtonDesign.loadingStroke,
               semanticsLabel: label,
             ),
           )
@@ -45,8 +55,11 @@ class AppButton extends StatelessWidget {
       AppButtonVariant.filled => FilledButton.icon(
         onPressed: action,
         icon: icon,
+        style: _emphasized ? AppButtonDesign.emphasizedStyle : null,
         label: Padding(
-          padding: const EdgeInsets.symmetric(vertical: AppSpacing.small),
+          padding: _emphasized
+              ? EdgeInsets.zero
+              : AppButtonDesign.filledLabelPadding,
           child: content,
         ),
       ),
@@ -54,11 +67,7 @@ class AppButton extends StatelessWidget {
         onPressed: action,
         icon: icon,
         style: icon == null
-            ? OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.small,
-                ),
-              )
+            ? OutlinedButton.styleFrom(padding: AppButtonDesign.outlinedPadding)
             : null,
         label: content,
       ),

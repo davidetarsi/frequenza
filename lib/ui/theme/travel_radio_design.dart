@@ -29,17 +29,55 @@ abstract final class TravelRadioLayout {
   static const landscapeMaxHeight = 560.0;
   static const landscapeContentWidth = 720.0;
   static const landscapeControlsWidth = 160.0;
-  static const compactHeight = 740.0;
-  static const compactHeightWithLargeText = 900.0;
+  static const minFittingWidthShare = .9;
+  static const minPageGap = 4.0;
+  // The cabinet's painted shadow extends beyond its layout box.
+  static const mapFooterClearance = 20.0;
+  static const pageGapCount = 5;
+  static const landscapeGapCount = 4;
+
+  static double fittingWidth(double width, double density) {
+    final minimum = (width * minFittingWidthShare).clamp(
+      minCabinetWidth.clamp(0.0, width),
+      width,
+    );
+    return minimum + (width - minimum) * density;
+  }
+
   static const referenceTextSize = 16.0;
   static const largeTextThreshold = 20.0;
   static const headingTracking = -1.0;
+  static const headingText = TextStyle(
+    fontWeight: FontWeight.w600,
+    letterSpacing: headingTracking,
+  );
   static const headerIconSize = 26.0;
   static const headerActionSize = 48.0;
   static const headerActionGap = 4.0;
   static const captionLineHeight = 1.1;
   static const captionTracking = 0.0;
 }
+
+typedef RadioCabinetMetrics = ({
+  double diameter,
+  double stationSize,
+  double frameInset,
+  double shellInset,
+  double screenInset,
+  double countryGap,
+  double detailGap,
+  double statusGap,
+  double detailHeightFactor,
+  double statusHeightFactor,
+  double dialLabelGap,
+  double dialLabelSize,
+  double dialLabelHeightFactor,
+  double handleHeight,
+  double controlsGap,
+  double keyHeight,
+  double keysGap,
+  int textLines,
+});
 
 abstract final class RadioCabinetDesign {
   static const compact = (
@@ -83,6 +121,42 @@ abstract final class RadioCabinetDesign {
     textLines: 2,
   );
 
+  static const tightStatusHeightFactor = 2.1;
+
+  static RadioCabinetMetrics metricsFor(double density) {
+    double mix(double tight, double comfortable) =>
+        tight + (comfortable - tight) * density;
+    return (
+      diameter: mix(compact.diameter, regular.diameter),
+      stationSize: mix(compact.stationSize, regular.stationSize),
+      frameInset: mix(compact.frameInset, regular.frameInset),
+      shellInset: mix(compact.shellInset, regular.shellInset),
+      screenInset: mix(compact.screenInset, regular.screenInset),
+      countryGap: mix(compact.countryGap, regular.countryGap),
+      detailGap: mix(compact.detailGap, regular.detailGap),
+      statusGap: mix(compact.statusGap, regular.statusGap),
+      detailHeightFactor: mix(
+        compact.detailHeightFactor,
+        regular.detailHeightFactor,
+      ),
+      statusHeightFactor: mix(
+        tightStatusHeightFactor,
+        regular.statusHeightFactor,
+      ),
+      dialLabelGap: mix(compact.dialLabelGap, regular.dialLabelGap),
+      dialLabelSize: mix(compact.dialLabelSize, regular.dialLabelSize),
+      dialLabelHeightFactor: mix(
+        compact.dialLabelHeightFactor,
+        regular.dialLabelHeightFactor,
+      ),
+      handleHeight: mix(compact.handleHeight, regular.handleHeight),
+      controlsGap: mix(compact.controlsGap, regular.controlsGap),
+      keyHeight: mix(compact.keyHeight, regular.keyHeight),
+      keysGap: mix(compact.keysGap, regular.keysGap),
+      textLines: regular.textLines,
+    );
+  }
+
   static const screenFrameInset = 5.0;
   static const screenFrameRadius = BorderRadius.all(Radius.circular(15));
   static const screenRadius = BorderRadius.all(Radius.circular(10));
@@ -124,6 +198,7 @@ abstract final class RadioCabinetDesign {
   /// The bookmark beside the song: a little taller than its text.
   static const detailActionSize = 18.0;
   static const statusText = TextStyle(fontSize: 12, height: 1.15);
+  static const statusWidthShare = .5;
   static const stationText = TextStyle(
     fontWeight: FontWeight.w600,
     height: 1.15,
@@ -199,25 +274,6 @@ abstract final class RadioEqualizerDesign {
 }
 
 abstract final class RadioFavoritesDesign {
-  static const maxWidth = 520.0;
-  static const initialHeight = .62;
-  static const minHeight = .3;
-  static const maxHeight = .94;
-  static const barrierOpacity = .48;
-  static const sheetRadius = BorderRadius.vertical(top: Radius.circular(32));
-  static const sheetPadding = EdgeInsets.fromLTRB(22, 12, 22, 24);
-  static const shadowOpacity = .22;
-  static const shadowBlur = 28.0;
-  static const shadowOffset = Offset(0, -5);
-  static const handleSize = Size(36, 4);
-  static const handleRadius = BorderRadius.all(Radius.circular(4));
-  static const titleTracking = -.6;
-  static const titleGap = 5.0;
-  static const closeIconSize = 20.0;
-  static const contentGap = 20.0;
-  static const pullToClose = 24.0;
-  static const mutedOpacity = 0.78;
-  static const emptyIconSize = 28.0;
   static const footerGap = 10.0;
   static const footerIconSize = 14.0;
   static const footerIconGap = 6.0;
@@ -228,12 +284,6 @@ abstract final class RadioFavoritesDesign {
   );
   static const presetCodeSize = Size(42, 46);
   static const inactivePresetBorderOpacity = .55;
-  static const presetGlobeSize = 18.0;
-  static const presetCodeText = TextStyle(
-    fontSize: 12,
-    fontWeight: FontWeight.w600,
-    letterSpacing: 1,
-  );
   static const removeIconSize = 19.0;
   static const trailingInset = 4.0;
 
@@ -249,6 +299,13 @@ abstract final class RadioFavoritesDesign {
 }
 
 abstract final class CodeBadgeDesign {
+  static const fallbackIconSize = 18.0;
+  static const text = TextStyle(
+    fontSize: 12,
+    fontWeight: FontWeight.w600,
+    letterSpacing: 1,
+  );
+
   static const size = Size(34, 26);
   static const borderOpacity = .55;
 }
@@ -265,9 +322,14 @@ abstract final class RadioDiagnosticsDesign {
 
 abstract final class RouteMapDesign {
   static const height = 84.0;
+  static const tightHeight = 56.0;
+  static double heightFor(double density) =>
+      tightHeight + (height - tightHeight) * density;
   static const north = 80.0;
   static const south = -60.0;
   static const dotRadius = .55;
+  static const dotReferenceScale = .6;
+  static const maxDotRadius = 1.4;
   static const dotOpacity = .22;
   static const historyOpacity = .25;
   static const historyStroke = .8;
@@ -279,12 +341,32 @@ abstract final class RouteMapDesign {
   static const radarRings = 3;
   static const radarRadius = 26.0;
   static const radarStroke = 1.0;
+  static const radarOpacity = .6;
+  static const departurePointShare = .7;
+  static const arrivalPulseOpacity = .7;
+  static const visibleOpacity = .001;
   static const radarCycle = Duration(milliseconds: 1800);
   static const arrivalPulseRadius = 7.0;
   static const arrivalCycle = Duration(milliseconds: 2400);
   static const landing = Duration(milliseconds: 600);
+  static const landingCurve = Curves.easeOutCubic;
+  static const countryStroke = 1.25;
+  static const countryFillOpacity = .065;
+  static const countryDotFade = .72;
+  static const countryArrival = Duration(milliseconds: 1800);
+  static const countryDeparture = Duration(milliseconds: 800);
+  static const departureFade = Interval(0, .6);
+  static const previousCountryFade = Interval(0, .4);
+  // Frame the country in the first half, then trace its border at steady speed.
+  static const arrivalCamera = Interval(0, .5, curve: Curves.easeInOutCubic);
+  static const departureCamera = Curves.easeInOutCubic;
+  static const countryReveal = Interval(.5, 1);
+  static const countryViewMargin = 1.35;
+  static const minCountryViewExtent = .08;
   static const landingBlur = 6.0;
   static const dotsCycle = Duration(milliseconds: 1200);
+  static const dotsCount = 3;
+  static const hiddenDotsText = TextStyle(color: Colors.transparent);
   static const clockIconGap = 3.0;
   static const localTimeLabelOpacity = .75;
   static const localTimeLabelText = TextStyle(
@@ -306,6 +388,7 @@ abstract final class RadioBarDesign {
   static const titleText = TextStyle(fontSize: 14, fontWeight: FontWeight.w500);
   static const detailText = TextStyle(fontSize: 12);
   static const detailOpacity = 0.8;
+  static const disabledKeyOpacity = .45;
   static const savedHeart = TravelRadioPalette.accent;
 }
 
@@ -330,6 +413,7 @@ abstract final class DiaryDesign {
   static const zoomKey = 36.0;
   static const zoomKeyRadius = 8.0;
   static const zoomIconSize = 16.0;
+  static const zoomCurve = Curves.easeOutCubic;
   static const zoomInset = 10.0;
 
   static const mapMinHeight = 180.0;
@@ -339,6 +423,8 @@ abstract final class DiaryDesign {
   static const playerBackdropTint = 0.88;
   static const barInset = EdgeInsets.fromLTRB(12, 12, 12, 14);
   static const pagePadding = EdgeInsets.fromLTRB(16, 14, 16, 10);
+  static const headerGap = AppSpacing.small;
+  static const summaryWidthShare = .5;
   static const periodGap = 8.0;
   static const periodPadding = EdgeInsets.symmetric(
     horizontal: 14,
@@ -354,13 +440,36 @@ abstract final class DiaryDesign {
     fontFamily: 'monospace',
     fontWeight: FontWeight.w500,
   );
+  static final sheetNumbersText = numbersText.copyWith(fontSize: 14);
+  static const periodText = TextStyle(
+    fontSize: 12,
+    fontWeight: FontWeight.w500,
+  );
+  static const selectedPeriodText = TextStyle(
+    fontSize: 12,
+    fontWeight: FontWeight.w700,
+  );
+  static const periodBorderOpacity = .4;
   static const sectionText = TextStyle(fontSize: 11, letterSpacing: 1.8);
   static const mutedOpacity = 0.78;
   static const barHeight = 6.0;
+  static const barRadius = BorderRadius.all(Radius.circular(3));
+  static const initialCountryCount = 10;
+  static const rankRowPadding = EdgeInsets.symmetric(
+    vertical: AppSpacing.small,
+  );
+  static const rankGap = AppSpacing.small;
+  static const topLabelGap = 6.0;
+  static const sectionGap = 14.0;
+  static const topRadius = BorderRadius.all(Radius.circular(10));
+  static const topPadding = EdgeInsets.all(AppSpacing.standard);
+  static const topBorderOpacity = .3;
+  static const topArrowSize = 16.0;
   static const rankNameWidth = 96.0;
   static const rankTimeWidth = 52.0;
   static const sheetRow = 54.0;
-  static const sheetButton = 48.0;
+  static const sheetSectionGap = 10.0;
+  static const sheetActionGap = 14.0;
   static const sheetMaxShare = 0.62;
 
   /// The «touch a country» pill in the map's corner.

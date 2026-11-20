@@ -1,7 +1,7 @@
 name: frequenza
 description: "Ascolto e scoperta di web radio nel mondo."
 publish_to: 'none'
-version: 0.4.1+6
+version: 0.4.2+7
 
 environment:
   sdk: ^3.10.4
@@ -18,7 +18,7 @@ dependencies:
   freezed_annotation: ^2.4.4
   json_annotation: ^4.9.0
   shared_preferences: ^2.5.4
-  http: ^1.2.2
+  http: ^1.6.0
   just_audio: ^0.9.44
   audio_service: ^0.18.19
   audio_session: ^0.1.25

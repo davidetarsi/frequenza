@@ -7,7 +7,7 @@ part of 'installed_apps.dart';
 // **************************************************************************
 
 String _$installedSearchAppsHash() =>
-    r'684895825aa6cc3fece059e5ab585e58c5eacf1f';
+    r'88698be47fa614d0c3652642a95f7e442a443b1f';
 
 /// The music apps on the phone, asked once per launch.
 ///

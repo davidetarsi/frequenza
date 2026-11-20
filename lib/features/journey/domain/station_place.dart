@@ -1,7 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 import '../../radio/domain/radio_station.dart';
-import '../data/world_atlas.g.dart';
+import 'atlas/world_atlas.g.dart';
 import 'geo_point.dart';
 
 part 'station_place.freezed.dart';

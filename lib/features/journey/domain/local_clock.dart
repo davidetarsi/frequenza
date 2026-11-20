@@ -1,5 +1,5 @@
 import '../../radio/domain/radio_station.dart';
-import '../data/world_atlas.g.dart';
+import 'atlas/world_atlas.g.dart';
 import 'dst_rule.dart';
 import 'geo_point.dart';
 

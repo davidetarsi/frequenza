@@ -23,7 +23,7 @@ final songsRepositoryProvider = Provider<SongsRepository>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef SongsRepositoryRef = ProviderRef<SongsRepository>;
-String _$savedSongsHash() => r'739c56b471bfb8a9ea341cebbf2af53842eccd5e';
+String _$savedSongsHash() => r'8fd9a1da33c02f5d3ffeae41e25eaba8e2c93ee1';
 
 /// The songs saved from the radio, in the order they were saved.
 ///

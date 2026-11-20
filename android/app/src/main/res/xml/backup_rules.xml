@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- App settings, favourites and songs share FlutterSharedPreferences.xml.
+     Drift uses Flutter's documents directory (app_flutter), not databases/.
+     Include SQLite recovery files; -shm is transient and is rebuilt by SQLite.
+     An include list excludes every other file, including future SDK data. -->
+<full-backup-content>
+    <include domain="sharedpref" path="FlutterSharedPreferences.xml" />
+    <include domain="root" path="app_flutter/frequenza.sqlite" />
+    <include domain="root" path="app_flutter/frequenza.sqlite-wal" />
+    <include domain="root" path="app_flutter/frequenza.sqlite-journal" />
+</full-backup-content>
