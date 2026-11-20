@@ -49,6 +49,9 @@ jobs:
       - name: 🛍️ Invia o valida la scheda
         env:
           GOOGLE_PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+          # Fastlane legge una release anche per la sola scheda: usare il
+          # canale del test chiuso, non production che può essere ancora vuoto.
+          PLAY_TRACK: ${{ vars.PLAY_TRACK || 'alpha' }}
           VALIDATE_ONLY: ${{ github.event_name == 'workflow_dispatch' && inputs.pubblica && 'false' || 'true' }}
         run: |
           set -euo pipefail
@@ -67,6 +70,7 @@ jobs:
             --package_name it.davidetarsi.frequenza \
             --json_key_data "$GOOGLE_PLAY_SERVICE_ACCOUNT_JSON" \
             --metadata_path fastlane/metadata/android \
+            --track "$PLAY_TRACK" \
             --skip_upload_apk true \
             --skip_upload_aab true \
             --skip_upload_changelogs true \

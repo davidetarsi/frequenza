@@ -5,11 +5,15 @@ Il punto di ripresa di ogni sessione: si legge questo, poi solo il piano attivo.
 ## Dove siamo
 
 - `main`: versione 0.4.1+6, dopo il merge della PR #46. Questo indica lo stato del repository; la pubblicazione sul Play Store resta gestita da Davide.
-- `develop`: include anche la scadenza incondizionata delle snackbar, dopo il merge della PR #50 (`5acab92`), confermato sul telefono da Davide.
-- Branch di lavoro: `feat/segnalibro-canzone-toggle`, da `origin/develop` dopo la PR #50. Davide ha autorizzato modifica, test, PR e merge verso `develop`.
+- `develop`: include il segnalibro come toggle (PR #51, `2ee0339`) e il bump patch automatico a 0.4.2+7.
+- Rilascio autorizzato: PR #52 da develop a main, etichetta version:patch, versione 0.4.2+7. Davide ha richiesto anche il merge. Il controllo versione è passato; in attesa dei controlli sul commit finale.
 - Audit del 19 novembre: completati i blocchi su persistenza/stati, sicurezza/privacy, confini architetturali e localizzazione. Completato anche il blocco UI condivisa/token; resta il punto di manutenzione P3 nativo descritto sotto. Il rapporto è nell'area di lavoro `../audit/2026-11-19/rapporto.md` (non versionata nel repository).
 
 ## Piano attivo
+
+Rilascio patch 0.4.2+7 — [PR #52](https://github.com/davidetarsi/frequenza/pull/52). La validazione della scheda Play ha rilevato un crash di Fastlane 2.225.0: cerca una release nel canale production vuoto anche con solo metadata e skip_upload_changelogs. Corretto il canale della scheda per usare PLAY_TRACK con fallback alpha, come il caricamento AAB esistente; nessuna promozione o modifica delle release. 58 test Python (inclusa la regressione del canale) e 6 test Node superati; CI applicativa della PR passata prima della correzione. Nessun nuovo vincolo CI. Pubblicazione della scheda resta una prova a vuoto nelle PR.
+
+## Segnalibro completato e unito in develop — PR #51
 
 Segnalibro delle canzoni come toggle: implementazione e verifiche locali completate; PR e merge verso develop autorizzati da Davide.
 
@@ -17,7 +21,7 @@ Segnalibro delle canzoni come toggle: implementazione e verifiche locali complet
 - Toggle serializzato in SavedSongs, con lettura dello stato quando il task raggiunge la coda, persistenza AsyncValue e gestione dei risultati obsoleti. Gli eventi analytics esistenti vengono emessi solo dopo il successo; dati/chiavi e normalizzazione delle identità conservati.
 - Un solo componente SongBookmark con presentazioni per radio e mini player, stessi token, icona piena/vuota, stato semantico toggled e label IT/EN esistenti per salvare/togliere. Durante la scrittura il pulsante è disabilitato, poi torna utilizzabile anche se pieno. Nessuna snackbar di conferma del salvataggio/rimozione dal pulsante; errori con messaggio esistente e possibilità di riprovare.
 - Il tocco sul titolo resta additivo e idempotente. Rimozione dalla lista e Annulla conservati: quando la riga sparisce, l'undo mantiene il proprio ruolo.
-- 74 test mirati superati: tocchi in coda senza perdita di altri brani, errori/riprova, ICY che cambia durante la scrittura, sincronizzazione tra mini player/diario e home, assenza di conferme. Script completo tool/check.sh superato: generazione dizionari/provider/schema coerente, formattazione, analisi statica senza problemi, 6 test Node, 57 test Python e 535 test Flutter. Nessuna modifica nativa, alla versione o ai vincoli CI/PR. Restano pubblicazione della PR e controlli GitHub prima del merge autorizzato; collaudo del gesto su telefono non eseguito in questa sessione.
+- 74 test mirati superati: tocchi in coda senza perdita di altri brani, errori/riprova, ICY che cambia durante la scrittura, sincronizzazione tra mini player/diario e home, assenza di conferme. Script completo tool/check.sh superato: generazione dizionari/provider/schema coerente, formattazione, analisi statica senza problemi, 6 test Node, 57 test Python e 535 test Flutter. Nessuna modifica nativa, alla versione o ai vincoli CI/PR. PR #51 unita in develop con CI GitHub verde; collaudo del gesto su telefono non eseguito in questa sessione.
 
 ## Scadenza snackbar completata — 20 novembre 2026
 
