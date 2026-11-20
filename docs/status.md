@@ -5,11 +5,19 @@ Il punto di ripresa di ogni sessione: si legge questo, poi solo il piano attivo.
 ## Dove siamo
 
 - `main`: versione 0.4.2+7, inclusa la pagina di anteprima aggiornata (PR #53, `3ee7252`). Questo indica lo stato del repository; la pubblicazione sul Play Store resta gestita da Davide.
-- `develop`: include la PR #54 (`00d7786`) sui comandi media e la chiusura del task; è anche la sorgente di GitHub Pages.
+- `develop`: include le PR #54 e #55 (`63b546f`) su comandi media/chiusura e Annulla nei preferiti; Davide conferma il collaudo sul telefono. È anche la sorgente di GitHub Pages.
 - Rilascio autorizzato: PR #52 da develop a main, etichetta version:patch, versione 0.4.2+7. Davide ha richiesto anche il merge. PR #52 unita con tutti i controlli verdi (inclusa la scheda Play).
 - Audit del 19 novembre: completati i blocchi su persistenza/stati, sicurezza/privacy, confini architetturali e localizzazione. Completato anche il blocco UI condivisa/token; resta il punto di manutenzione P3 nativo descritto sotto. Il rapporto è nell'area di lavoro `../audit/2026-11-19/rapporto.md` (non versionata nel repository).
 
 ## Piano attivo
+
+Rilascio patch 0.4.3+8 da develop a main, apertura PR e merge autorizzati da Davide dopo la conferma che tutto funziona su develop.
+
+- Include PR #54 (comandi media e stop rimuovendo il task) e PR #55 (snackbar di 4 secondi con Annulla rimuovendo i preferiti).
+- Note Play Store IT/EN aggiornate alle novità correnti e verificate entro i 500 caratteri. Il workflow esistente applicherà version:patch da 0.4.2+7 a 0.4.3+8.
+- Nessun nuovo test locale: collaudo sul telefono confermato da Davide e controlli automatici delle PR precedenti superati. Verificare i controlli GitHub sul commit finale prima del merge.
+
+## Annulla nei preferiti completato — PR #55
 
 Snackbar per la rimozione delle radio preferite — branch `feat/annulla-rimozione-preferiti`, da develop dopo la PR #54.
 
