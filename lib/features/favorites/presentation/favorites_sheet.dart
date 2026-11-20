@@ -19,6 +19,7 @@ import '../../radio/application/radio_controller.dart';
 import '../../radio/domain/radio_session.dart';
 import '../../songs/presentation/songs_tab.dart';
 import '../application/favorites_controller.dart';
+import 'toggle_favorite.dart';
 
 Future<void> showFavorites(BuildContext context) =>
     showTravelSheet(context, builder: (_) => const FavoritesSheet());
@@ -129,8 +130,8 @@ class _FavoritesSheetState extends ConsumerState<FavoritesSheet> {
                 },
                 onRemove: favorites.isLoading
                     ? null
-                    : () =>
-                          ref.read(favoritesProvider.notifier).toggle(station),
+                    : (presetContext) =>
+                          toggleFavorite(presetContext, ref, station),
               ),
             ),
         const SizedBox(height: RadioFavoritesDesign.footerGap),
@@ -172,7 +173,7 @@ class _StationPreset extends StatelessWidget {
   final String id, name, code, subtitle, removeLabel;
   final bool active;
   final VoidCallback onPlay;
-  final VoidCallback? onRemove;
+  final ValueChanged<BuildContext>? onRemove;
   @override
   Widget build(BuildContext context) {
     final p = TravelRadioPalette.of(context);
@@ -240,7 +241,7 @@ class _StationPreset extends StatelessWidget {
           ),
           AppIconButton(
             tooltip: removeLabel,
-            onPressed: onRemove,
+            onPressed: onRemove == null ? null : () => onRemove!(context),
             icon: const Icon(
               Icons.favorite,
               size: RadioFavoritesDesign.removeIconSize,

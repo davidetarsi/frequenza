@@ -19,6 +19,7 @@ abstract class LocaleKeys {
   static const favoritesError = 'favoritesError';
   static const savedOnDevice = 'savedOnDevice';
   static const removeFavorite = 'removeFavorite';
+  static const favoriteRemoved = 'favoriteRemoved';
   static const tapToListen = 'tapToListen';
   static const close = 'close';
   static const playing = 'playing';

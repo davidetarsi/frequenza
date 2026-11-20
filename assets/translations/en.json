@@ -15,6 +15,7 @@
   "favoritesError": "Your favorites could not be updated. Try again.",
   "savedOnDevice": "Saved on this device",
   "removeFavorite": "Remove from favorites",
+  "favoriteRemoved": "Station removed from favorites",
   "tapToListen": "Tap to listen",
   "close": "Close",
   "playing": "Listening",
